@@ -1,3 +1,23 @@
+"""
+このコードは著作権フリーではありません。@NokonoKotlin  (TwitterID)
+によって作成されたものであり、このコード及びこのプログラムが動作している動画、
+画像を使用する際、このコードを編集する際は
+
+game_window.title("Maze_Game created by @NokonoKotlin")
+
+のコードを書き換えたり、Tkinterウィンドウに表示される
+"Maze_Game created by @NokonoKotlin"の文字列をを隠して見えなくしたり
+する行為はおやめください、ご理解よろしくお願いいたします。
+
+また、このコードはmacOSでの動作のみ確認しております。
+他OSではファイルパスの書き方が異なる場合がありますので、その場合は
+VScodeなどの文字列置換機能を用いるなどで各自解決してください。
+
+バグの原因でもありますのでファイル読み込みの部分だけコピーして置き換えることを推奨します。
+
+"""
+
+
 import random
 from collections import deque
 import sys,time
@@ -546,7 +566,7 @@ class Display:
 
 if(__name__ == "__main__"):
     
-    S_main = Stages(30,30)
+    S_main = Stages(10,10)
 
     S_main.set_stage()
 
@@ -562,7 +582,7 @@ if(__name__ == "__main__"):
 
 
     game_window = tkinter.Tk()
-    game_window.title("Maze")
+    game_window.title("Maze_Game created by @NokonoKotlin")
     game_window.geometry(f"{window_width}x{window_height}")
     game_display_Var = tkinter.StringVar()
     game_display_Var.set(D_main.grafic_display)
