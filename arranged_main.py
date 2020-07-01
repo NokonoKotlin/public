@@ -369,7 +369,7 @@ class Display:
 
 
 
-    def root(self,b,a,direction):         #a座標　b座標　向きdi　を入れると　目の前の道の図を返す
+    def route_view(self,b,a,direction):         #a座標　b座標　向きdi　を入れると　目の前の道の図を返す
                             # 道:1 以外は基本的に壁のイラストを追加する
                             # アイテム：４　の場所にも壁のイラストを追加し、その１つ前の位置にアイテムのイラストを追加する 
         s = self.direction_stage(direction)        #方角に合わせた向きのステージを返す
@@ -573,7 +573,7 @@ if(__name__ == "__main__"):
     file_open()
 
     D_main = Display()
-    D_main.root(y,x,dire)
+    D_main.route_view(y,x,dire)
 
 
     window_width = 800
@@ -595,22 +595,22 @@ if(__name__ == "__main__"):
         global x, y , dire
         if D_main.direction_stage(dire)[y-1][x] != 0 and D_main.direction_stage(dire)[y-1][x] != 2:
             y -= 1
-            game_display_Var.set(D_main.root(y,x,dire))
+            game_display_Var.set(D_main.route_view(y,x,dire))
         else:
-            game_display_Var.set(D_main.root(y,x,dire))
+            game_display_Var.set(D_main.route_view(y,x,dire))
 
     def turn_left(self):
         D_main.direction_plus(y,x,dire)
-        game_display_Var.set(D_main.root(y,x,dire))
+        game_display_Var.set(D_main.route_view(y,x,dire))
 
     def turn_right(self):
         D_main.direction_minus(y,x,dire)
-        game_display_Var.set(D_main.root(y,x,dire))
+        game_display_Var.set(D_main.route_view(y,x,dire))
 
     def turn_back(self):
         D_main.direction_plus(y,x,dire)
         D_main.direction_plus(y,x,dire)
-        game_display_Var.set(D_main.root(y,x,dire))
+        game_display_Var.set(D_main.route_view(y,x,dire))
 
 
     #初期化
