@@ -1,15 +1,6 @@
 """
-このコードは著作権フリーではありません。@NokonoKotlin  (TwitterID)
-によって作成されたものであり、このコード及びこのプログラムが動作している動画、
-画像を使用する際、このコードを編集する際は
-
-game_window.title("Maze_Game created by @NokonoKotlin")
-
-のコードを書き換えたり、Tkinterウィンドウに表示される
-"Maze_Game created by @NokonoKotlin"の文字列をを隠して見えなくしたり
-する行為はおやめください、ご理解よろしくお願いいたします。
-
-また、このコードはmacOSでの動作のみ確認しております。
+こんちゃ、Twitter ID:NokonoKotlin です！
+このコードはmacOSでの動作のみ確認しております。
 他OSではファイルパスの書き方が異なる場合がありますので、その場合は
 VScodeなどの文字列置換機能を用いるなどで各自解決してください。
 
