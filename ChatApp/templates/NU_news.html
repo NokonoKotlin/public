@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="ja">
+    <link rel="stylesheet" media="screen and (max-width:768px)" href="./../static/css/ChatRoom_SmartPhone.css">
+    <link rel="stylesheet" media="screen and (min-width:769px)" href="./../static/css/ChatRoom_PC.css">
+    <link rel = "stylesheet" href = "./../static/css/common.css">
+    <link rel="icon" href="./../static/image/favicon.ico">
+    
+    <script src = "./../static/javascript/client.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha384-ZCmVL/dTQHh41JxtZe73klDRFSJ/zixGCGt5lhnLQGjSWfAnlXSg+GSnRACaK5lc" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha384-3ceskX3iaEnIogmQchP8opvBy3Mi7Ce34nWjpBIwVTHfGYWQS9jwHDVRnpKKHJg7" crossorigin="anonymous"></script>
+    
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+
+
+    <title>名大新着ニュース</title>
+    </head>
+    
+    
+   <!--背景(imageの相対パスはChatRoom.htmlがあるフォルダから)-->
+    <div class = "BackGround_basic" id = "BackGroundTag" style = "background-image:url(./../static/image/background_green1.png);"></div>
+    
+    
+    
+    
+    <!--
+        部屋の情報のメニューバー
+    -->
+    <div class = "ChatRoomMenu_bar" id = "ChatRoomMenu_bar">
+        
+            
+        
+        <!--トップに戻る-->
+        <span onclick = "return_to_TOPPAGE()" style = "font-size:15px;">&ensp;&ensp;⬅︎︎&ensp;&ensp;</span> 
+        
+        
+        
+            
+         
+        <!--チャットルームの説明-->
+        <span class = "ChatRoomExplanation_Button" onclick = "SetHTML('ChatRoomExplanation')" style = "float:right; margin-right:5%; top:3px;"> i </span>
+        <span style = "clear:right;" name = "floatを消すためのdiv" ></span>
+        
+        
+        
+        
+        <!--ルーム名　and ここを押すとページトップまでスクロール-->
+        <center><div style = "font-size:12px; margin-top:2px;margin-bottom:2px;" onclick="scroll_to_TOP()">{{chatRoomName_JP}}</div></center>
+        
+        
+        
+        <!--ユーザーの情報や注意書き-->
+        
+        
+        <!--部屋の説明-->
+        <div class = "ChatRoomExplanation"  id = "ChatRoomExplanation"  style = "display:none;">
+            <br>
+            <center><h_big>{{chatRoomName_JP}}</h_big></center>
+            <center>{{chatRoomExplanation}}</center>    
+            <br>
+
+            <center><button class = 'nomal_button' onclick = "HideHTML('ChatRoomExplanation')">CLOSE</button></center>
+            <br>
+        </div>
+        
+        
+        
+        
+        
+    </div>
+
+
+    <br>
+    <br>
+    <br>
+    
+    
+    
+    
+    <!--デカめの親要素。-->
+    <div class  = 'Inner' , id = 'Inner' style = "background-color:rgba(255,255,255,0);">
+        
+        
+        <br>
+        <!--チャット欄-->
+        <div class = 'ChatArea'  id = 'ChatArea'>
+            
+            
+        </div>
+        
+        <!--新着メッセージが来た時のアニメーション-->
+        <div class = "NewMessageSign" id = "NewMessageSign" ></div>
+        
+
+        
+        
+        
+    </div>
+    
+
+
+    <!--メッセージのオプションを選択-->
+    <!-- オプションのラジオボタンのvalueがそのままコマンドになっており、メッセージ送信時にメッセージに隠しコマンドを付け加える -->
+    <div class = "SelectMessageOption" id = "SelectMessageOption" style = "display:none;">
+        <div id = "SelectMessageOption_Close" onclick = "HideHTML('SelectMessageOption')"  style = " border-radius:15px;width:100%;background-color:red;text-align:center;color:white;">CLOSE</div>
+        
+        テキストの色:
+        
+        <!--valueがそのまま隠しコマンドになっている-->
+        <br>&ensp;&ensp;<label><input type="radio" name="MessageColor_SelectRadioButton" value="Color-0:" checked>BLACK</label>
+        <br>&ensp;&ensp;<label><input type="radio" name="MessageColor_SelectRadioButton" value="Color-1:" >RED</label>
+        <br>&ensp;&ensp;<label><input type="radio" name="MessageColor_SelectRadioButton" value="Color-2:" >BLUE</label>
+        <br>&ensp;&ensp;<label><input type="radio" name="MessageColor_SelectRadioButton" value="Color-3:" >PINK</label>
+        
+        <br>
+        <br>
+        
+        ユーザー名:
+        <br>&ensp;&ensp;<label><input type="radio" name="MessageUserName_SelectRadioButton" value="" checked>パンピー</label>
+        <br>&ensp;&ensp;<label><input type="radio" name="MessageUserName_SelectRadioButton" value="NokonoKotlin:" >サクラ</label>
+
+
+        
+            
+        
+        
+    </div>
+    
+    
+
+    
+    
+
+
+
+        
+    
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+
+    
+
+
+    
+</html>
+
+
+
+
+
+<!--==============================================ここからjavascript========================================================--><!--==============================================ここからjavascript========================================================-->
+
+<!--==============================================ここからjavascript========================================================--><!--==============================================ここからjavascript========================================================-->
+
+<!--==============================================ここからjavascript========================================================--><!--==============================================ここからjavascript========================================================-->
+
+<!--==============================================ここからjavascript========================================================--><!--==============================================ここからjavascript========================================================-->
+
+<!--==============================================ここからjavascript========================================================--><!--==============================================ここからjavascript========================================================-->
+
+<!--==============================================ここからjavascript========================================================--><!--==============================================ここからjavascript========================================================-->
+
+<!--==============================================ここからjavascript========================================================--><!--==============================================ここからjavascript========================================================-->
+
+<!--==============================================ここからjavascript========================================================--><!--==============================================ここからjavascript========================================================-->
+
+<!--==============================================ここからjavascript========================================================--><!--==============================================ここからjavascript========================================================-->
+
+
+
+
+
+
+
+
+<!--=========================================================================================================================-->
+<!--HTML要素の初期化=========================================================================================================-->
+<!--=========================================================================================================================-->
+
+
+
+
+<script>
+    
+    /*
+        HTML内の配置や初期化を行います。
+    */
+            
+    var WindowHeight = window.innerHeight;
+    var WindowWidth = window.innerWidth;
+
+
+    //HTML要素をセット
+    function SetHTML(id){
+        document.getElementById(id).style.display = 'block';
+    }
+    
+    
+    //HTML要素を削除（見えなくする）
+    function HideHTML(id){
+        document.getElementById(id).style.display = 'none';
+    }
+    
+    
+        
+    function init_HTML(){
+        
+        SetHTML('ChatArea')
+        
+        
+        
+    }
+    
+
+
+    /*
+    デバッグよう
+    */
+    function reload(){
+        console.log("reloaded");
+        location.reload(true);
+    }    
+    
+    
+    
+    /*
+        メッセージ入力エリアの改行の処理
+    */
+    function textAreaHeightSet(argObj){
+
+        // 一旦テキストエリアを小さくしてスクロールバー（縦の長さを取得）
+        argObj.style.height = "10px";
+        var wSclollHeight = parseInt(argObj.scrollHeight);
+        // 1行の長さを取得する
+        var wLineH = parseInt(argObj.style.lineHeight.replace(/px/, ''));
+        // 最低2行の表示エリアにする
+        if(wSclollHeight < (wLineH * 2)){wSclollHeight=(wLineH * 2);}
+        // テキストエリアの高さを設定する
+        if(wSclollHeight <= 100)argObj.style.height = wSclollHeight + "px";
+        else argObj.style.height = 100 + "px";
+    }
+        
+    
+    
+
+    
+    function return_to_TOPPAGE(){
+        window.location = "/";
+    }
+    
+    
+    //windowメソッドでTOPにスクロール
+    function scroll_to_TOP(){
+        window.scrollTo({
+            top:0,
+            left:0,
+            behavior: 'smooth'
+        });
+    }
+    
+    
+    function scroll_to_BOTTOM(){
+        var element = document.documentElement;
+        var bottom = element.scrollHeight - element.clientHeight;
+        window.scroll(0, bottom);
+    }
+    
+    
+    
+    
+    
+    
+    
+    init_HTML();
+    
+    //alert("このプログラムは位置情報を使います。\n 位置情報設定を許可してください。")
+
+    window.onresize = init_HTML;
+
+    
+</script>
+
+
+
+
+
+
+
+
+
+
+
+<!--=========================================================================================================================-->
+<!--汎用的な関数たち==========================================================================================================-->
+<!--=========================================================================================================================-->
+
+
+
+
+
+
+<script>
+    
+    
+    
+        
+    //数値：xに対応する色(cssにおける色を表す文字列)を返す関数。Color-x:コマンドの処理で使う
+    function color_for_x(x){
+        if(x == 0)return "black";
+        else if(x == 1)return "red";
+        else if(x == 2)return "blue";
+        else if(x == 3)return "pink";
+        else return "black";
+    }
+    
+    
+    
+    
+    //メッセージの吹き出しを押すと、メッセージの情報が表示される(引数にevent)
+    function DisplayMessageInfo(e){
+        alert(e.target.id)
+    }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--=========================================================================================================================-->
+<!--サーバーと通信して、チャットの情報を取ってきたり、チャットルームの情報取得や更新を行う==========================================================================================================-->
+<!--=========================================================================================================================-->
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+
+
+
+    /*
+        メッセージのやり取りを行うプログラム
+        サーバーと通信します。
+    */
+    
+    
+    
+    //メイン処理及び変数宣言
+    //メイン処理及び変数宣言
+    //メイン処理及び変数宣言
+    //メイン処理及び変数宣言
+
+
+
+
+    
+    //通信
+    var socket = io();
+    
+    
+    
+    
+    
+    
+
+    
+    /*
+        クライアント(チャットルーム)のデータ    
+        サーバーと通信するときも、これを使ってデータを送信する
+        随時更新する
+        
+        ChatRoomName : クライアントの参加している部屋名
+        message_text : 送信するメッセージ(送信時のみ参照)。また、前回送ったメッセージとして保存しておく
+        LatestMessageTimeStamp : クライアントのチャット欄に表示されている最新のメッセージのタイムスタンプ
+        ClientLongitude : クライアントの現在地の経度
+        ClientLatitude : クライアントの現在地の緯度
+        
+        
+            
+        クライアントのデータはここで管理するので、ちゃんと管理、更新することが大事
+            
+    */
+    var Client_json_data = {
+        
+        ChatRoomName :  {{chatRoomName | tojson}} , 
+        
+        message_text : 'NULL' ,
+        
+        LatestMessageTimeStamp : -1 ,
+        
+        ClientLongitude : 135 ,
+        
+        ClientLatitude : 36 ,
+        
+        ClientUserType : {{usrType | tojson}}
+        
+    }
+    
+
+
+
+    
+    get_ChatData_from_server();
+    //Timestampが-1(初期化値であるかぎりこれまでのチャットデータをサーバーに要求する(バグでちゃんとメッセージを受け取れない可能性もあるから)
+    interval_UserPosition_update =  setInterval(get_ChatData_from_server  , 3000);
+
+    
+    //最初に現在地の位置情報を取得and,その位置情報がこの部屋で有効かチェック
+    
+    reload_ChatRoom();
+    /*
+        以降は一定時間毎にチャットルームをリロード
+        (ブラウザをリロードするのではなく、参加者権限を確認するためにサーバーにアクセスするだけ)
+        HTMLの要素も更新したりするので忘れずに
+    */
+    interval_UserPosition_update =  setInterval(reload_ChatRoom  , 3000);
+    
+    
+
+
+
+
+
+
+
+    //====================================================================================================================================================================================
+    //====================================================================================================================================================================================
+    //=====================================================関数たち====================================================================================================
+    //====================================================================================================================================================================================
+
+
+
+
+
+
+
+    /*
+        最初にサーバーにアクセスしてチャットエリアをこれまでのメッセージで更新
+        
+        サーバーには
+        現在のクライアントの最新メッセージのタイムスタンプと、    
+        クライアントの接続しているチャットルーム名をjsonで送信する
+    */
+    function get_ChatData_from_server(){
+        //初期状態なら
+        if(Client_json_data.LatestMessageTimeStamp == -1)socket.emit('return_updated_data' , Client_json_data);
+        
+    }
+    
+    
+    
+
+
+
+
+    /*
+        チャットルームを定期的にリロード。サーバーにアクセスし、
+        クライアントのアクセス情報を更新し、アクセス権限がなくなっていればトップページに戻す
+        コード規約なので、パラメータが1つでもjsonファイルで通信を行います
+        
+        (ブラウザをリロードするのではなく、参加者権限を確認するためにサーバーにアクセスするだけ)
+    */
+    function reload_ChatRoom(){
+        
+        
+         //うまく位置情報を取得できなかった場合、待機
+        if(Client_json_data.ClientLongitude == -1 || Client_json_data.ClientLongitude == -1)return false;
+        
+        
+        socket.emit('reload_Client_ChatRoom' , Client_json_data);
+        
+        
+        
+        
+        return true;
+    }
+    
+    
+    
+    
+    
+    
+
+
+
+    
+
+
+
+    
+    
+    
+
+        
+        
+        
+        
+
+    
+    
+    
+    
+    
+    
+    /*
+        Likeをサーバーに送信
+        メッセージに対応したボタンからイベントを受け取る
+        ボタンタグののidがメッセージの（サーバーにおける）グローバルIDと一致しているので、idをそのまま送信する
+        送信するjsonデータは、
+        {
+            MessageGlobalID :
+            ChatRoomName :
+            ClientLongitude : 
+            ClientLatitude :
+        }
+    */
+    function send_Like(e){
+        var json_data_for_server = {
+            ChatRoomName : Client_json_data.ChatRoomName , 
+            MessageGlobalID : e.target.id , 
+            ClientLongitude : Client_json_data.ClientLongitude,
+            ClientLatitude : Client_json_data.ClientLatitude
+        }
+        socket.emit('send_Like_for_database',json_data_for_server);
+        document.getElementById('' + e.target.id).onclick = "";
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+ 
+    
+    
+
+    
+    
+    
+    /*    
+        サーバーからメッセージが送られてくるので、Client_json_dataやチャット欄を更新
+        
+        
+        テキストエリアの更新(一つずつtextが送られてくるので、順次追加)
+          'update_ChatArea-'+ChatRoomName_now とあるが、
+          これは今現在参加しているチャットルームの窓口であることを表す
+          (+ChatRoomName_nowがなければ、他のルームのメッセージも受け取ってしまうから)
+          
+          
+          隠しコマンドの処理、
+          floatによる意図しない位置ズレの対応(改行兼Likeボタンにclearを乗せて強制的に改行)
+          最新の情報欄の更新
+          
+    */
+    socket.on('update_ChatArea-' + Client_json_data.ChatRoomName , function(json_data) {
+        console.log("GET")
+        Client_json_data.LatestMessageTimeStamp = json_data.TimeStamp;
+        
+        
+        var ChatAreaElement = document.getElementById('ChatArea');
+        
+        //ユーザー名
+        var userName = 'パンピー'
+        if(json_data.Type == 1)userName = 'Admin'
+        else if(json_data.Type == 3)userName = 'サクラ'
+        
+        
+        //テキストの色(messageの隠しコマンド . Color-x:で指定) x = 0 -> 黒; 他はREDME参照
+        var textColor = 0;
+        //受理されるColorコマンドの集合(in 演算子でKeyの存在を判定可能)
+        var ColorOK =  {"Color-0:":true ,"Color-1:":true,"Color-2:":true ,"Color-3:":true};
+
+        
+        
+        //隠しコマンド処理(全部)
+        while(1){
+            var isCommandExist = false;
+            
+            
+            if(json_data.Text.substring(0,String("NokonoKotlin:").length) == "NokonoKotlin:"){
+                //最初のlength(NokonoKotlin:)文字目までが NokonoKotlin:コマンドと一致
+                userName = 'サクラ';        
+                json_data.Text = json_data.Text.substring(String("NokonoKotlin:").length , json_data.Text.length);//コマンドを切り取り
+                isCommandExist = true;
+                
+            }else if(json_data.Text.substring(0,String("Color-x:").length) in ColorOK){
+                //最初のlength(NokonoKotlin:)文字目までが 指定されたColor-xコマンドと一致
+                textColor = parseInt(json_data.Text[6]);//intで扱いたいので
+                json_data.Text = json_data.Text.substring(String("Color-x:").length , json_data.Text.length);//コマンドを切り取り
+                isCommandExist = true;
+                console.log(textColor)
+            }
+            
+            
+            //もうコマンドがなくなったら
+            if(isCommandExist == false){
+                break;
+            }
+        }
+           
+        
+        
+        //表示するメッセージのHTMLタグ(送信者によって左右に分ける . nameにメッセージの情報を格納)
+        var ChatMessageTag;
+        //メッセージのcssクラス
+        var ChatMessageCssClass;
+        
+        // 改行 兼 LikeボタンのHTMLタグ (改行は、メッセージのcssのfloatを消すためにあるので、メッセージの向きによってclearの方向が変わる)
+        var EndLineandLikesTag;
+        
+        
+        
+        
+        ChatMessageTag = "<div class = 'ChatMessage_left' id = '"
+         + "Message send by " + userName + " : "+json_data.Date + " : id - " + json_data.MessageGlobalID 
+        +"' onclick = 'DisplayMessageInfo(event)'></div>";
+        
+        //左
+        ChatMessageCssClass = 'ChatMessage_left';
+        
+        /*
+            
+            adminのメッセージにLikeボタンはない
+             改行の役割、clear:left;することでfloat:left;を消す
+        */
+        
+        EndLineandLikesTag = "<div style = 'width:100%; clear:left; margin-left: 4%;'>"
+        + "By : "
+        + userName
+        + "</div>";
+    
+        
+        //メッセージのタグをチャットエリアに追加(とりあえずタグだけ追加して、後で中身を)
+        ChatAreaElement.insertAdjacentHTML('beforeend', ChatMessageTag);
+        
+        
+        //メッセージタグの一覧
+        var ChatMessageList = document.getElementsByClassName(ChatMessageCssClass);
+        var index_end = ChatMessageList.length - 1;//さっき追加したタグのindex
+        
+            
+        if(index_end >= 0){
+            //最後のタグが今追加したメッセージなので、そこに内容を書き込む
+            ChatMessageList[index_end].innerText = json_data.Text;
+            
+            //Color-x:コマンドの色に変える
+            ChatMessageList[index_end].style.color = color_for_x(textColor);
+            
+            console.log(color_for_x(textColor))
+            
+            
+        }
+        
+    
+        
+        
+        //改行 兼 Likeボタンタグを追加。ここでfloatをclearする
+        ChatAreaElement.insertAdjacentHTML('beforeend', EndLineandLikesTag);
+        
+        
+    });
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    /*
+        チャットルーム利用中にエラーが発生した時用のエラー窓口
+        エラーとはサーバーのプログラム的なエラーではなく、アプリで定められた制約(README)に違反している場合を指す
+        
+        error_code = 0 : メッセージのフォーマットの問題
+        error_code = 1 : 部屋の参加権限がなくなった場合 
+        error_code = 2 : 部屋の参加権限もとからない場合
+        error_code = 3 : サーバーの負荷が大きい場合
+        
+    */
+    socket.on('catch_error_when_send_request-' + Client_json_data.ChatRoomName , function(error_code){
+        if(error_code == 3){
+            document.getElementById('LatestMessageArea').style.color = color_for_x(0);
+            document.getElementById('LatestMessageArea').innerText = "🔻サーバーが混み合っており、リクエストが拒否されました。🔻";
+        }
+        
+    })
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+</script>
+
+
+
+
+
+
+
+
+
+

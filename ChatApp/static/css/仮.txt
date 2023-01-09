@@ -1,0 +1,77 @@
+
+
+/*    
+    部屋の情報を書く場所と
+    部屋の情報欄を開閉するボタン
+
+*/
+ChatRoomInfo_button {
+  display: block;
+  cursor: pointer;
+  background-color: darkturquoise;
+  text-align: center;
+  width: 300px;
+  height: 50px;
+  line-height: 50px;
+}
+ChatRoomInfo_Box > ChatRoomInfo_Content {
+  background-color: paleturquoise;
+  text-align: center;
+  width: 300px;
+  /* 閉じている状態 */
+  border-top: 0 white solid;
+  padding-top: 0;
+  padding-bottom: 0;
+  /* 閉じるアニメーション */
+  transition:
+    border-top     .3s ease-out,
+    padding-top    .3s ease-out,
+    padding-bottom .3s ease-out;
+}
+ChatRoomInfo_Box.is-open > ChatRoomInfo_Content {
+  /* 開いている状態 */
+  border-top: 1px white solid;
+  padding-top: 13px;
+  padding-bottom: 13px;
+  /* 開くアニメーション */
+  transition:
+    border-top     .3s ease-out,
+    padding-top    .3s ease-out,
+    padding-bottom .3s ease-out;
+}
+
+ChatRoomInfo_Box > ChatRoomInfo_Content > ChatRoonInfo_text {
+  /* 閉じている状態 */
+  line-height: 0;
+  opacity: 0;
+  visibility: hidden;
+  /* 閉じるアニメーション */
+  transition:
+    line-height .3s ease-out,
+    opacity     .1s linear,
+    visibility  .1s linear;
+}
+ChatRoomInfo_Box.is-open > ChatRoomInfo_Content > ChatRoonInfo_text {
+  /* 開いている状態 */
+  line-height: 1.5;
+  opacity: 1;
+  visibility: visible;
+  /* 開くアニメーション */
+  transition:
+    line-height .3s ease-out,
+    opacity     .1s linear .1s,
+    visibility  .1s linear .1s;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="ja">
+    <link rel="stylesheet" media="screen and (max-width:768px)" href="./../static/css/index_SmartPhone.css">
+    <link rel="stylesheet" media="screen and (min-width:769px)" href="./../static/css/index_PC.css">
+    <link rel = "stylesheet" href = "./../static/css/common.css">
+
+    <link rel="icon" href="./../static/image/favicon.ico">
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha384-ZCmVL/dTQHh41JxtZe73klDRFSJ/zixGCGt5lhnLQGjSWfAnlXSg+GSnRACaK5lc" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha384-3ceskX3iaEnIogmQchP8opvBy3Mi7Ce34nWjpBIwVTHfGYWQS9jwHDVRnpKKHJg7" crossorigin="anonymous"></script>
+    <script src="/static/javascript/client.js" ></script>
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    
+
+
+    <title>NU掲示板</title>
+    
+    
+        
+ 
+    
+    
+    
+
+        
+
+    </head>
+
+   <!--背景(imageの相対パスはindex.htmlがあるフォルダから)-->
+    <div class = "BackGround_basic" id = "BackGroundTag" style = "background-image:url(./../static/image/background_green1.png);"></div>
+    
+    
+    <div id = "Inner">
+
+
+
+
+        <section class="Introduction">
+            <h style = "color: rgb(111, 105, 105);font-size:27px;font-family: 'Itim';">NU掲示板</h>
+            <br>名古屋大学生の便利ツール
+            
+        </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        <section id = "Content_1">
+            <section id = "inner1_Content_1" style = "padding-left:20px;padding-right:20px; ">
+                
+                <div class = "ScrollText"> 
+                        <span>入室可能な部屋一覧です。正常に表示されない場合はしばらくお待ちください。
+                        表示されない場合、位置情報取得の権限を確認するか、入室可能な場所(全学教養棟など)に移動してからもう一度お試しください。</span>
+                </div>
+            </section>
+            
+            <!--入室可能なチャットルーム一覧-->
+            <div class = 'ChatRoomSelectBox' id = 'ChatRoomSelectBox' style = "opacitiy:0%;">
+                <div style = "font-size:10px;">チャットルーム一覧が表示されるまでお待ちください</div>
+                <div onclick = 'enterChatRoom(event)' id = 'INFORMATION_ROOM' name = 'INFORMATION_ROOM' style = 'background-color:green; opacity :0.75;'>おしらせ</div>
+                <div onclick = 'enterChatRoom(event)' id = 'NU_news' name = 'NU_news' style = 'background-color:green; opacity :0.75;'>名大新着ニュース</div>
+            </div>
+                        
+            <div class="Box" style = "background-color:white;" >
+                チャットルームの選び方は、下の地図の行/列の番号を参照してください
+                <br>
+                <img src = "./../static/image/NU_MAP.jpeg" style = "width:100%;max-width:800px;">
+                <br>
+                #各チャットルームは、行/列に対応した2直線の交差点を中心に持った円形の領域です
+            </div>
+        </section>
+        
+        
+        
+        <section class = "Explanation" id = "Explanation_WebSites"> 
+
+            <h style = "font-size:19px; color:green;font-family: 'Itim';">NU掲示板とは</h>
+            <br>&ensp;&ensp;&ensp;<a href = "https://ct.nagoya-u.ac.jp/portal">NUCT</a>を超える便利ツールを目標に作られた非公式サイトです。
+            <br>&ensp;&ensp;&ensp;・名大生同士の交流を目的としたチャット機能を設け、
+            <br>&ensp;&ensp;&ensp;・名古屋大学に関連するWEBサービスやTwitterアカウント、
+            <br>&ensp;&ensp;&ensp;・名大生にオススメの活動スポットを紹介します。
+            <br>
+            <br>
+            <h style = "font-size:19px; color:green;font-family: 'Itim';">How To Use</h>
+            <br>&ensp;&ensp;&ensp;チャットルームに入ると同じ時間、同じ場所にいる人たちとリアルタイムで交流できます。
+            <br>&ensp;&ensp;&ensp;位置情報を使用するので、お使いのブラウザで位置情報を有効にしてください。
+            <br>
+            <br>
+            <img src = "./../static/image/exp1.jpg" style = "width:100%;max-width:800px;">
+            <br>
+            <br>
+            <br>
+            <br>
+            
+            
+            
+            
+            <h style = "font-size:19px; color:green;font-family: 'Itim';">名大関連のWEBサービス一覧</h>
+            <div style = "background-color:rgba(160,160,160,0.16);color-black;text-align:center;" onclick = "display_HTML('SelectWebCategory')">カテゴリを選択</div>
+                
+            <!--カテゴリ選択-->
+            <div style = "text-align:center;width:100%;">
+                <div class = "SelectWebCategory" id = "SelectWebCategory" style = "display:none; border-radius:15px; background-color:rgba(160,160,160,0.16); width:100%;">
+                    <!--closeボタン-->
+                    <div id = "SelectWebCategory_Close" onclick = "display_HTML('SelectWebCategory')"  style = " border-radius:15px;width:100%;background-color:red;text-align:center;color:white;">CLOSE</div>
+                    
+                    <!--適用ボタン-->
+                    <div id = "SelectWebCategory_Close"
+                    style = "width:100%;background-color:cyan;text-align:center;color:black;border-radius:10px;border:1px solid black;" 
+                    onclick = "ApplyCategory_WebSite()">適用</div>
+                    
+                    
+                    表示するwebサイトのカテゴリを選択
+                    <!--カテゴリ番号:{ 2 : 学業 , 3 : 勉強 , 5 : エンターテイメント , 7 : 便利 , 11 : SNS , 13 : 公式 , 17 : 生活 }とする-->
+                    
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="WebCategory_SelectChecgBox" value="1" checked>すべて</label>
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="WebCategory_SelectChecgBox" value="2" >学業</label>
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="WebCategory_SelectChecgBox" value="3" >勉強</label>
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="WebCategory_SelectChecgBox" value="5" >エンターテイメント</label>
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="WebCategory_SelectChecgBox" value="7" >便利</label>
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="WebCategory_SelectChecgBox" value="11" >SNS</label>
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="WebCategory_SelectChecgBox" value="13" >公式</label>
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="WebCategory_SelectChecgBox" value="17" >生活</label>
+            
+                    
+                </div>
+            </div>
+            <br>
+            <br>
+            <div id = "WebSiteRecommendationArea" style = "left:7%;width:93%;position:relative;max-height:750px;overflow-x:hidden;">
+                <div style = "background-color:rgba(160,160,160,0.16);color-black;text-align:center; opacity:0.56;" onclick = "get_pagedata()">表示されない場合は<br>ここをクリック</div>
+            </div>
+            
+            <br>
+            <br>
+            
+            
+            
+            
+            <h style = "font-size:19px; color:green;font-family: 'Itim';">名大生にオススメの活動スポット</h>
+            <div style = "background-color:rgba(160,160,160,0.16);color-black;text-align:center;" onclick = "display_HTML('SelectPlayGroundCategory')">カテゴリを選択</div>
+            <!--カテゴリ選択-->
+            <div style = "text-align:center;width:100%;">
+                <div class = "SelectPlayGroundCategory" id = "SelectPlayGroundCategory" style = "display:none; border-radius:15px; background-color:rgba(160,160,160,0.16); width:100%;">
+                    <div id = "SelectPlayGroundCategory_Close" onclick = "display_HTML('SelectPlayGroundCategory')"  style = " border-radius:15px;width:100%;background-color:red;text-align:center;color:white;">CLOSE</div>
+                    
+                    <div id = "SelectPlayGroundCategory_Close"
+                    style = "width:100%;background-color:cyan;text-align:center;color:black;border-radius:10px;border:1px solid black;" 
+                    onclick = "ApplyCategory_PlayGround()">適用</div>
+            
+                    
+                    
+                    表示するPlayGroundサイトのカテゴリを選択
+                    <!--{ 2 : 学業 , 3 : 大学内 , 5 : 飲食 , 7 : 暇つぶし , 11 : エンターテイメント , 13 : 生活-スーパー-コンビニ , 17 : ショッピング , 19 : 施設 , 23 : 運動 }とする-->
+
+                    
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="PlayGroundCategory_SelectChecgBox" value="1" checked>すべて</label>
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="PlayGroundCategory_SelectChecgBox" value="2" >学業</label>
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="PlayGroundCategory_SelectChecgBox" value="3" >大学内</label>
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="PlayGroundCategory_SelectChecgBox" value="5" >飲食</label>
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="PlayGroundCategory_SelectChecgBox" value="7" >暇つぶし</label>
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="PlayGroundCategory_SelectChecgBox" value="11" >エンターテイメント</label>
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="PlayGroundCategory_SelectChecgBox" value="13" >生活-スーパー-コンビニ</label>
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="PlayGroundCategory_SelectChecgBox" value="17" >ショッピング</label>
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="PlayGroundCategory_SelectChecgBox" value="19" >施設</label>
+                    <br>&ensp;&ensp;<label><input type="checkbox" name="PlayGroundCategory_SelectChecgBox" value="23" >運動</label>
+                    
+                </div>
+            </div>
+                
+            <br>
+            <br>
+            <div id = "PlayGroundRecommendationArea" style = "left:7%;width:93%;position:relative;max-height:750px;overflow-x:hidden;">
+                <div style = "background-color:rgba(160,160,160,0.16);color-black;text-align:center; opacity:0.56;" onclick = "get_pagedata()">表示されない場合は<br>ここをクリック</div>
+            </div>
+            
+            <br>
+            <br>
+
+            
+ 
+            
+            <br><a href = "./PrivacyPolicy">Privacy Policy</a>
+            <br><a href = "https://twitter.com/NokonoKotlin">Twitter</a>        
+        </section>
+        
+        
+        
+        
+    
+        
+    </div>
+
+
+
+        
+</html>
+
+
+
+
+
+
+
+
+
+
+    
+<!--=========================================================================================================================-->
+<!--HTMLの初期化やHTMLの操作など==========================================================================================================-->
+<!--=========================================================================================================================-->
+
+
+
+
+
+<script>
+
+    /*
+    デバッグよう
+    */
+    function reload(){
+        console.log("reloaded");
+        location.reload(true);
+    }
+    
+    
+    
+        
+    /*
+        HTML内の配置や初期化を行います。
+    */
+            
+    var WindowHeight = window.innerHeight;
+    var WindowWidth = window.innerWidth;
+
+
+    //HTML要素をセット
+    function SetHTML(id){
+        document.getElementById(id).style.display = 'block';
+        
+    }
+    
+    
+    //HTML要素を削除（見えなくする）
+    function HideHTML(id){
+        document.getElementById(id).style.display = 'none';
+    }
+    
+    
+    function display_HTML(id){
+        var e = document.getElementById(id);
+        if(e.style.display == "none"){
+            SetHTML(id);
+        }else{
+            HideHTML(id);
+        }
+    }
+    
+
+    
+    //windowメソッドでTOPにスクロール
+    function scroll_to_TOP(){
+        window.scrollTo({
+            top:0,
+            left:0,
+            behavior: 'smooth'
+        });
+    }
+    
+    
+    function scroll_to_BOTTOM(){
+        var element = document.documentElement;
+        var bottom = element.scrollHeight - element.clientHeight;
+        window.scroll(0, bottom);
+    }
+    
+    
+    
+    
+    
+        
+
+    
+    
+</script>
+
+
+    
+<!--=========================================================================================================================-->
+<!--サーバーと通信して、チャットの情報を取ってきたり、チャットルームの情報取得や更新を行う==========================================================================================================-->
+<!--=========================================================================================================================-->
+
+
+
+    
+<script>
+
+    //通信
+    var socket = io();
+    
+
+            
+
+    
+    /*
+        クライアント(ルーム)のデータ    
+        ただし、ここはindex.htmlであり、チャットルームではないので、
+        経度と緯度以外は使わない
+        
+        サーバーと通信するときも、これを使ってデータを送信する
+        随時更新する
+        
+        ChatRoomName : クライアントの参加している部屋名
+        message_text : 送信するメッセージ(送信時のみ参照)。また、前回送ったメッセージとして保存しておく
+        LatestMessageTimeStamp : クライアントのチャット欄に表示されている最新のメッセージのタイムスタンプ
+        ClientLongitude : クライアントの現在地の経度
+        ClientLatitude : クライアントの現在地の緯度
+        
+        
+            
+        クライアントのデータはここで管理するので、ちゃんと管理、更新することが大事
+            
+    */
+    var Client_json_data = {
+        
+        ClientLongitude : -1 ,
+        
+        ClientLatitude : -1 
+        
+    }
+    
+    //ウェブサイトのデータを受け取ったかどうか(false(失敗)の間は定期的にサーバーに受け取りにアクセスする)
+    var get_pagedata_web_done = false;
+    var get_pagedata_playground_done = false;
+    
+    //ページを開いたらまず情報(チャットルーム一覧など)を取得
+    update_page_info();
+    get_pagedata();
+    
+    //以降は定期的に取得
+    interval_chatroom = setInterval(update_page_info , 3000);
+    interval_pagedata = setInterval(get_pagedata , 3000);
+    
+    
+    
+    
+            
+    /*
+        自分の位置情報を取得,更新
+    */
+    function get_UserPosition(){
+    //Geolocation APIに対応している場合
+        if(navigator.geolocation ){
+            navigator.geolocation.getCurrentPosition(function(position){
+                Client_json_data.ClientLatitude = position.coords.latitude;//緯度
+                Client_json_data.ClientLongitude = position.coords.longitude;//経度
+               });
+        }else{
+            alert("位置情報を取得できませんでした。チャットルームを使用するためには位置情報設定を再確認してください")
+        }
+    }
+    
+    
+    
+    
+    
+    
+    /*
+        サイト訪問時や画面サイズ変更時にHTML要素の配置を行う
+        サーバーにリクエストを送り、ページに表示する情報をとってきたりもする
+        ただし引数のboolがfalseの時、サーバーへのリクエストは行わず、HTMLの配置の初期化だけを行う
+    */
+    function init_HTML(RequestNeeded = false){
+        //サイズ調整
+        if(isPC())document.getElementById('ChatRoomSelectBox').style.height = WindowHeight*3/10 + "px";
+        else document.getElementById('ChatRoomSelectBox').style.height = WindowHeight*4/10 + "px";
+        
+        //サーバーへのアクセスが必要な場合
+        if(RequestNeeded){
+            //オススメwebサイトデータをサーバーに要求
+            socket.emit('return_WebSiteRecommendation' , Client_json_data)
+            
+            //オススメの遊び場のデータをサーバーに要求
+            socket.emit('return_PlayGroundRecommendation' , Client_json_data)
+        }
+    }
+    
+    init_HTML(true);
+
+    window.onresize = init_HTML();
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    /*
+        サーバーに入室可能な部屋を問い合わせる
+    */
+    function update_page_info(){
+        get_UserPosition()
+        
+        //うまく位置情報を取得できなかった場合、待機
+        if(Client_json_data.ClientLongitude == -1 || Client_json_data.ClientLongitude == -1)return false;
+        
+        socket.emit('reload_Client_ChatRoomCandidateList' , Client_json_data)
+ 
+        return true;
+    }
+    
+    
+    
+    
+    function get_pagedata(){
+        //まだデータを受け取っていなければ、サーバーにアクセス
+        if(get_pagedata_web_done == false)socket.emit('return_WebSiteRecommendation' , Client_json_data)
+        if(get_pagedata_playground_done == false)socket.emit('return_PlayGroundRecommendation' , Client_json_data)
+       
+    }
+    
+    
+    
+        
+    
+    
+    //押したボタンからイベントを受け取って、そのボタンの名前の部屋にリダイレクト
+    function enterChatRoom(e){
+        var RoomNameRequest = e.target.id;
+        window.location = "/ChatRoom/"+RoomNameRequest;
+        
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    /*
+        サーバーから参加可能ルームの一覧をjsonで受け取り、反映させる
+    */
+    socket.on('get_ChatRoomCandidate' , function(json_data){
+        
+        //現在表示されている候補(HTML要素)をリストに
+        var ChatRoomCandidateList = document.getElementById('ChatRoomSelectBox');
+        
+        //現在表示されている候補を全て削除
+        while( ChatRoomCandidateList.firstChild ){
+            ChatRoomCandidateList.removeChild( ChatRoomCandidateList.firstChild );
+        }
+                
+
+       
+        
+        //Primary Keyの方
+        var NewChatRoomCandidateList = json_data.ChatRoomNameList;
+        //日本語の方--これらの長さは同じで、同じindexのものが対応している
+        var NewChatRoomCandidateName_JP_List = json_data.ChatRoomName_JP_List;
+        //足跡数
+        var  NewChatRoomCandidateFootPrintsNum = json_data.ChatRoomFootPrintsNum;
+        
+        
+        var CandidateAreaElement = document.getElementById('ChatRoomSelectBox');
+        
+        for(var index = 0 ; index < NewChatRoomCandidateList.length ; index++ ){
+            var RoomName = NewChatRoomCandidateList[index];
+            var RoomName_JP = NewChatRoomCandidateName_JP_List[index];
+            var FootPrintsNum = NewChatRoomCandidateFootPrintsNum[index];
+            
+            //足跡表示などは、お知らせルームではしない
+            var if_not_information_room_then_add =  " 🐾 : " + FootPrintsNum;
+            var if_information_room_then_add = "";//お知らせルームのみ色を変える
+            
+            if(RoomName == "INFORMATION_ROOM" || RoomName == "NU_news"){
+                if_not_information_room_then_add = "";
+                if_information_room_then_add = " style = 'background-color:green; opacity :0.75;' ";
+            }
+            
+            //新しい候補(のHTML要素)
+            var NewCandidateTag =
+            "<div   onclick = 'enterChatRoom(event)'"
+            + "id = '" + RoomName + "' name = '" + RoomName + "'" + if_information_room_then_add +">" 
+            + RoomName_JP 
+            +if_not_information_room_then_add
+            + "</div>";
+            
+            //部屋の候補に追加            
+            CandidateAreaElement.insertAdjacentHTML('beforeend', NewCandidateTag);
+            
+
+        }
+        
+    })
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    /*
+        
+        チェックボックスから、選択されたカテゴリに対応する数値の積をとってきて、それをxとする
+        xに当てはまるカテゴリを持つWebサイトのみを表示する(カテゴリに当てはまらないものをdisplay:none;する)
+    */
+    function ApplyCategory_WebSite(){
+        const Category_int_list = document.getElementsByName("WebCategory_SelectChecgBox");
+        var x = 1;
+        
+        for(var ind = 0 ; ind <  Category_int_list.length; ind++ ){
+            if(Category_int_list[ind].checked){
+                x *= parseInt(Category_int_list[ind].value , 10);
+            }
+        }
+        const RecommendedWebSiteList = document.getElementsByClassName("RecommendedWebSite");
+        for(var ind = 0 ; ind < RecommendedWebSiteList.length ; ind++ ){
+            if(parseInt(RecommendedWebSiteList[ind].title , 10) % x != 0){
+                //カテゴリに当てはまらないのなら非表示
+                RecommendedWebSiteList[ind].style.display = "none";
+            }else{
+                //当てはまるものは表示
+                RecommendedWebSiteList[ind].style.display = "block";
+            }
+        }
+        HideHTML('SelectWebCategory');
+    }
+    
+    
+    
+    
+    
+    
+    
+        
+    
+    
+    /*
+            
+        チェックボックスから、選択されたカテゴリに対応する数値の積をとってきて、それをxとする
+        xに当てはまるカテゴリを持つPlayGroundサイトのみを表示する(カテゴリに当てはまらないものをdisplay:none;する)
+    */
+    function ApplyCategory_PlayGround(){
+        const Category_int_list = document.getElementsByName("PlayGroundCategory_SelectChecgBox");
+        var x = 1;
+        
+        for(var ind = 0 ; ind <  Category_int_list.length; ind++ ){
+            if(Category_int_list[ind].checked){
+                x *= parseInt(Category_int_list[ind].value , 10);
+            }
+        }
+        const RecommendedPlayGroundList = document.getElementsByClassName("RecommendedPlayGround");
+        for(var ind = 0 ; ind < RecommendedPlayGroundList.length ; ind++ ){
+            if(parseInt(RecommendedPlayGroundList[ind].title , 10) % x != 0){
+                //カテゴリに当てはまらないのなら非表示
+                RecommendedPlayGroundList[ind].style.display = "none";
+            }else{
+                //当てはまるものは表示
+                RecommendedPlayGroundList[ind].style.display = "block";
+            }
+        }
+        HideHTML('SelectPlayGroundCategory');
+    }
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    /*
+        サーバーからオススメ名大関連のWEBサイトの一覧をjson(中身はリスト)で受け取り、反映させる
+        サイト訪問時にinit_HTMLでサーバーにアクセスする
+        カテゴリ分けのため、RecommendedWebSiteのtitle属性にはカテゴリに対応したintを入れる
+    */
+    
+    socket.on('get_WebSiteRecommendation'  , function(json_data){
+        WebSiteList_Name = json_data.WebSiteList_Name;
+        WebSiteList_Link = json_data.WebSiteList_Link;
+        WebSiteList_Explanation = json_data.WebSiteList_Explanation;
+        WebSiteList_Category = json_data.WebSiteList_Category;
+        
+        //現在表示されている候補(HTML要素)をリストに
+        var CandidateList = document.getElementById('WebSiteRecommendationArea');
+        
+        //現在表示されている候補を全て削除
+        while( CandidateList.firstChild ){
+            CandidateList.removeChild( CandidateList.firstChild );
+        }
+                
+
+        var ListLength = WebSiteList_Name.length;//それぞれのリストの各要素はそれぞれが対応してる
+        
+        var WebSiteRecommendationAreaElement = document.getElementById('WebSiteRecommendationArea');
+        
+        for(var ind = 0 ; ind < ListLength ; ind++){
+            var NewTag = 
+            "<div class = 'RecommendedWebSite' title = '"
+            +WebSiteList_Category[ind]
+            +"' >"
+            +"・<a href = '" 
+            + WebSiteList_Link[ind]
+            +"' >"
+            +WebSiteList_Name[ind]
+            + " </a><div class = 'ServiceExplanation_NU' style = 'position:relative;left:7%;width:85%;border-left:solid 1px black;position:relative;padding-left:10px;'>"
+            + WebSiteList_Explanation[ind]       
+            +"</div><br></div>";
+            
+            //オススメにHTMLタグを追加
+            WebSiteRecommendationAreaElement.insertAdjacentHTML('beforeend', NewTag);
+        }
+        
+        get_pagedata_web_done = true;
+        
+    })
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+       
+    /*
+        サーバーから名大生にオススメの遊び場の一覧をjson(中身はリスト)で受け取り、反映させる
+        サイト訪問時にinit_HTMLでサーバーにアクセスする
+        カテゴリ分けのため、nameにはカテゴリに対応したintを入れる
+    */
+    
+    socket.on('get_PlayGroundRecommendation'  , function(json_data){
+        PlayGroundList_Name = json_data.PlayGroundList_Name;
+        PlayGroundList_Link = json_data.PlayGroundList_Link;
+        PlayGroundList_Explanation = json_data.PlayGroundList_Explanation;
+        PlayGroundList_Category = json_data.PlayGroundList_Category;
+        
+            //現在表示されている候補(HTML要素)をリストに
+        var CandidateList = document.getElementById('PlayGroundRecommendationArea');
+        
+        //現在表示されている候補を全て削除
+        while( CandidateList.firstChild ){
+            CandidateList.removeChild( CandidateList.firstChild );
+        }
+        
+        var ListLength = PlayGroundList_Name.length;//それぞれのリストの各要素はそれぞれが対応してる
+        
+        var PlayGroundRecommendationAreaElement = document.getElementById('PlayGroundRecommendationArea');
+        
+        for(var ind = 0 ; ind < ListLength ; ind++){
+            var NewTag = 
+            "<div class = 'RecommendedPlayGround' title = '"
+            +PlayGroundList_Category[ind]
+            +"' >"
+            +"・<a href = '" 
+            + PlayGroundList_Link[ind]
+            +"' >"
+            +PlayGroundList_Name[ind]
+            + " </a><div class = 'ServiceExplanation_NU' style = 'position:relative;left:7%;width:85%;border-left:solid 1px black;position:relative;padding-left:10px;'>"
+            + PlayGroundList_Explanation[ind]       
+            +"</div><br></div>";
+            
+            //オススメにHTMLタグを追加
+            PlayGroundRecommendationAreaElement.insertAdjacentHTML('beforeend', NewTag);
+        }
+        
+        get_pagedata_playground_done = true;
+        
+    })
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
+
+
+    
+</script>    
+    
+
+
+

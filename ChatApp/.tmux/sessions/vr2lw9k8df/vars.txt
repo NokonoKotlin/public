@@ -1,0 +1,80 @@
+declare -- BASH="/bin/bash"
+declare -r BASHOPTS="checkwinsize:cmdhist:complete_fullquote:expand_aliases:extglob:extquote:force_fignore:histappend:interactive_comments:progcomp:promptvars:sourcepath"
+declare -ir BASHPID
+declare -A BASH_ALIASES=([grep]="grep --color=auto" [egrep]="egrep --color=auto" [alert]="notify-send --urgency=low -i \"\$([ \$? = 0 ] && echo terminal || echo error)\" \"\$(history|tail -n1|sed -e 's/^\\s*[0-9]\\+\\s*//;s/[;&|]\\s*alert\$//')\"" [pip]="pip3" [fgrep]="fgrep --color=auto" [la]="ls -A" [ll]="ls -alF" [l]="ls -CF" [ls]="ls --color=auto" [python]="python3" )
+declare -a BASH_ARGC=()
+declare -a BASH_ARGV=()
+declare -A BASH_CMDS=([gunicorn]="/home/ubuntu/.local/bin/gunicorn" [rm]="/bin/rm" [mkdir]="/bin/mkdir" )
+declare -- BASH_COMMAND="gunicorn server:app -c config/settings.py"
+declare -a BASH_COMPLETION_VERSINFO=([0]="2" [1]="8")
+declare -a BASH_LINENO=([0]="18")
+declare -ar BASH_REMATCH=()
+declare -a BASH_SOURCE=([0]="/home/ubuntu/.bashrc")
+declare -- BASH_SUBSHELL="0"
+declare -ar BASH_VERSINFO=([0]="4" [1]="4" [2]="20" [3]="1" [4]="release" [5]="x86_64-pc-linux-gnu")
+declare -- BASH_VERSION="4.4.20(1)-release"
+declare -x BROWSER="/usr/local/bin/paizacloud-open-browser"
+declare -- COLUMNS="135"
+declare -- COMP_WORDBREAKS=" 	
+\"'><=;|&(:"
+declare -a DIRSTACK=([0]="~")
+declare -ir EUID="1000"
+declare -a FUNCNAME=([0]="tmux_save_session")
+declare -a GROUPS=([0]="1000")
+declare -i HISTCMD="1"
+declare -- HISTCONTROL="ignoreboth"
+declare -- HISTFILE="/home/ubuntu/.bash_history"
+declare -- HISTFILESIZE="2000"
+declare -- HISTSIZE="1000"
+declare -x HOME="/home/ubuntu"
+declare -- HOSTNAME="rr-main1"
+declare -- HOSTTYPE="x86_64"
+declare -- IFS=" 	
+"
+declare -x INVOCATION_ID="17f33b16830d44b1acfaf5a9e2bbdebc"
+declare -x JOURNAL_STREAM="9:29690"
+declare -x LANG="en_US.UTF-8"
+declare -x LESSCLOSE="/usr/bin/lesspipe %s %s"
+declare -x LESSOPEN="| /usr/bin/lesspipe %s"
+declare -i LINENO="34"
+declare -- LINES="54"
+declare -x LOGNAME="ubuntu"
+declare -x LS_COLORS="rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:"
+declare -- MACHTYPE="x86_64-pc-linux-gnu"
+declare -i MAILCHECK="60"
+declare -x NODE_PATH="/home/ubuntu/.npm-packages/lib/node_modules:"
+declare -x NOKOGIRI_USE_SYSTEM_LIBRARIES="1"
+declare -x NPM_CONFIG_PREFIX="/home/ubuntu/.npm-packages"
+declare -- NPM_PACKAGES="/home/ubuntu/.npm-packages"
+declare -x OLDPWD="/home/ubuntu"
+declare -- OPTERR="1"
+declare -i OPTIND="1"
+declare -- OSTYPE="linux-gnu"
+declare -x PATH="/home/ubuntu/.local/bin:/home/ubuntu/.npm-packages/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games:/home/ubuntu/go/bin:/home/ubuntu/.local/bin:/usr/local/rbenv/shims"
+declare -a PIPESTATUS=([0]="0")
+declare -x PIP_USER="true"
+declare -ir PPID="148"
+declare -- PROMPT_COMMAND="history -a;tmux_save_session"
+declare -- PS1="\\[\\e]0;\\w\\a\\]\${debian_chroot:+(\$debian_chroot)}\\[\\033[01;32m\\]\\[\\033[00m\\]\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\\$ "
+declare -- PS2="> "
+declare -- PS4="+ "
+declare -x PWD="/home/ubuntu"
+declare -i RANDOM="5612"
+declare -x RUBYOPT="-W:no-deprecated -W:no-experimental"
+declare -i SECONDS="82085"
+declare -x SHELL="/bin/bash"
+declare -r SHELLOPTS="braceexpand:emacs:hashall:histexpand:history:interactive-comments:monitor"
+declare -x SHLVL="3"
+declare -x S_COLORS="auto"
+declare -x TERM="xterm-256color"
+declare -x TMUX="/tmp/tmux-1000/default,148,3"
+declare -x TMUX_PANE="%3"
+declare -x TMUX_SESSION_NAME="vr2lw9k8df"
+declare -- TRAP_DEBUG_COMMAND="[[ \${BASH_COMMAND} =~ ^history ]] || ( echo -ne \"\\033]0;\"; echo -n \"\${BASH_COMMAND} - \${PWD/\\/home\\/ubuntu/\\~}\"; echo -ne \"\\007\";tmux_save_session \"\${BASH_COMMAND}\")"
+declare -ir UID="1000"
+declare -x USER="ubuntu"
+declare -- _="gunicorn server:app -c config/settings.py"
+declare -- __git_printf_supports_v="yes"
+declare -- _backup_glob="@(#*#|*@(~|.@(bak|orig|rej|swp|dpkg*|rpm@(orig|new|save))))"
+declare -A _xspecs=([freeamp]="!*.@(mp3|og[ag]|pls|m3u)" [bibtex]="!*.aux" [lualatex]="!*.@(?(la)tex|texi|dtx|ins|ltx|dbj)" [chromium-browser]="!*.@(?([xX]|[sS])[hH][tT][mM]?([lL])|[pP][dD][fF])" [tex]="!*.@(?(la)tex|texi|dtx|ins|ltx|dbj)" [zathura]="!*.@(cb[rz7t]|djv?(u)|?(e)ps|pdf)" [lrunzip]="!*.lrz" [amaya]="!*.@(?([xX]|[sS])[hH][tT][mM]?([lL]))" [hbpp]="!*.@([Pp][Rr][Gg]|[Cc][Ll][Pp])" [lzgrep]="!*.@(tlz|lzma)" [ggv]="!*.@(@(?(e)ps|?(E)PS|pdf|PDF)?(.gz|.GZ|.bz2|.BZ2|.Z))" [lzless]="!*.@(tlz|lzma)" [loimpress]="!*.@(sxi|sti|pps?(x)|ppt?([mx])|pot?([mx])|?(f)odp|otp)" [kdvi]="!*.@(dvi|DVI)?(.@(gz|Z|bz2))" [lobase]="!*.odb" [lbzcat]="!*.?(t)bz?(2)" [lilypond]="!*.ly" [sxemacs]="*.@([ao]|so|so.!(conf|*/*)|[rs]pm|gif|jp?(e)g|mp3|mp?(e)g|avi|asf|ogg|class)" [epdfview]="!*.pdf" [localc]="!*.@(sxc|stc|xls?([bmx])|xlw|xlt?([mx])|[ct]sv|?(f)ods|ots)" [texi2dvi]="!*.@(?(la)tex|texi|dtx|ins|ltx|dbj)" [ps2pdf12]="!*.@(?(e)ps|pdf)" [ee]="!*.@(gif|jp?(e)g|miff|tif?(f)|pn[gm]|p[bgp]m|bmp|xpm|ico|xwd|tga|pcx)" [lbunzip2]="!*.?(t)bz?(2)" [ps2pdf13]="!*.@(?(e)ps|pdf)" [ps2pdf14]="!*.@(?(e)ps|pdf)" [lzfgrep]="!*.@(tlz|lzma)" [hbrun]="!*.[Hh][Rr][Bb]" [kbabel]="!*.po" [rview]="*.@([ao]|so|so.!(conf|*/*)|[rs]pm|gif|jp?(e)g|mp3|mp?(e)g|avi|asf|ogg|class)" [kaffeine]="!*@(.@(mp?(e)g|MP?(E)G|wm[av]|WM[AV]|avi|AVI|asf|vob|VOB|bin|dat|divx|DIVX|vcd|ps|pes|fli|flv|FLV|fxm|FXM|viv|rm|ram|yuv|mov|MOV|qt|QT|web[am]|WEB[AM]|mp[234]|MP[234]|m?(p)4[av]|M?(P)4[AV]|mkv|MKV|og[agmvx]|OG[AGMVX]|t[ps]|T[PS]|m2t?(s)|M2T?(S)|mts|MTS|wav|WAV|flac|FLAC|asx|ASX|mng|MNG|srt|m[eo]d|M[EO]D|s[3t]m|S[3T]M|it|IT|xm|XM|iso|ISO)|+([0-9]).@(vdr|VDR))?(.part)" [xv]="!*.@(gif|jp?(e)g?(2)|j2[ck]|jp[2f]|tif?(f)|png|p[bgp]m|bmp|x[bp]m|rle|rgb|pcx|fits|pm|?(e)ps)" [rgvim]="*.@([ao]|so|so.!(conf|*/*)|[rs]pm|gif|jp?(e)g|mp3|mp?(e)g|avi|asf|ogg|class)" [oodraw]="!*.@(sxd|std|sda|sdd|?(f)odg|otg)" [elinks]="!*.@(?([xX]|[sS])[hH][tT][mM]?([lL]))" [playmidi]="!*.@(mid?(i)|cmf)" [xine]="!*@(.@(mp?(e)g|MP?(E)G|wm[av]|WM[AV]|avi|AVI|asf|vob|VOB|bin|dat|divx|DIVX|vcd|ps|pes|fli|flv|FLV|fxm|FXM|viv|rm|ram|yuv|mov|MOV|qt|QT|web[am]|WEB[AM]|mp[234]|MP[234]|m?(p)4[av]|M?(P)4[AV]|mkv|MKV|og[agmvx]|OG[AGMVX]|t[ps]|T[PS]|m2t?(s)|M2T?(S)|mts|MTS|wav|WAV|flac|FLAC|asx|ASX|mng|MNG|srt|m[eo]d|M[EO]D|s[3t]m|S[3T]M|it|IT|xm|XM)|+([0-9]).@(vdr|VDR))?(.part)" [xpdf]="!*.@(pdf|fdf)?(.@(gz|GZ|bz2|BZ2|Z))" [aviplay]="!*.@(avi|asf|wmv)" [latex]="!*.@(?(la)tex|texi|dtx|ins|ltx|dbj)" [lodraw]="!*.@(sxd|std|sda|sdd|?(f)odg|otg)" [rvim]="*.@([ao]|so|so.!(conf|*/*)|[rs]pm|gif|jp?(e)g|mp3|mp?(e)g|avi|asf|ogg|class)" [ogg123]="!*.@(og[ag]|m3u|flac|spx)" [ps2pdfwr]="!*.@(?(e)ps|pdf)" [harbour]="!*.@([Pp][Rr][Gg]|[Cc][Ll][Pp])" [lomath]="!*.@(sxm|smf|mml|odf)" [xemacs]="*.@([ao]|so|so.!(conf|*/*)|[rs]pm|gif|jp?(e)g|mp3|mp?(e)g|avi|asf|ogg|class)" [unlzma]="!*.@(tlz|lzma)" [lowriter]="!*.@(sxw|stw|sxg|sgl|doc?([mx])|dot?([mx])|rtf|txt|htm|html|?(f)odt|ott|odm|pdf)" [vi]="*.@([ao]|so|so.!(conf|*/*)|[rs]pm|gif|jp?(e)g|mp3|mp?(e)g|avi|asf|ogg|class)" [xetex]="!*.@(?(la)tex|texi|dtx|ins|ltx|dbj)" [gvim]="*.@([ao]|so|so.!(conf|*/*)|[rs]pm|gif|jp?(e)g|mp3|mp?(e)g|avi|asf|ogg|class)" [kid3-qt]="!*.@(mp[234c]|og[ag]|@(fl|a)ac|m4[abp]|spx|tta|w?(a)v|wma|aif?(f)|asf|ape)" [xanim]="!*.@(mpg|mpeg|avi|mov|qt)" [portecle]="!@(*.@(ks|jks|jceks|p12|pfx|bks|ubr|gkr|cer|crt|cert|p7b|pkipath|pem|p10|csr|crl)|cacerts)" [oocalc]="!*.@(sxc|stc|xls?([bmx])|xlw|xlt?([mx])|[ct]sv|?(f)ods|ots)" [emacs]="*.@([ao]|so|so.!(conf|*/*)|[rs]pm|gif|jp?(e)g|mp3|mp?(e)g|avi|asf|ogg|class)" [fbxine]="!*@(.@(mp?(e)g|MP?(E)G|wm[av]|WM[AV]|avi|AVI|asf|vob|VOB|bin|dat|divx|DIVX|vcd|ps|pes|fli|flv|FLV|fxm|FXM|viv|rm|ram|yuv|mov|MOV|qt|QT|web[am]|WEB[AM]|mp[234]|MP[234]|m?(p)4[av]|M?(P)4[AV]|mkv|MKV|og[agmvx]|OG[AGMVX]|t[ps]|T[PS]|m2t?(s)|M2T?(S)|mts|MTS|wav|WAV|flac|FLAC|asx|ASX|mng|MNG|srt|m[eo]d|M[EO]D|s[3t]m|S[3T]M|it|IT|xm|XM)|+([0-9]).@(vdr|VDR))?(.part)" [kpdf]="!*.@(?(e)ps|pdf)" [oomath]="!*.@(sxm|smf|mml|odf)" [compress]="*.Z" [iceweasel]="!*.@(?([xX]|[sS])[hH][tT][mM]?([lL])|[pP][dD][fF])" [zcat]="!*.@(Z|[gGd]z|t[ag]z)" [unzip]="!*.@(zip|[egjsw]ar|exe|pk3|wsz|zargo|xpi|s[tx][cdiw]|sx[gm]|o[dt][tspgfc]|od[bm]|oxt|epub|apk|ipa|do[ct][xm]|p[op]t[mx]|xl[st][xm]|pyz)" [modplug123]="!*.@(669|abc|am[fs]|d[bs]m|dmf|far|it|mdl|m[eo]d|mid?(i)|mt[2m]|oct|okt?(a)|p[st]m|s[3t]m|ult|umx|wav|xm)" [dvipdfm]="!*.dvi" [oobase]="!*.odb" [zipinfo]="!*.@(zip|[egjsw]ar|exe|pk3|wsz|zargo|xpi|s[tx][cdiw]|sx[gm]|o[dt][tspgfc]|od[bm]|oxt|epub|apk|ipa|do[ct][xm]|p[op]t[mx]|xl[st][xm]|pyz)" [epiphany]="!*.@(?([xX]|[sS])[hH][tT][mM]?([lL]))" [galeon]="!*.@(?([xX]|[sS])[hH][tT][mM]?([lL]))" [bzme]="!*.@(zip|z|gz|tgz)" [xfig]="!*.fig" [xdvi]="!*.@(dvi|DVI)?(.@(gz|Z|bz2))" [cdiff]="!*.@(dif?(f)|?(d)patch)?(.@([gx]z|bz2|lzma))" [rgview]="*.@([ao]|so|so.!(conf|*/*)|[rs]pm|gif|jp?(e)g|mp3|mp?(e)g|avi|asf|ogg|class)" [oowriter]="!*.@(sxw|stw|sxg|sgl|doc?([mx])|dot?([mx])|rtf|txt|htm|html|?(f)odt|ott|odm|pdf)" [netscape]="!*.@(?([xX]|[sS])[hH][tT][mM]?([lL]))" [acroread]="!*.[pf]df" [makeinfo]="!*.texi*" [kwrite]="*.@([ao]|so|so.!(conf|*/*)|[rs]pm|gif|jp?(e)g|mp3|mp?(e)g|avi|asf|ogg|class)" [gview]="*.@([ao]|so|so.!(conf|*/*)|[rs]pm|gif|jp?(e)g|mp3|mp?(e)g|avi|asf|ogg|class)" [qiv]="!*.@(gif|jp?(e)g|tif?(f)|png|p[bgp]m|bmp|x[bp]m|rle|rgb|pcx|fits|pm|svg)" [bzcat]="!*.?(t)bz?(2)" [pdftex]="!*.@(?(la)tex|texi|dtx|ins|ltx|dbj)" [rpm2cpio]="!*.[rs]pm" [view]="*.@([ao]|so|so.!(conf|*/*)|[rs]pm|gif|jp?(e)g|mp3|mp?(e)g|avi|asf|ogg|class)" [unxz]="!*.@(?(t)xz|tlz|lzma)" [ly2dvi]="!*.ly" [mozilla]="!*.@(?([xX]|[sS])[hH][tT][mM]?([lL]))" [modplugplay]="!*.@(669|abc|am[fs]|d[bs]m|dmf|far|it|mdl|m[eo]d|mid?(i)|mt[2m]|oct|okt?(a)|p[st]m|s[3t]m|ult|umx|wav|xm)" [dillo]="!*.@(?([xX]|[sS])[hH][tT][mM]?([lL]))" [aaxine]="!*@(.@(mp?(e)g|MP?(E)G|wm[av]|WM[AV]|avi|AVI|asf|vob|VOB|bin|dat|divx|DIVX|vcd|ps|pes|fli|flv|FLV|fxm|FXM|viv|rm|ram|yuv|mov|MOV|qt|QT|web[am]|WEB[AM]|mp[234]|MP[234]|m?(p)4[av]|M?(P)4[AV]|mkv|MKV|og[agmvx]|OG[AGMVX]|t[ps]|T[PS]|m2t?(s)|M2T?(S)|mts|MTS|wav|WAV|flac|FLAC|asx|ASX|mng|MNG|srt|m[eo]d|M[EO]D|s[3t]m|S[3T]M|it|IT|xm|XM)|+([0-9]).@(vdr|VDR))?(.part)" [dvipdfmx]="!*.dvi" [advi]="!*.dvi" [lzmore]="!*.@(tlz|lzma)" [poedit]="!*.po" [firefox]="!*.@(?([xX]|[sS])[hH][tT][mM]?([lL])|[pP][dD][fF])" [gv]="!*.@(@(?(e)ps|?(E)PS|pdf|PDF)?(.gz|.GZ|.bz2|.BZ2|.Z))" [madplay]="!*.mp3" [gtranslator]="!*.po" [jadetex]="!*.@(?(la)tex|texi|dtx|ins|ltx|dbj)" [gpdf]="!*.[pf]df" [kghostview]="!*.@(@(?(e)ps|?(E)PS|pdf|PDF)?(.gz|.GZ|.bz2|.BZ2|.Z))" [pbzcat]="!*.?(t)bz?(2)" [lzcat]="!*.@(tlz|lzma)" [vim]="*.@([ao]|so|so.!(conf|*/*)|[rs]pm|gif|jp?(e)g|mp3|mp?(e)g|avi|asf|ogg|class)" [dvips]="!*.dvi" [pdfunite]="!*.pdf" [dvitype]="!*.dvi" [realplay]="!*.@(rm?(j)|ra?(m)|smi?(l))" [gqmpeg]="!*.@(mp3|og[ag]|pls|m3u)" [xelatex]="!*.@(?(la)tex|texi|dtx|ins|ltx|dbj)" [lzegrep]="!*.@(tlz|lzma)" [bunzip2]="!*.?(t)bz?(2)" [znew]="*.Z" [lokalize]="!*.po" [kate]="*.@([ao]|so|so.!(conf|*/*)|[rs]pm|gif|jp?(e)g|mp3|mp?(e)g|avi|asf|ogg|class)" [dragon]="!*@(.@(mp?(e)g|MP?(E)G|wm[av]|WM[AV]|avi|AVI|asf|vob|VOB|bin|dat|divx|DIVX|vcd|ps|pes|fli|flv|FLV|fxm|FXM|viv|rm|ram|yuv|mov|MOV|qt|QT|web[am]|WEB[AM]|mp[234]|MP[234]|m?(p)4[av]|M?(P)4[AV]|mkv|MKV|og[agmvx]|OG[AGMVX]|t[ps]|T[PS]|m2t?(s)|M2T?(S)|mts|MTS|wav|WAV|flac|FLAC|asx|ASX|mng|MNG|srt|m[eo]d|M[EO]D|s[3t]m|S[3T]M|it|IT|xm|XM|iso|ISO)|+([0-9]).@(vdr|VDR))?(.part)" [pdflatex]="!*.@(?(la)tex|texi|dtx|ins|ltx|dbj)" [mozilla-firefox]="!*.@(?([xX]|[sS])[hH][tT][mM]?([lL])|[pP][dD][fF])" [ooimpress]="!*.@(sxi|sti|pps?(x)|ppt?([mx])|pot?([mx])|?(f)odp|otp)" [uncompress]="!*.Z" [unpigz]="!*.@(Z|[gGdz]z|t[ag]z)" [luatex]="!*.@(?(la)tex|texi|dtx|ins|ltx|dbj)" [lynx]="!*.@(?([xX]|[sS])[hH][tT][mM]?([lL]))" [ps2pdf]="!*.@(?(e)ps|pdf)" [mpg321]="!*.mp3" [mpg123]="!*.mp3" [pbunzip2]="!*.?(t)bz?(2)" [kid3]="!*.@(mp[234c]|og[ag]|@(fl|a)ac|m4[abp]|spx|tta|w?(a)v|wma|aif?(f)|asf|ape)" [pdfjadetex]="!*.@(?(la)tex|texi|dtx|ins|ltx|dbj)" [dvipdf]="!*.dvi" [gharbour]="!*.@([Pp][Rr][Gg]|[Cc][Ll][Pp])" [texi2html]="!*.texi*" [gunzip]="!*.@(Z|[gGd]z|t[ag]z)" [google-chrome]="!*.@(?([xX]|[sS])[hH][tT][mM]?([lL])|[pP][dD][fF])" [okular]="!*.@(okular|@(?(e|x)ps|?(E|X)PS|[pf]df|[PF]DF|dvi|DVI|cb[rz]|CB[RZ]|djv?(u)|DJV?(U)|dvi|DVI|gif|jp?(e)g|miff|tif?(f)|pn[gm]|p[bgp]m|bmp|xpm|ico|xwd|tga|pcx|GIF|JP?(E)G|MIFF|TIF?(F)|PN[GM]|P[BGP]M|BMP|XPM|ICO|XWD|TGA|PCX|epub|EPUB|odt|ODT|fb?(2)|FB?(2)|mobi|MOBI|g3|G3|chm|CHM)?(.?(gz|GZ|bz2|BZ2)))" [slitex]="!*.@(?(la)tex|texi|dtx|ins|ltx|dbj)" [xzcat]="!*.@(?(t)xz|tlz|lzma)" [timidity]="!*.@(mid?(i)|rmi|rcp|[gr]36|g18|mod|xm|it|x3m|s[3t]m|kar)" [dviselect]="!*.dvi" )
+declare -- command="gunicorn server:app -c config/settings.py"
