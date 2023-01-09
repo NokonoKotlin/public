@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ja">
+    <link rel="stylesheet" media="screen and (max-width:768px)" href="./../css/sp_style.css">    
+<link rel="stylesheet" media="screen and (min-width:769px)" href="./../css/pc_style.css">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    </script>
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" }},
+        tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+        processEscapes: true
+        },
+        "HTML-CSS": { matchFontHeight: false },
+        displayAlign: "left",
+        displayIndent: "2em"
+    });
+    </script>
+    <title>脳トレ - 掛け算(easy)</title>
+        
+
+    </head>
+
+
+
+
+    <body>
+
+       
+        <!--軽くコメント-->
+        <div id="Inner">
+            <h_middle style = "text-align: left;"><a href="../index.html">前のページ</a> </h_middle>
+            <section class = "Introduction">
+                
+                <h_big>   
+                    掛け算トレーニング1<br></h_big>
+
+
+            </section>
+
+
+            <section class = "Explanation">
+               
+                
+                <h_middle>
+                    ここでは掛け算の簡単なトレーニングをできます。<br>
+                    掛け算の計算を早く計算したければ、まずは九九を速攻で計算できるようにならないといけないと思います。<br>
+                    九九を計算するためには、九九の計算をいちいち頭の中で暗唱してはいけません。<br>
+                    a×b という 視覚的なinputが与えられたとき、頭のメモリのa×bの領域にアクセスして答えを即座にoutputしないといけません(と思っています)。
+                    <br>
+                    <br>
+                    <br>
+                    ルール:九九の式が表示されるので、その計算式が合っているならば'YES',間違っているなら'NO'を選びます。
+                    <br>
+                    正解した速度が計測されますが、その速度が自分の中でbestになるように頑張ってください。
+
+                </h_middle>
+
+
+                
+            </section>
+
+            <section class = "SmallBox">
+
+                <h_big>
+
+
+                    <div id = "pagetype_0">
+                        <center>始める時はNewQueryボタンを押してね！！</center>
+                        <br>
+   
+                        <center><input type="button" id = "NewQueryButton" value="NewQuery" onclick="NewQuery()"  style =" font-size: 25px; "></center>
+                    </div>
+
+                    <div id = "pagetype_1" style = "display:none;">
+                        <center><div id = "Question"></div></center>
+                        <br>
+                        <!--この行長いです-->
+                        <center><input type="button" value="NO" onclick="select_NO()" id ="Select_NO" style = " font-size: 25px; "><input type="button" value="YES" onclick="select_YES()" id ="Select_YES" style =" font-size: 25px; "></center>
+                    </div>
+
+                    <div id = "pagetype_2" style = "display:none;">
+                        <center><div id ="result"></div></center>
+                        <br>
+                    
+                        <center><input type="button" id = "NewQueryButton" value="NewQuery" onclick="NewQuery()"  style = " font-size: 25px; "></center>
+                    </div>
+
+                
+                </h_big>
+                
+                
+                
+                <script>
+
+
+                    var pagetype = 0;/*問題の画面のタイプ*/
+                    /*
+                        0 : 始める前の画面
+                        1 : 式が表示される画面
+                        2 : リザルト画面(0と同じ挙動ただし、表示されるものがちがう)
+                    */
+
+
+                    var correct;/*次の問題の正誤*/
+                    function newQuestion(){
+                    
+                        var a = Math.floor(Math.random()*9)+1;
+                        var b = Math.floor(Math.random()*9)+1;
+                        var c = a*b;
+                        var res= new String("");
+                        var x = Math.floor(Math.random()*3)-1;
+                        c += x*2;
+                        res+=String(a);
+                        res += 'x';
+                        res += String(b);
+                        res += "=";
+                        res += String(c);
+                        
+                        if(x!=0){
+                            correct = 0;
+                        }else{
+                            correct = 1;
+                        }
+                        
+                        console.log(res);
+                        return res;
+
+                    }
+                    
+                    var start_time;
+                    var end_time;
+
+                    function NewQuery(){
+                        if(pagetype == 0){
+                            pagetype = 1;
+                            document.getElementById("pagetype_1").style.display = "block" ;
+                            document.getElementById("pagetype_0").style.display = "none" ;
+                            document.getElementById("Question").innerText = newQuestion();
+                            start_time = Date.now();
+                            
+                        }else if(pagetype == 1){/*ここは多分呼び出されない*/
+                            pagetype = 2;
+                            
+                            document.getElementById("pagetype_2").style.display = "block" ;
+                            document.getElementById("pagetype_1").style.display = "none" ;
+
+
+                        }else if(pagetype == 2){
+                            pagetype = 1;
+                            document.getElementById("pagetype_1").style.display = "block" ;
+                            document.getElementById("pagetype_2").style.display = "none" ;
+                            document.getElementById("Question").innerText = newQuestion();
+                            start_time = Date.now();
+                        }
+                    }
+
+                    function select_NO(){
+                        if(correct == 0){
+                            end_time = Date.now();
+                            result = String("正解!!かかった時間は");
+                            result += String(Math.floor((end_time-start_time)/1000));
+                            result+=".";
+                            result += String(Math.floor((end_time-start_time)%1000));
+                            result += "秒です。";
+                            document.getElementById("result").innerText = result;
+                        }else{
+                            document.getElementById("result").innerText = "不正解..スピードよりも正確さですよ...";
+                        }
+
+                        pagetype = 2;
+                            
+                        document.getElementById("pagetype_2").style.display = "block" ;
+                        document.getElementById("pagetype_1").style.display = "none" ;
+                        
+
+                    }
+
+                    function select_YES(){
+                        if(correct == 1){
+                            end_time = Date.now();
+                            let result = String("正解!!かかった時間は");
+                            result += String(Math.floor((end_time-start_time)/1000));
+                            result+=".";
+                            result += String(Math.floor((end_time-start_time)%1000));
+                            result += "秒です。";
+                            document.getElementById("result").innerText = result;
+                        }else{
+                            document.getElementById("result").innerText = "不正解..スピードよりも正確さですよ...";
+                        }
+
+                        pagetype = 2;
+                        
+                        document.getElementById("pagetype_2").style.display = "block" ;
+                        document.getElementById("pagetype_1").style.display = "none" ;
+
+
+                    }
+                    
+
+
+
+                </script>
+                <br>
+
+            </section>
+
+            <br>
+            <br>
+            <br>
+            <br>
+        
+
+
+        </div>
+
+
+
+    </body>
+
+
+</html>

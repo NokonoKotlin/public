@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ja">
+    <link rel="stylesheet" media="screen and (max-width:768px)" href="./../../css/sp_style.css">    
+<link rel="stylesheet" media="screen and (min-width:769px)" href="./../../css/pc_style.css">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>全探索</title>
+        
+
+    </head>
+
+
+
+
+    <body>
+
+         <!--軽くコメント-->
+        <div id="Inner">
+            <h_middle style = "text-align: left;"><a href="../../index.html">前のページ</a> </h_middle>
+            <section class = "Introduction">
+                
+                <h_big>   
+                    全探索<br></h_big>
+
+
+            </section>
+
+
+            <section class = "Explanation">
+                <h_middle>
+                    全探索 := 全て調べることです。<br>
+                    n重ループ , bit全探索 , などがあります。<br>
+                </h_middle>
+                <br>
+                <br>
+                <h_middle>
+                    n重ループ : 再帰関数によって実装できます。<br><br>
+                </h_middle>
+
+
+                <code>
+                    <ol style="list-style:decimal-leading-zero outside;line-height:14px;font-size:12px;padding-left:36px;margin:0;background-color:#EEF;width:90%;color:#000;">
+                    <li style="background-color:#EFF;">#include&lt;iostream&gt;</li>
+                    <li style="background-color:#EEF;">#include&lt;vector&gt;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"><font style="color:green;font-style:italic;">/*</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;テストは全部でN問あり、それぞれの質問の選択肢はM個ある。</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;テストの点数はそれぞれの選択肢に割り当てられた数値の積とする。</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;テストのi問目のj番目の選択肢の点数をV[i][j]とする。</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;テストの点数を最大化せよ。</li>
+                    <li style="background-color:#EFF;">*/</font></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">int N , M;</li>
+                    <li style="background-color:#EEF;">std::vector&lt;std::vector&lt;int&gt;&gt; V;</li>
+                    <li style="background-color:#EFF;">long long ans = -1e18;</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">void dfs(int i , long long score = 1){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;if(i&lt;N){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for(int j = 0 ; j &lt; M ; j++)dfs(i+1 , score*V[i][j]);</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}else{</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(ans &lt; score)ans = score;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;">}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">int main(){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;std::cin &gt;&gt; N &gt;&gt; M ;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::vector&lt;int&gt;&gt;(N,std::vector&lt;int&gt;(M)).swap(V);</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i= 0 ; i&lt; N ; i++){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for( int j = 0 ; j&lt;M ; j++){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cin &gt;&gt; V[i][j];</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;dfs(0);</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; ans &lt;&lt; std::endl;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;return 0;</li>
+                    <li style="background-color:#EEF;">}</li>
+                    <li style="background-color:#EFF;"></li>
+                </ol></code>
+                    
+                
+
+
+                <h_middle>
+                    <br>
+                    <br>
+                    bit全探索 : nbitの場合、0以上2^n未満の整数を二進数に変換したものがbitの集合に対応している 
+                    <br>
+                    <br>
+                </h_middle>
+                
+
+
+                <code>
+                    <ol style="list-style:decimal-leading-zero outside;padding-left:36px;margin:0;background-color:#EEF;width:90%;color:#000;font-size:12px;line-height: 14px;">
+                    <li style="background-color:#EFF;">#include&lt;iostream&gt;</li>
+                    <li style="background-color:#EEF;">#include&lt;vector&gt;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"><font style="color:green;font-style:italic;">/*</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;ノコノコくんは、高さXの塔を作りたい。</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;N個の積み木をいくつか選んで、高さがちょうどXにできるか判定せよ。</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;i番目の積み木の高さはA[i]である。</li>
+                    <li style="background-color:#EEF;">*/</font></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">int N , X;</li>
+                    <li style="background-color:#EFF;">long long A[25];</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">int main(){</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;scanf(<font style="color:brown;">"%d"</font> , &amp;N);</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;scanf(<font style="color:brown;">"%d"</font> , &amp;X);</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;for( int i = 0 ; i &lt; N ; i++){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scanf(<font style="color:brown;">"%d"</font> ,&amp;A[i]);</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//二進数表示したものがビットの集合</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int bit = 0 ; bit &lt; (1&lt;&lt;N) ; bit++){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int height = 0;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for( int i = 0 ; i&lt;N;i++){<font style="color:green;font-style:italic;">//i:=i番目のbit</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if((bit&amp;(1&lt;&lt;i))!=0){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;height += A[i];</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(height == X){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font style="color:brown;">"Yes\n"</font>);</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return 0;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;printf(<font style="color:brown;">"No\n"</font>);</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;return 0;</li>
+                    <li style="background-color:#EFF;">}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    </ol></code>
+            </section>
+
+
+
+        </div>
+
+
+
+    </body>
+
+
+</html>

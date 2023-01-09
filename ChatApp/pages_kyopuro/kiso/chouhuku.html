@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ja">
+    <link rel="stylesheet" media="screen and (max-width:768px)" href="./../../css/sp_style.css">    
+    <link rel="stylesheet" media="screen and (min-width:769px)" href="./../../css/pc_style.css">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    </script>
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" }},
+        tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+        processEscapes: true
+        },
+        "HTML-CSS": { matchFontHeight: false },
+        displayAlign: "left",
+        displayIndent: "2em"
+    });
+    </script>
+    <title>重複組合せ</title>
+        
+
+    </head>
+
+
+
+
+    <body>
+        
+         <!--軽くコメント-->
+        <div id="Inner">
+            <h_middle style = "text-align: left;"><a href="../../index.html">前のページ</a> </h_middle>
+            <section class = "Introduction">
+                
+                <h_big>   
+                    重複組合せ<br></h_big>
+
+
+            </section>
+
+
+            <section class = "Explanation">
+               
+                <br>重複組み合わせとは、区別しないボールを、区別できる箱に入れる時の入れ方の総数です。
+                <br>
+                <br>ボールが7つ、箱が4つの場合で考えてみましょう。
+                <br>図で示すと、こうなります。
+                <br>
+
+                <br>
+
+                <img src = "./../../images/chouhuku.png" style="width: 80%;"> 
+
+                <br>
+                <br>
+                <br>このような単純な場合は、ボールを(箱の個数-1)本の棒で仕切れば良いとわかるのですが、
+                <br>例えば、すべての箱には必ず1個以上のボールが入っていなければならないという条件付きならどうでしょう。
+                <br>
+                <br>この場合、4つの箱に一つずつボールを入れて、残り3つのボールを先ほどと同じように棒と一緒に並べれば良いです。
+                <br>よって、答えは(7-4+3)C(3)となります。
+                <br>
+                <br>ボールが区別できないからこそ、条件を満たすように先にボールを割り当ててから考えるということができるのです。
+                <br>
+                <br>
+                <br><h_big>練習問題1</h_big>
+                <br>&ensp;&ensp;&ensp;a + b + c &lt;= 7 という条件を満たす整数の組 (a,b,c) の総数を求めてみましょう。
+                <br>
+                <br>もし仮に a+b+c = 7であれば、7個のボールを a,b,cという箱に割り当てる問題になるのですが、残念ながら今回はそうではありません。
+                <br>そこで、W = 7-a-b-c という 変数を考えてみます。
+                <br>すると a+b+c+W = 7という式が得られます。これは 7個 のボールを a,b,c,Wという4つの箱に割り当てる重複組合せと考えることができます。
+
+                <br>
+                <br>
+                <br><h_big>練習問題2</h_big>
+                <br>
+                <br> 0&lt;= a &lt;= b &lt;= c &lt;= 6となるような整数の組み (a,b,c) の総数を求めてみましょう。
+                <br> 
+                <br>練習問題1では変数 a,b,c を箱としてみなしていましたが、今回は変数 a,b,c を区別しないボールとして考えます。
+                <br>以下の図を見てください。
+                <br>
+                <img src = "./../../images/chouhuku2.png" style="width: 80%;"> 
+                <br>
+                <br>このように、変数の間の仕切り棒の本数を変数の差(の絶対値)として並べると綺麗に対応できています。
+                <br>
+                <br>
+                <br>
+                <br><h_big>まとめ</h_big>
+                <br>区別できないボールは自由に並べていいので、条件がついている重複組合せの場合は、先に条件を満たすようにボールを配置してから残りのボールを並べる。
+                <br>
+                <br>整数の変数が出てくる問題は、重複組合せの問題として捉えることができることがある。
+                <br>
+                <br>
+                <br>ちなみに<a href = "https://atcoder.jp/contests/abc021/tasks/abc021_d">こちらの問題</a>は練習問題２を知っていると解けます。
+                <br>以下はコード例です(mod計算を使用しているので、mod計算のページも参照ください)。
+                <br>
+                <br>
+                <br>
+                <br>
+                <code>
+                    <ol style="list-style:decimal-leading-zero outside;padding-left:36px;margin:0;background-color:#EEF;width:90%;line-height: 14px;color:#000;font-size:12px;">
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"><font style="color:green;font-style:italic;">//include</font></li>
+                    <li style="background-color:#EFF;"><font style="color:green;font-style:italic;">//------------------------------------------</font></li>
+                    <li style="background-color:#EEF;">#include&lt;iostream&gt;</li>
+                    <li style="background-color:#EFF;">#include&lt;vector&gt;</li>
+                    <li style="background-color:#EEF;">#include&lt;queue&gt;</li>
+                    <li style="background-color:#EFF;">#include&lt;map&gt;</li>
+                    <li style="background-color:#EEF;">#include&lt;algorithm&gt;</li>
+                    <li style="background-color:#EFF;">using namespace std;</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">const long long INF = 1e18;</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">long long MOD = 1000000007;</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">long long modpow(long long a, long long b , long long m){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt; bit;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 0 ; i &lt;= 62;i++){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(b&amp;(1ll&lt;&lt;i))bit.push_back(i);</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;long long&gt; power(63 , 0);</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;power[0] = (a%m+m)%m;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int x = 1 ; x &lt;= 62 ; x++){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;power[x] = power[x-1]*power[x-1];</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;power[x] %=m;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;long long res = 1;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int b : bit){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;res *= power[b];</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;res%=m;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;return res;</li>
+                    <li style="background-color:#EFF;">}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">long long modinv(long long x, long long m){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;x = (x%m+m)%m;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;return modpow(x,m-2,m);</li>
+                    <li style="background-color:#EFF;">}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">long long moddiv(long long a , long long b , long long m){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;a = (a%m+m)%m;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;return (a*modinv(b,m))%m;</li>
+                    <li style="background-color:#EFF;">}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">int main(){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;long long n , k;cin &gt;&gt; n &gt;&gt; k;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;long long ans = 1;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int N = n+k-1 ; N &gt; n-1 ; N--){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ans *= moddiv(N,N-n+1,MOD);</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ans %=MOD;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; ans &lt;&lt; endl;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;return 0;</li>
+                    <li style="background-color:#EFF;">}   </li>
+                    </ol>
+                </code>
+
+
+
+
+
+                
+            </section>
+
+
+
+        </div>
+
+
+
+    </body>
+
+
+</html>

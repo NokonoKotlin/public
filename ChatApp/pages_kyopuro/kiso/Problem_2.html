@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ja">
+    <link rel="stylesheet" media="screen and (max-width:768px)" href="./../../css/sp_style.css">    
+    <link rel="stylesheet" media="screen and (min-width:769px)" href="./../../css/pc_style.css">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    </script>
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" }},
+        tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+        processEscapes: true
+        },
+        "HTML-CSS": { matchFontHeight: false },
+        displayAlign: "left",
+        displayIndent: "2em"
+    });
+    </script>
+    <title>Problem_1</title>
+        
+
+    </head>
+
+
+
+
+    <body>
+        
+         <!--軽くコメント-->
+        <div id="Inner">
+            <h_middle style = "text-align: left;"><a href="../../index.html">前のページ</a> </h_middle>
+            <section class = "Introduction">
+                
+                <h_big>   
+                    典型テクニック<br></h_big>
+
+
+            </section>
+
+
+            <section class = "Explanation">
+                
+                <br>
+                <br>競プロでは、計算量を減らすために、無駄なところを見ないようにする場合があります。
+                <br>例えば、数列で要素 X がどの位置に現れたかをメモするとき、全部メモする必要がなければ 直近のものや最遠のものしか見ないというように。
+                <br>
+                <br>特にある時点の操作で、「直近のものしか見ない」というのは頻出です。
+                <br>
+                <br><a href = "https://atcoder.jp/contests/abc174/tasks/abc174_f">この問題</a>を見てみましょう。
+                <br>
+                <br>問題文
+                
+                <br>N 個の色の付いた玉が左右一列に並んでおり、左から i 番目の玉の色は c[i] です。
+                <br>クエリが Q個与えられます。i 番目のクエリでは、左から l_i番目から r_i番目までにある玉の色の種類数を答えてください。
+                <br>
+                <br>
+                <br>
+                <section class="Box">
+                    <!-- 解説パート ...　長い-->
+                    <div id = "ProblemExplanation" style="display: none;">
+                        <center><input type="button"  id="Button_hide" class = "button_black" onclick="HideButton()"  value = "解説を隠す"></center>
+
+                            <br>
+                            <br>
+                            <br>区間の右端を R で固定してみましょう。
+                            <br>place[x] := 色 x が現れる場所のうち、現在見ている区間の右端以前にあって、最も 右端 から近いもの(直近のもの)。ただし、一度も現れていない色については、-1とする。
+                            <br>この時、区間 [L,R] に色 x が存在する &lt;=> 区間 [L,R] に place[x] が含まれる。と言える。
+                            <br>
+                            
+                            <br><h_big>色 x の存在条件</h_big>
+                            <br>位置 R 以前で色 x が現れた場所のうち、R から i 番目に近い場所を X_i とすると、
+                            <br>
+                            <br> ・「 X_1 が [L,R]に含まれる 」　=> 「 区間[L,R]に色 x が存在する 」
+                            <br> ・「 X_1 が [L,R]に含まれない 」 => 「 X_2も [L,R]に含まれない 」　=> 「 X_3も [L,R]に含まれない 」　=> .... => 「 区間[L,R]に色 x が存在しない 」
+                            <br>
+                            <br>    となるので、X_1　(R以前で直近のもの)のみに注目することで、色 x が区間内に存在するかどうかを判定できます。
+                            <br>
+                            <br>
+                            <br>問題の解法 : 
+                            <br>
+                            <br>現在、区間の右端をRで固定しているとし、全ての x に対して、set&lt;int> S にplace[x]を入れておく(-1なら入れないでおく)。
+                            <br>
+                            <br>「 区間 [L,R] にある色の種類数は、Sに入っている要素のうち、L以上のものの個数である。」
+                            <br>
+                            <br>現在、S には これまでに一度以上現れた各色について、その色が直近に現れた位置が入っています。
+                            <br>区間[L,R]に色 x が現れるかどうかは、上記の「色 x の存在条件」から、「 直近の色 x の位置がL以上かどうか 」です。
+                            <br>よって、S のうち L 以上の要素数だけ、区間[L,R]異なる色が現れることになります。
+                            <br>
+                            <br>
+                            <br>
+                            <br>今、R を固定して考えましたが、問題では R もクエリで与えられるので、そこも対応します。
+                            <br>
+                            <br>今、右端がRの場合は攻略できました。次は右端がR+1の場合を見ます。
+                            <br>右端が　R -> R+1 と移動した時、配列:placeは一箇所しか変わりません。
+                            <br>具体的には、place[c[R+1]] = R+1 とするだけです。つまり、区間の右がR+1に伸びたことで、c[R+1]の現れる最新の位置がR+1になったということです。
+                            
+                            <br>また、S にはc[R+1]の直近の位置が更新される前の状態で入っているので、S.erase(更新前のplace[c[R+1]]) してから S.insert(更新後のplace[c[R+1]]) をします。 
+                            <br>
+                            <br>これで、右端がRの状態からR+1に移行することができました。
+                            <br>1 &lt= R &lt= N なので、右端の移行の回数も N 回なので計算時間も大丈夫です。
+                            <br>
+                            <br>よって、クエリ[ l_i , r_i ]を r_i に関して昇順にソートし、区間の右端を r_i に合わせて移動しながらクエリを処理すれば良いです。
+                            <br>クエリの処理は、上記で言うところの R = r_i として S のうち l_i 以上の要素数を出力すれば良いです。
+                            <br>
+                            <br>
+                            <br>
+                            <br>
+                            <code>
+                                <ol style="list-style:decimal-leading-zero outside;padding-left:36px;margin:0;background-color:#EEF;width:90%;line-height:14px;color:#000;font-size:12px;">
+                                <li style="background-color:#EFF;">#include&lt;iostream&gt;</li>
+                                <li style="background-color:#EEF;">#include&lt;vector&gt;</li>
+                                <li style="background-color:#EFF;">#include&lt;string&gt;</li>
+                                <li style="background-color:#EEF;">#include&lt;set&gt;</li>
+                                <li style="background-color:#EFF;">#include&lt;algorithm&gt;</li>
+                                <li style="background-color:#EEF;">using namespace std;</li>
+                                <li style="background-color:#EFF;">int INF = 500000000;</li>
+                                <li style="background-color:#EEF;"></li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;"></li>
+                                <li style="background-color:#EFF;">struct query{</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;int l , r , id;</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;query(){}</li>
+                                <li style="background-color:#EEF;">};</li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;">bool cp_r(query a , query b){</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;return a.r &lt; b.r;</li>
+                                <li style="background-color:#EEF;">}</li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;">int main(){</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;int N ,Q;</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;cin &gt;&gt; N &gt;&gt; Q;</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt; c(N);</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt; place(N+1,-1);</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;query&gt; Queries(Q);</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;MyMultiSet&lt;int&gt; S;</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 0 ; i &lt; N ; i++){</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cin &gt;&gt; c[i];</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 0 ; i &lt; Q ; i++){</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cin &gt;&gt; Queries[i].l &gt;&gt; Queries[i].r;</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Queries[i].id = i;</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;sort(Queries.begin() , Queries.end() , cp_r);    </li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;int R = 0;</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt; ans(Q);</li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(query qr : Queries){</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;while(R &lt; qr.r){</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(place[c[R]] == -1){</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else{</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S.erase(place[c[R]]);</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;place[c[R]] = R;</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S.insert(place[c[R]]);</li>
+                                <li style="background-color:#EEF;"></li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;R++;</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int res = S.Size - S.lower_bound(qr.l-1);</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ans[qr.id] = res;<font style="color:green;font-style:italic;">//元の順番で出力</font></li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int res : ans){</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font style="color:brown;">"%d\n"</font> , res);</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                                <li style="background-color:#EFF;">}</li>
+                                <li style="background-color:#EEF;"></li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;"></li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;"></li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;"></li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;"></li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;"></li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;"></li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;"></li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;"></li>
+                                <li style="background-color:#EFF;"></li>
+                                </ol>
+                            </code>
+                    
+
+                            <br><br><br>
+
+
+
+
+                        <center><input type="button" id="Button_hide" class = "button_black" onclick="HideButton()" value = "解説を隠す"></center>
+                    </div>
+                    
+
+
+
+
+
+
+
+                    <div id = "HideCheck" style="display: block;">
+                        <center><input type="button"  id="Button_appear" class = "button_black" onclick="AppearButton()"  value = "解説を表示する"></center>
+                    </div>
+
+                    
+
+
+                </section>
+
+
+                
+
+                
+            </section>
+
+
+
+        </div>
+        <br>
+
+
+    </body>
+
+
+</html>
+
+
+<!--javascript partです-->
+<!--javascript partです-->
+<!--javascript partです-->
+<!--javascript partです-->
+
+
+<script>
+
+
+    function AppearButton(){
+        document.getElementById("ProblemExplanation").style.display = "block";
+        document.getElementById("HideCheck").style.display = "none";
+    }
+
+    function HideButton(){
+        document.getElementById("ProblemExplanation").style.display = "none";
+        document.getElementById("HideCheck").style.display = "block";
+    }
+</script>

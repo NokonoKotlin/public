@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="ja">
+    <link rel="stylesheet" media="screen and (max-width:768px)" href="./../../css/sp_style.css">    
+    <link rel="stylesheet" media="screen and (min-width:769px)" href="./../../css/pc_style.css">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    </script>
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" }},
+        tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+        processEscapes: true
+        },
+        "HTML-CSS": { matchFontHeight: false },
+        displayAlign: "left",
+        displayIndent: "2em"
+    });
+    </script>
+    <title>SA_IS</title>
+        
+
+    </head>
+
+
+
+
+    <body>
+        
+         <!--軽くコメント-->
+        <div id="Inner">
+            <h_middle style = "text-align: left;"><a href="../../index.html">前のページ</a> </h_middle>
+            <section class = "Introduction">
+                
+                <h_big>   
+                    Suffix Array ~ SA_IS<br></h_big>
+
+
+            </section>
+
+
+            <section class = "Explanation">
+               
+                Suffix Arrayのレシピを勉強しました。
+                <br>
+                <br>かなり大変なレシピでしたが、大好きなあの子にご馳走するために頑張って勉強しました。
+                <br>
+                <br>
+                <br>とりあえず軽く実装の流れを書きます。
+                <br>
+                <br>
+                <h_big>Suffix Arrayとは</h_big>
+                <section class = "Box">
+                    文字列 s の i 番目の接尾辞を、s_i から sの末尾までの連続した部分文字列とするとき、
+                    <br>文字列 s の Suffix Arrayとは、sの接尾辞を全て辞書順で昇順に並べたとき、ソートされた接尾辞が s の何番目の接尾辞かを int で並べたものです。
+                    <br>
+                    <br>例でいうと、s = kaba の時、s のSuffix Arrayは
+                    <br>&ensp;&ensp;&ensp;&ensp; 接尾辞(空列を含む)を昇順に並べたもの : { "" , "a" , "aba" , "ba" , "kaba" } 
+                    <br>&ensp;&ensp;&ensp;&ensp; 並べた接尾辞が s の接尾辞のうち何番目のものか : { 4 , 3 , 1 , 2 , 0 }
+                    <br>
+                    <br>といった感じです。
+                    <br>
+                </section>
+                <br>
+                <br>
+                <br>さて、これをどうやって求めるのでしょうか。
+                <br>
+                <br>愚直に接尾辞を全て求めてそれらをソートすると、s の長さが N とすると、接尾辞同士の辞書順比較に O(N) , ソートに O(NlogN) で結局 O(N^2logN) かかってしまいます。
+                <br>
+                <br><h_big>解 : O(N)で求めるアルゴリズムがあります。</h_big>
+                <br>
+                <br>SA-IS といいまして、天才です。
+                <br>
+                <br>SA-IS に必要なものをいくつかまとめます(結構あります)。
+                <br>
+                <section class="Box">
+                    induced_sort  :=  SA-ISアルゴリズムの中で使う、少し特殊なソートです。
+                    <br>
+                    <br>S型 , L型 := s の接尾辞に型をつける。
+                    <br> &ensp;&ensp;&ensp;&ensp;  i 番目の接尾辞が i+1 番目の接尾辞よりも辞書順で小さいなら、i 番目の接尾辞は S型
+                    <br> &ensp;&ensp;&ensp;&ensp;  i 番目の接尾辞が i+1 番目の接尾辞よりも辞書順で大きいなら、i 番目の接尾辞は L型
+                    <br> &ensp;&ensp;&ensp;&ensp;  s の接尾辞は全て長さが異なるので、= であるようなものはない 
+                    <br>
+                    <br>LMS ~ Left Most S := i 番目の接尾辞が L型で、i+1 番目の接尾辞がS型の時、i+1 番目はLMSという
+                    <br>LMS-substring  := i が LMS であったとき、i の次にLMSが現れるまでの連続部分文字列
+                    <br>
+                </section>
+                <br>
+                <br>
+                <br><h_big><Orange>コードで使う変数、配列。前準備。</Orange></h_big>
+                <section class="Box">
+                    s の末尾に番兵: 0 を追加して、番兵が s のどの要素よりも小さくなるように、s の末尾以外の要素を +1 する。番兵 0 の type は S型とする。
+                    <br>int s_size := s の長さ
+                    <br>
+                    <br>vector&lt;int> SA(s_size) := s をinduced_sortした結果を入れておく。メモリ節約のため、LMSに番号を割り振るときにも再利用する。 <br>
+                    <br>vector&lt;char> type(s_size) := s の各 index の型が何か。 <br>
+                    <br>vector&lt;int> LMS_index := s のうち、LMSであるような index を前から順に入れておく。一度目のinduced_sortの<Orange>元</Orange>として使う。 <br>
+                    <br>vector&lt;int> num_for_LMS( LMS_index.size() ) := 各 LMS に番号を割り振る。num_for_LMS[i] は、 s の 前から見て i 番目の LMS に割り振る番号。<br>
+                    <br>vector&lt;int> NewLMS_index( LMS_index.size() ) := 各 LMS に割り振られた番号をもとに LMS を並べ替えたもの。二度目のinduced_sortの<Orange>元</Orange>として使う。<br>
+                    
+                </section>
+                <br>
+                <br>
+                <br>次はinduced_sortです
+                <br><h_big>induced_sortとは</h_big>
+                <section class="Box">
+                    簡単に、 s = nokokaba である場合に、上記の変数がどんなものになるのかをまとめましょう。
+                    <br>
+                    <br>index : 0 , 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8
+                    <br>&ensp;s&ensp;&ensp;&ensp; :&ensp;n , o , k , o , k , a , b , a , 0
+                    <br>type &ensp;: S , L , S , L , L , S , L , L , S
+                    <br>LMS_index : 2 , 5 , 8
+
+                    <br>
+                    <br>ここで、新たにvector&lt;int> bin(max_val) という配列を用意します。
+                    <br>bin[c] が表すのは、文字 c から始まる接尾辞がSuffix Array(SA)のどの位置に現れるのかです。
+                    <br>具体的にいうと、c から始まる接尾辞は、求めるSuffix Arrayにおいて、半開区間 : [ bin[c] , bin[c+1] ) に現れる。
+                    <br>という定義のもと、binを作っていきます。
+                    <br>
+                    <br>binの作り方は簡単で、s の中身を見て、文字 c が現れたら bin[c]++ をして、
+                    <br>sを全て見終わったらxが小さい順からbin[c+1] += bin[c]と、累積和のようにスライドさせていきます。
+        
+                    <br>また、文字 c から始まる接尾辞が現れる区間を、c の bin と呼ぶことにします。
+                    <br>
+                    <br>それではinduced_sortのステップを3つに分けて紹介します。
+                    <br>
+                    <br>SAに順に接尾辞のindexを入れていきます。SAは初めは-1で初期化されています。
+                    <br>
+                    <br>
+                    <br><h_big>ステップ１</h_big>
+                    <br>各LMSのindexを、LMSの先頭の文字の bin の<Orange>末尾</Orange>から入れていきます。
+                    <br>
+                    <br>
+                    <h_big>ステップ２</h_big>
+                    <br>SA を<Orange>先頭</Orange>から調べていき、SA が埋まっている(-1でない)なら、その index を x とする。
+                    <br>元の列 s において、s[x-1]が L型なら、s[x-1]のbinの<Orange>先頭</Orange>から x-1 を入れていきます。
+                    <br>
+                    <br>
+                    <h_big>ステップ3</h_big>
+                    <br>SA を<Orange>末尾</Orange>から調べていき、SA が埋まっている(-1でない)なら、その index を x とする。
+                    <br>s[x-1] が S型なら、s[x-1] の bin の<Orange>末尾</Orange>から x-1 を入れていきます。
+                    <br>
+                    <br>
+                    <br>こうして並べた接尾辞は、少なくとも先頭の文字についてはソートされています。
+                    <br>また、ある LMS から、ひとつ前の LMS までに現れる接尾辞に関してはソートされています。これは、各ステップとL型S型の定義を睨んだらわかると思います。
+                    <br>
+                    <br>&ensp;&ensp;&ensp;&ensp; ステップ２では、LMS、または L型の接尾辞から その一つ手前の L型接尾辞 を並べています。　
+                    LMSの先頭の文字 &lt; 1つ手前の L型の先頭の文字なので、必ずこれらは異なる bin に現れます。x &lt; y について、 bin[x] &lt;= bin[y] なので、これらはソートされています。
+                    また、L型の接尾辞 t から 一つ手前の L型 t' を並べるとき、L型の定義より t &lt; t' であり、ステップ２ではbinの先頭から埋めるという状況なので、t と t'
+                    の先頭の文字が同じ場合でも必ず t' は t よりも後ろの位置にきます。
+                    <br>
+                    <br>&ensp;&ensp;&ensp;&ensp; ステップ３では、L型の接尾辞 t からその一つ手前の S型の接尾辞 t' を並べます。 S型の定義より、t' &lt; t なので、
+                    binの末尾から埋めていけば t' は t よりも前の位置にきます。
+                    <br>
+                    <br>このように、ある１つのLMS接尾辞から派生して並べられた接尾辞達は全てソートされています。
+                    <br>しかし、ステップ１で埋められた LMS接尾辞達についてはソートされていません。
+                    <br>
+                </section>
+                <br>
+                <br>
+                <br>
+                <br>わかりやすいように、
+                <br>s = "nokokaba"の場合のソートの動きを図で見せましょう。
+                <div class="Box">
+
+                    <br><center><input type="button" value="前のステップ" onclick="select_back()" id ="Select_Back" style = " font-size: 25px;" class = "nomal_button">
+                        &ensp;&ensp;&ensp;&ensp;&ensp;
+                        <input type="button" value="次のステップ" onclick="select_next()" id ="Select_Next" style =" font-size: 25px; " class = "nomal_button"></center>
+                    <img src="./induced_sort_explain/sort0.png"  class = "induced_sort_explain" id = "induced_sort_0" style = "display:block;">
+                    <img src="./induced_sort_explain/sort1.png"  class = "induced_sort_explain" id = "induced_sort_1" style = "display:none;">
+                    <img src="./induced_sort_explain/sort2.png"  class = "induced_sort_explain" id = "induced_sort_2" style = "display:none;">
+                    <img src="./induced_sort_explain/sort3.png"  class = "induced_sort_explain" id = "induced_sort_3" style = "display:none;">
+                    <img src="./induced_sort_explain/sort4.png"  class = "induced_sort_explain" id = "induced_sort_4" style = "display:none;">
+                    <img src="./induced_sort_explain/sort5.png"  class = "induced_sort_explain" id = "induced_sort_6" style = "display:none;">
+                    <img src="./induced_sort_explain/sort6.png"  class = "induced_sort_explain" id = "induced_sort_5" style = "display:none;">
+                    <img src="./induced_sort_explain/sort7.png"  class = "induced_sort_explain" id = "induced_sort_7" style = "display:none;">
+                    <img src="./induced_sort_explain/sort8.png"  class = "induced_sort_explain" id = "induced_sort_8" style = "display:none;">
+                    <img src="./induced_sort_explain/sort9.png"  class = "induced_sort_explain" id = "induced_sort_9" style = "display:none;">
+                    <img src="./induced_sort_explain/sort10.png" class = "induced_sort_explain" id = "induced_sort_10" style = "display:none;">
+                    <img src="./induced_sort_explain/sort11.png" class = "induced_sort_explain" id = "induced_sort_11" style = "display:none;">
+                    <br>
+                    <br><center><input type="button" value="前のステップ" onclick="select_back()" id ="Select_Back" style = " font-size: 25px;" class = "nomal_button">
+                        &ensp;&ensp;&ensp;&ensp;&ensp;
+                        <input type="button" value="次のステップ" onclick="select_next()" id ="Select_Next" style =" font-size: 25px; " class = "nomal_button"></center>
+                
+                </div>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>続きはまた今度かきます。
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br><a href = "https://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=ALDS1_14_D">こちらの問題</a>でverifyしました。以下はコード例です。
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+                <br>
+
+
+
+
+                <code>
+                    <ol style="list-style:decimal-leading-zero outside;padding-left:36px;margin:0;background-color:#EEF;width:90%;line-height:14px;color:#000;font-size:12px;">
+                    <li style="background-color:#EFF;">#include&lt;iostream&gt;</li>
+                    <li style="background-color:#EEF;">#include&lt;vector&gt;</li>
+                    <li style="background-color:#EFF;">#include&lt;string&gt;</li>
+                    <li style="background-color:#EEF;">using namespace std;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"><font style="color:green;font-style:italic;">/*</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;s：元の文字列</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;type:s[i]のタイプ(LS型) = type[i]</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;LMS_index : sのlmsのindexを並べたもの</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;charnum_max : 使われている文字の種類数</li>
+                    <li style="background-color:#EFF;">*/</font></li>
+                    <li style="background-color:#EEF;">template&lt;class String_or_VectorInt&gt;</li>
+                    <li style="background-color:#EFF;">vector&lt;int&gt; induced_sort(String_or_VectorInt &amp;s , vector&lt;char&gt; &amp;type , vector&lt;int&gt; &amp;LMS_index , int charnum_max ){</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt; res(s.size() , -1);</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt; bin(charnum_max+1,0);<font style="color:green;font-style:italic;">//文字コードをindexとして、文字cはsuffixArrayの[ bin[c] , bin[c+1] )の場所に現れる</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt; bin_cop;<font style="color:green;font-style:italic;">//binはcount変数としてよく使うので、使う際はコピーを使う</font></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int c : s){<font style="color:green;font-style:italic;">//必ずint !! </font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//各文字が現れる回数をカウント</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bin[c]++;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">/*</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;suffixの先頭の文字のみをソートした時、文字:cが現れる位置は、[ bin[c] , bin[c+1] ) である(半開区間なのに注意)</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;例えば、bin[$] = 0 , bin[a] = 1 , bin[b] = 1 , bin[c] = 3 , bin[d] = 4の時、</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;先頭の文字だけソートしたら { $ b b c ... } となる</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;*/</font> </li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;int now_ind = 0;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 0 ; i &lt; bin.size() ;i++){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int next_ind = now_ind + bin[i];</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bin[i] = now_ind;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;now_ind = next_ind;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//induce sortのステップ１(LMSを、s[LMS]のbinの末尾(上限)の方から埋めていく(SufArrにはindexを入れていく))</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;bin_cop = bin;<font style="color:green;font-style:italic;">//カウント用</font></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = (int)LMS_index.size()-1 ; i &gt;= 0 ; i--){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int lms = LMS_index[i];</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int c = s[lms];</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;res[bin_cop[c+1]-1] = lms;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bin_cop[c+1]--;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//ステップ２(SufArrを前から見て、SufArrに接尾辞のindex: i が入っていて、s[i-1]がL型の時、SufArrのbin[s[i-1]]の先頭の位置からi-1を入れていく</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;bin_cop = bin;<font style="color:green;font-style:italic;">//カウント用</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 0 ; i &lt; res.size() ; i++){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(res[i] == -1)continue;<font style="color:green;font-style:italic;">//何も入っていない</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(res[i] == 0)continue;<font style="color:green;font-style:italic;">//&amp;なので、0-1はout of index</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(type[res[i]-1] == <font style="color:brown;">'S'</font>)continue;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int c = s[res[i]-1];</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;res[bin_cop[c]]=res[i]-1;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bin_cop[c]++;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//ステップ３(SufArrを後ろから見て、SufArrに接尾辞のindex: i が入っていて、s[i-1]がS型の時、SufArrのbin[s[i-1]]の末尾(上限)の位置からi-1を入れていく</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;bin_cop = bin;<font style="color:green;font-style:italic;">//カウント用</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = (int)res.size()-1 ; i &gt;= 0 ; i--){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(res[i] == -1)continue;<font style="color:green;font-style:italic;">//何も入っていない</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(res[i] == 0)continue;<font style="color:green;font-style:italic;">//&amp;なので、0-1はout of index</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(type[res[i]-1] == <font style="color:brown;">'L'</font>)continue;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int c = s[res[i]-1];</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;res[bin_cop[c+1]-1]=res[i]-1;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bin_cop[c+1]--;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;return res;</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"><font style="color:green;font-style:italic;">/*</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;接尾辞配列(string or vector&lt;int&gt;)</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;suffix arrayを返す。</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;特に、得られたsuffix arrayを使って、sのsuffix(接尾辞)に関して</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lower_bound_SA  と  upper_bound_SAができる。</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lower_bound_SA(s , suffixarray , t) := sの接尾辞たちの内、t以下のものの個数を求める。</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;upper_bound_SA(s , suffixarray , t) := sの接尾辞たちの内、t未満のものの個数を求める。</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;charnum_max = sに現れる文字の個数(文字コードの最大値)</li>
+                    <li style="background-color:#EFF;">*/</font></li>
+                    <li style="background-color:#EEF;">template&lt;class String_or_VectorInt&gt;</li>
+                    <li style="background-color:#EFF;">vector&lt;int&gt; SuffixArray(String_or_VectorInt s , int charnum_max = 1100000){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">/*</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;計算中はsの末尾に0を加える</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0を加えるので、sの中身を全て+1する</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;末尾の0はsのどの文字よりも小さい</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;*/</font></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;charnum_max++; </li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 0 ; i &lt; s.size() ; i++){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//0を最小として追加するので、インクリメント</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;s[i]++;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;s.push_back(0);</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//sのindexの型(L型かS型か)</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;char&gt; type(s.size(),<font style="color:brown;">'.'</font>);</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//LMSかどうか</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;bool&gt; isLMS(s.size(),false);</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//sの前から、LMSであるようなindexを順に入れる</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt;LMS_index;  </li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//一度目のinduced_sortの結果を入れるやつ。メモリの節約のために,LMSに番号を割り振るときに再利用する</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt; SA(s.size(),-1);</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//for文の外で変数が必要な時、これ使って</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;int now_ind = 0;</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//LMSに番割り振った番号の最大値</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;int max_num = -1;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//一度目のソートの結果で、前からLMSである部分だけ順番に取り出す。そして、適切に並べ替える。</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt;NewLMS_index;</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//NewLMS_indexのi番目に割り振る番号</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt; num_for_LMS;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">/*</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sのindex:iが</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;S型 := sのi文字目以降の接尾辞が、i+1文字目以降の接尾辞よりも辞書順で小さい。</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L型 := sのi文字目以降の接尾辞が、i+1文字目以降の接尾辞よりも辞書順で大きい。</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;*/</font></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;type.back()=<font style="color:brown;">'S'</font>;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = (int)s.size()-2 ; i&gt;= 0 ; i--){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//i以降の接尾辞と、i+1以降の接尾辞の辞書順を比べる。(後ろから見れば、iとi+1文字目のみ見ればわかる)</font></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(s[i] &lt; s[i+1]){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//s[i] &lt; s[i+1]ならSタイプ(先頭の文字からの比較で辞書順は決まるから)</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type[i] = <font style="color:brown;">'S'</font>;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else if(s[i]&gt;s[i+1]){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//s[i] &gt; s[i+1]ならLタイプ(先頭の文字からの比較で辞書順は決まるから)</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type[i] = <font style="color:brown;">'L'</font>;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else{</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//s[i]とs[i+1]が等しい時、i以降の接尾辞とi+1以降の接尾辞の先頭1文字を取ればいいので、i+1とi+2の場合と同じタイプ。</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type[i] = type[i+1];</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 0 ; i &lt; s.size()-1 ; i++){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(type[i] == <font style="color:brown;">'L'</font> &amp;&amp; type[i+1] == <font style="color:brown;">'S'</font>){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//LMSであるようなindexたちを入れる</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LMS_index.push_back(i+1);</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int ind : LMS_index)isLMS[ind]=true;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt;(LMS_index.size()).swap(NewLMS_index);<font style="color:green;font-style:italic;">//並べ替えたLMSも、個数は同じ</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt;(LMS_index.size()).swap(num_for_LMS);<font style="color:green;font-style:italic;">//LMSに番号を割り振るので、LMS_indexのサイズと同じ</font></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">/*</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LMS(Left-Most-S)とは、s[i-1]がL型で,s[i]がS型になるような index:i .</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LMS-substringとは、LMSであるようなindexに挟まれた文字列のこと。</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;また、文字cのビンとは、求めるSuffixArrayにおいて、文字cで始まるsuffixが現れる場所の範囲のことである。</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;文字:cが現れる位置は、[ bin[c] , bin[c+1] ) である(半開区間なのに注意)</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;例えば、bin[$] = 0 , bin[a] = 1 , bin[b] = 1 , bin[c] = 3 , bin[d] = 4の時、</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;先頭の文字だけソートしたら { $ b b c ... } となる</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;*/</font></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//一度目のinducedsort</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;SA = induced_sort(s,type,LMS_index,charnum_max);</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;now_ind = 0;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int x : SA){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(isLMS[x]){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NewLMS_index[now_ind] = x;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;now_ind++;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;now_ind = 0;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//メモリがもったいないので、SAを再利用。LMSのindexに番号を割り振ります。</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;SA[NewLMS_index[now_ind]]=0;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;now_ind++;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 1 ; i &lt; NewLMS_index.size() ; i++){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//Iは、i-1番目のLMSのindex ,　Jはi番目のLMSのindex</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int J = NewLMS_index[i-1];</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int I = NewLMS_index[i];</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool is_same_I_and_J = true;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for(int x = 0 ; x &lt; s.size() ; x++){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(J+x&gt;=s.size())break;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(s[I+x]!=s[J+x] || isLMS[I+x] != isLMS[J+x]){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is_same_I_and_J = false;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else if(x &gt; 0 &amp;&amp; (isLMS[I+x] || isLMS[J+x]))break;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(is_same_I_and_J){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;num_for_LMS[now_ind] = num_for_LMS[now_ind-1];</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else{</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;num_for_LMS[now_ind] = num_for_LMS[now_ind-1] + 1;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SA[NewLMS_index[now_ind]] = num_for_LMS[now_ind];</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;now_ind++;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//num_for_LMSを再利用。元の列:sの前から、LMSを発見したら順にそのLMSに割り振った番号をnum_for_indの後ろに追加</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;now_ind = 0;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 0 ; i &lt; s.size() ; i++){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(isLMS[i]){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;num_for_LMS[now_ind] = SA[i];</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;now_ind++;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max_num = max(SA[i] , max_num);</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//先頭を空けておきたいので、+1</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;SA.resize(LMS_index.size()+1);</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;if(max_num +1 == num_for_LMS.size()){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 0 ; i &lt; num_for_LMS.size() ; i++){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SA[num_for_LMS[i]+1] = i;<font style="color:green;font-style:italic;">//先頭は空けておくので+1</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}else{</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SA = SuffixArray(num_for_LMS , max_num+5);</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;} </li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;SA.erase(SA.begin());<font style="color:green;font-style:italic;">//先頭は邪魔</font></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 0 ; i &lt; SA.size(); i++){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NewLMS_index[i] = LMS_index[SA[i]];</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;return induced_sort(s,type,NewLMS_index,charnum_max);</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">}</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"><font style="color:green;font-style:italic;">/*</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;比較でバグらせたら目も当てられないので、うしさんのブログからパクってきました。</li>
+                    <li style="background-color:#EFF;">*/</font></li>
+                    <li style="background-color:#EEF;">template&lt;class String_or_VectorInt&gt;</li>
+                    <li style="background-color:#EFF;">bool cp_with_suffix(String_or_VectorInt &amp;s , int si , String_or_VectorInt t){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;int ti = 0;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;while(si &lt; s.size() &amp;&amp; ti &lt; t.size()) {</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(s[si] &lt; t[ti]) return true;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(s[si] &gt; t[ti]) return false;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;si++;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ti++;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;return si &gt;= s.size() &amp;&amp; ti &lt; t.size();   </li>
+                    <li style="background-color:#EEF;">}</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"><font style="color:green;font-style:italic;">/*</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;文字列(vector&lt;int&gt;) s のsuffixうち、suffix_arrayをもとに、辞書順で t 未満のものの個数を求める</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;元の列 s , sのsuffix_array , 検索する列 t</li>
+                    <li style="background-color:#EEF;">*/</font></li>
+                    <li style="background-color:#EFF;">template&lt;class String_or_VectorInt&gt;</li>
+                    <li style="background-color:#EEF;">int lower_bound_SA(String_or_VectorInt &amp;s , vector&lt;int&gt; &amp;suffix_array , String_or_VectorInt t){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;int lef = -1;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;int rig = suffix_array.size();</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;while(rig-lef&gt;1){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int mid = lef + (rig-lef)/2;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(cp_with_suffix(s , suffix_array[mid],t)){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lef = mid;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else{</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rig = mid;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;return rig;</li>
+                    <li style="background-color:#EEF;">}</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"><font style="color:green;font-style:italic;">/*</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;文字列(vector&lt;int&gt;) s のsuffixうち、suffix_arrayをもとに、辞書順で t 以下のものの個数を求める</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;元の列 s , sのsuffix_array , 検索する列 t</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;うしさんのブログ参照</li>
+                    <li style="background-color:#EFF;">*/</font></li>
+                    <li style="background-color:#EEF;">template&lt;class String_or_VectorInt&gt;</li>
+                    <li style="background-color:#EFF;">int upper_bound_SA(String_or_VectorInt &amp;s , vector&lt;int&gt; &amp;suffix_array , String_or_VectorInt t){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;int lef = lower_bound_SA(s,suffix_array,t) - 1;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;int rig = suffix_array.size();</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;t.back()++;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;while(rig-lef&gt;1){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int mid = lef + (rig-lef)/2;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(cp_with_suffix(s , suffix_array[mid],t)){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lef = mid;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else{</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rig = mid;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;t.back()--;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;return rig;</li>
+                    <li style="background-color:#EFF;">}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">int main(){ </li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;string s;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;cin &gt;&gt; s;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt; SA = SuffixArray(s);</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;int q ;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;cin &gt;&gt; q;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;while(q--&gt;0){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;string t;cin &gt;&gt; t;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(upper_bound_SA(s,SA,t) - lower_bound_SA(s,SA,t)){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; 1 &lt;&lt; endl;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else{</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; 0 &lt;&lt; endl;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;return 0;</li>
+                    <li style="background-color:#EEF;">}</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    </ol>
+                </code>
+
+
+
+                
+
+
+
+
+
+                
+            </section>
+
+
+
+        </div>
+
+
+
+    </body>
+
+
+</html>
+
+
+
+
+<script>
+    //ソートの解説
+
+    
+    var PageList = document.getElementsByClassName("induced_sort_explain");
+    var size = PageList.length;
+    var index_now = 0;
+
+    function display_page(index){
+        index = (index%size+size)%size;
+        PageList[index].style.display = "block";
+        return true;
+    }
+    
+
+    function close_page(index){
+        index = (index%size+size)%size;
+        PageList[index].style.display = "none";
+        return true;
+    }
+    
+
+    function select_next(){
+        if(index_now==size-1)return;
+        close_page(index_now);
+        index_now++;
+        index_now = (index_now%size+size)%size;
+        display_page(index_now);
+    }
+
+    
+    function select_back(){
+        if(index_now == 0)return;
+        close_page(index_now);
+        index_now--;
+        index_now = (index_now%size+size)%size;
+        display_page(index_now);
+    }
+
+</script>

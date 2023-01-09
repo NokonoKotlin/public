@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="ja">
+    <link rel="stylesheet" media="screen and (max-width:768px)" href="./../css/sp_style.css">    
+<link rel="stylesheet" media="screen and (min-width:769px)" href="./../css/pc_style.css">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    </script>
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" }},
+        tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+        processEscapes: true
+        },
+        "HTML-CSS": { matchFontHeight: false },
+        displayAlign: "left",
+        displayIndent: "2em"
+    });
+    </script>
+    <title>脳トレ - 文字列</title>
+        
+
+    </head>
+
+
+
+
+    <body>
+
+       
+        <!--軽くコメント-->
+        <div id="Inner">
+            <h_middle style = "text-align: left;"><a href="../index.html">前のページ</a> </h_middle>
+            <section class = "Introduction">
+                
+                <h_big>   
+                    文字列ソートトレーニング<br></h_big>
+
+
+            </section>
+
+
+            <section class = "Explanation">
+               
+                
+                <h_middle>
+                    
+                    ここでは、文字列を辞書順に並べるトレーニングを行います。
+          
+                    <br>
+                    <br>
+                    <br>
+                    ルール:4つの文字列が表示されるので、辞書順で小さい順に選択してください。
+                    <br>
+                    正解した速度が計測されますが、その速度が自分の中でbestになるように頑張ってください、
+
+                </h_middle>
+
+
+                
+            </section>
+
+            <section class = "SmallBox">
+
+                <h_big>
+
+
+                    <div id = "pagetype_0">
+                        <center>始める時はNewQuestionボタンを押してね！！</center>
+                        <br>
+                        <br>
+   
+                        <center><input type="button" id = "NewQueryButton" value="NewQuestion" onclick="NewQuery()"  style =  " font-size: 25px; "></center>
+                    </div>
+
+                    <div id = "pagetype_1" style = "display:none;">
+
+
+                        <center>
+                            <h_big id = "string0"></h_big><input value = "◯" type="button"  onclick="button0_pushed()" class ="button_0" style =  " font-size: 25px; "><br>
+                            <h_big id = "string1"></h_big><input value = "◯" type="button"  onclick="button1_pushed()" class ="button_1" style =  " font-size: 25px; "><br>
+                            <h_big id = "string2"></h_big><input value = "◯" type="button"  onclick="button2_pushed()" class ="button_2" style =  " font-size: 25px; "><br>
+                            <h_big id = "string3"></h_big><input value = "◯" type="button"  onclick="button3_pushed()" class ="button_3" style =  " font-size: 25px; "><br>
+                            
+                        </center>
+                    </div>
+
+                    <div id = "pagetype_2" style = "display:none;">
+                        <center><div id ="result"></div></center>
+                        <br>
+                        <br>
+                    
+                        <center><input type="button" id = "NewQueryButton" value="NewQuery" onclick="NewQuery()"  style = " font-size: 25px; "></center>
+                    </div>
+
+                
+                </h_big>
+                
+                
+                
+                <script>
+
+
+                    var pagetype = 0;/*問題の画面のタイプ*/
+                    /*
+                        0 : 始める前の画面
+                        1 : 問題が表示される画面
+                        2 : リザルト画面(0と同じ挙動ただし、表示されるものがちがう)
+                    */
+
+                    let array_size = 4;//表示するstringの個数
+
+
+                    let string_array = ["" ,"" , "" , ""];/*表示される文字列たち*/
+                    let string_array_sorted = ["","","",""];/*ソートしたやつ*/
+                    let selected= [0,0,0,0];//押したかどうか
+                    let index =  0;//次の選択肢が辞書順で何番目か 
+
+                    function init_val(){
+                        string_array = ["","","",""];
+                        string_array_sorted = ["","","",""];
+                        selected = [0,0,0,0];
+                        index = 0;
+                    }
+
+                    function newQuestion(){
+                        for(var i = 0 ; i<4;i++){
+                            
+                            var s_size = Math.floor(Math.random()*8)+1;
+                            let chars = 'abcdefghijklmnopqrstuvwxyz';
+                            let s_i = '';
+                            for ( var j = 0;j < s_size; j++ ) {
+                                s_i += chars.charAt(Math.floor(Math.random() * chars.length));
+                            }
+                            string_array_sorted[i] = s_i;
+                            string_array[i] = s_i;
+                            
+                        }
+
+                        string_array_sorted.sort();
+
+
+                        document.getElementById("string0").innerText = string_array[0];
+                        document.getElementById("string1").innerText = string_array[1];
+                        document.getElementById("string2").innerText = string_array[2];
+                        document.getElementById("string3").innerText = string_array[3];
+                       
+                    }
+                    
+                    var start_time;
+                    var end_time;
+                    
+
+                    function NewQuery(){
+                        if(pagetype == 0){
+                            
+                            pagetype = 1;
+                            document.getElementById("pagetype_0").style.display = "none" ;
+                            document.getElementById("pagetype_1").style.display = "block" ;
+                            
+                            newQuestion();
+                            
+                            
+                            
+                            start_time = Date.now();
+                            
+                        }else if(pagetype == 1){/*ここは多分呼び出されない*/
+                            pagetype = 2;
+                            
+                            document.getElementById("pagetype_2").style.display = "block" ;
+                            document.getElementById("pagetype_1").style.display = "none" ;
+
+
+                        }else if(pagetype == 2){
+                            pagetype = 1;
+                            document.getElementById("pagetype_1").style.display = "block" ;
+                            document.getElementById("pagetype_2").style.display = "none" ;
+                            newQuestion();
+                            start_time = Date.now();
+                        }
+                    }
+
+
+                    //button(number)を押した時の挙動
+                    function button_push(number){ 
+                        if(number >= array_size)return false;
+                        if(number<0)return false;
+
+                        if(selected[number] != 0)return false;
+                        
+                     
+                        selected[number] = 1;
+
+                        let string_id = String("string");
+                        string_id += number;
+
+                        let button_id = String("button_");
+                        button_id += number;
+
+
+                        let select_string = document.getElementById(string_id).innerText;
+                        
+                        if(select_string == string_array_sorted[index]){
+                            document.getElementById(string_id).innerText = String(index+1);
+                            index++;
+                            if(index >= array_size){//全部押し終わったらAC
+                                
+                                correct_answer();
+                            }
+                        }else{//間違えたら
+                            wrong_answer();
+
+                        }
+                        return true;
+                    }
+                   
+
+    
+                   
+
+                    //正解
+                    function correct_answer(){
+                        end_time = Date.now();
+                        let result = String("正解!!かかった時間は");
+                        result += String(Math.floor((end_time-start_time)/1000));
+                        result +=".";
+                        result += String(Math.floor((end_time-start_time)%1000));
+                        result += "秒です。";
+                        
+                                
+                        pagetype = 2;
+                        document.getElementById("pagetype_2").style.display = "block" ;
+                        document.getElementById("pagetype_1").style.display = "none" ;
+
+                        document.getElementById("result").innerText = result;
+                        init_val();
+                    }
+
+
+                    //不正解
+                    function wrong_answer(){
+                        let result = String("不正解です。正解は : ");
+                        for(var i = 0 ; i < array_size;i++){
+                            result += string_array_sorted[i];
+                            if(i == array_size-1)break;
+                            result += " , ";
+                        }
+
+                        result += "です。"
+                        
+                        pagetype = 2;
+                        document.getElementById("pagetype_2").style.display = "block" ;
+                        document.getElementById("pagetype_1").style.display = "none" ;
+
+                        document.getElementById("result").innerText = result;
+                        init_val();
+                    }
+
+                    
+                    function button0_pushed(){
+                        button_push(0);
+                    }
+
+                    function button1_pushed(){
+                        button_push(1);
+                    }
+                    function button2_pushed(){
+                        button_push(2);
+                    }
+                    function button3_pushed(){
+                        button_push(3);
+                    }
+
+
+                </script>
+                <br>
+                
+            </section>
+            <br>
+            <br>
+            <br>
+            <br>
+
+
+        </div>
+
+
+
+    </body>
+
+
+</html>

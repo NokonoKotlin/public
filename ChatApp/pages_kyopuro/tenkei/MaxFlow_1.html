@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ja">
+    <link rel="stylesheet" media="screen and (max-width:768px)" href="./../../css/sp_style.css">    
+    <link rel="stylesheet" media="screen and (min-width:769px)" href="./../../css/pc_style.css">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    </script>
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" }},
+        tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+        processEscapes: true
+        },
+        "HTML-CSS": { matchFontHeight: false },
+        displayAlign: "left",
+        displayIndent: "2em"
+    });
+    </script>
+    <title>最大流</title>
+        
+
+    </head>
+
+
+
+
+    <body>
+        
+         <!--軽くコメント-->
+        <div id="Inner">
+            <h_middle style = "text-align: left;"><a href="../../index.html">前のページ</a> </h_middle>
+            <section class = "Introduction">
+                
+                <h_big>   
+                    フォード-ファルカーソン法<br></h_big>
+
+
+            </section>
+
+
+            <section class = "Explanation">
+                フォード-ファルカーソン法は、最大流問題と言われる問題を解くためのアルゴリズムです。
+                <br>
+                <br>最大流とは、グラフの各辺を通る水流の量の上限が決められているときに、始点から終点までどれだけ同時に水を流せるかという問題です。
+                <br>
+                <br>例えば以下のグラフは、各辺の最大流量が 1 の場合の、単純な問題です。
+                <br>
+                <h_big>図１</h_big>
+                <br>
+                <img src = "./../../images/MaxFlow_0.png"  style = "width : 85%;">
+                <br>
+                <br>ここで、SからGにとりあえず適当に道を選んで水を 1 だけ流してみます。
+                <br>すると、水の流れは以下の図の赤い線になります。
+                <br>
+                <h_big>図２</h_big>
+                <br>
+                <img src = "./../../images/MaxFlow_1.png" style = "width : 85%;">
+                <br>
+                <br>現在、終点:Gに達している水流の量は 1 ですが、もう一回水を流して水の量を 2 にしたいです。
+                <br>しかし、下の図のようにもう一度青い線の流し方で水を流しても頂点 3 で詰まってしまいます(頂点 3 と G を繋ぐ辺はこれ以上を水を流せないから)。
+                <br>
+                <h_big>図３</h_big>
+                <br>
+                <img src = "./../../images/MaxFlow_2.png" style = "width : 85%;">
+                <br>
+                <br>こうなったとき本来理想的なのは、以下のようにあらかじめ赤の水流が頂点 1 を通って G に流れることです。
+                <br>
+                <h_big>図４</h_big>
+                <br>
+                <img src = "./../../images/MaxFlow_3.png" style = "width : 85%;">
+                <br>
+                <br>
+                <br>しかし、青の線は気付きました。
+                <br>
+                <br>青 「こうやって通れば実質赤が上の道を使うのと同じじゃん！」
+                <br>
+                <h_big>図５</h_big>
+                <br>
+                <img src ="./../../images/MaxFlow_4.png" style ="width : 85%;">
+                <br>
+                <br>頂点 2 と頂点 3 の間に注目してください。
+                <br>赤が頂点 2 から頂点 3 に水を流して、青が頂点 3 から頂点 2 に水を流したら、結局何も流さないのと同じです。
+                <br>今回の説明では便宜上赤と青で色分けして説明しましたが、本来、流す水に区別はないので、{S -> 2 -> 1 -> G} と {S -> 4 -> 3 -> G} の二つのルートに水を流すことになります。
+                <br>{S -> 2 -> 1 -> G} と {S -> 4 -> 3 -> G} の辺を見ると、図４、図５で上限が 0 になっている辺(使った辺)と対応しているのがわかると思います。
+                <br>つまり、図４と図５の動作は実質同じです。
+                <br>
+                <br>
+                <br>まとめると、
+                <br> &ensp;&ensp;&ensp;&ensp;手順1 :水を一回ずつ流していく。しかし、図３のようにどこかで詰まってしまうことがある。
+                <br> &ensp;&ensp;&ensp;&ensp;手順2 :図４のように、赤の水流をひとつ前に押し戻して、改めて赤が別のルートを見つけることができればそれでOK.
+                <br> &ensp;&ensp;&ensp;&ensp;手順3 :しかし、実装上水流を前に押し戻すのは難しいので、図５の様に、赤が来た道を赤の代わりに青が戻り、引き続き青が探索をするということができる。実際は水流を色で区別したりしないので、これは実質赤が来た道を戻るのと同じである。
+                <br>
+                <br>
+                <br>これを実装するために、各辺に逆辺というものを持たせておきます。例えば、赤の水流が辺:(2->3)を通ったとき、(2->3)の上限を0にすると同時に、後から３に来た水流が赤の代わりに 2 に戻れるように、辺:(3->2)の上限を 1 にしておく。
+                <br>
+                <br>この様なアルゴリズムをフォード-ファルカーソン法といいます。
+                <br>
+                <br>
+                <br>また、最大流のテクニックは上記のような単純なフローの問題の他にもさまざまな問題に使うことができます。
+                <br>
+                <br>今回のverifyはそのことも兼ねて二部マッチングの問題を解いてみます。
+                <br>
+                <br>二部マッチングとは、二つの集合 S と T があったとき、「ある条件」を満たすような x,y (x,yは異なる集合の要素)を最大で何組選べるかという問題です。
+                <br>この問題は、「ある条件」を満たす様な x,y の間に最大流量が 1 の辺を張ることで、最大流問題に帰着できます。
+                <br>具体的には下の図の様に辺を張ります。
+                <br>
+                <br>
+                <img src ="./../../images/MaxFlow_5.png" style ="width : 85%;">
+                <br>
+                <br>このように辺を張ったグラフの、始点から終点までの最大流が二部マッチングの答えです。
+                <br>
+                <br>
+                <br>
+                <br>verifyは<a href = "https://atcoder.jp/contests/arc092/tasks/arc092_a">こちらの問題</a>で、以下はコード例です。
+                <br>
+                <br>
+                <br>
+
+                <code>
+                    <ol style="list-style:decimal-leading-zero outside;padding-left:36px;margin:0;background-color:#EEF;width:90%;line-height:14px;color:#000;font-size:12px;">
+                    <li style="background-color:#EFF;">#include&lt;iostream&gt;</li>
+                    <li style="background-color:#EEF;">#include&lt;vector&gt;</li>
+                    <li style="background-color:#EFF;">#include&lt;string&gt;</li>
+                    <li style="background-color:#EEF;">using namespace std;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">int flow[300][300];</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">bool dfs(int src , int snk , vector&lt;int&gt;&amp; used){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;if(src == snk)return true;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;bool res = false;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;used[src] = 1;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int v = 0 ; v &lt; 300 ; v++){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(used[v] == 0){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(flow[src][v] &gt;= 1){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;flow[src][v]--;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;flow[v][src]++;<font style="color:green;font-style:italic;">//逆辺</font></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(dfs(v,snk,used)){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return true;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else{</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;flow[src][v]++;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;flow[v][src]--;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;return false;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">}</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">int main(){ </li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;int n ; cin &gt;&gt; n;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt; a(n) ,b(n) , c(n), d(n);</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 0 ; i &lt; n ; i++){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cin &gt;&gt; a[i] &gt;&gt; b[i];</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 0 ; i &lt; n ; i++){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cin &gt;&gt; c[i] &gt;&gt; d[i];</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 1; i &lt; n+1 ; i++){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for(int j = 1 ; j &lt; n+1 ; j++){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(a[i-1] &lt; c[j-1] &amp;&amp; b[i-1] &lt; d[j-1]){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;flow[i][n+j]=1;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 1 ; i &lt; n + 1 ; i++){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;flow[0][i] = 1;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int j = n+1;j &lt; n+1+n ; j++){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;flow[j][n*2+15] = 1;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;int ans = 0;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt;used(300,0);</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;while (dfs(0,n*2+15 , used)){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ans++;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for(int &amp;x:used)x = 0;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; ans &lt;&lt; endl;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;return 0;</li>
+                    <li style="background-color:#EFF;">}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    </ol>
+                </code>
+            
+
+
+
+
+                
+            </section>
+
+
+
+        </div>
+
+
+
+    </body>
+
+
+</html>

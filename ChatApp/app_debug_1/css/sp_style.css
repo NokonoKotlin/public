@@ -1,0 +1,402 @@
+
+/*基本-------------------------------------------------------------------------------------------*/
+
+body,html {width: 100%;height: 100%;}
+
+
+body {
+	
+	margin: 0px;
+	padding: 0px;
+	color: rgb(0, 0, 0);	/*文字色*/
+	font-family: "ヒラギノ丸ゴ Pro", "Hiragino Maru Gothic Pro","ヒラギノ角ゴ Pro", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, Osaka, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+	font-size: 12px;	/*サイズ*/
+	line-height: 2;		/*行間*/
+
+	-webkit-text-size-adjust: none;
+
+
+	/*
+		背景色とグラデーション
+	*/
+	background: -moz-linear-gradient(left, #7bc2a9, rgb(210, 215, 160));
+	background: -webkit-linear-gradient(left, #7bc2a9, rgb(210, 215, 160));
+	background: linear-gradient(to right, #7bc2a9, rgb(210, 215, 160));
+
+	animation: BackGroundAnimation 20s 0s infinite alternate linear;
+}
+
+
+@keyframes BackGroundAnimation {
+	0%{
+		background: -moz-linear-gradient(left, #7bc2a9, rgb(210, 215, 160));
+		background: -webkit-linear-gradient(left, #7bc2a9, rgb(210, 215, 160));
+		background: linear-gradient(to right, #7bc2a9, rgb(210, 215, 160));
+	}
+	
+	20%{
+		background: -moz-linear-gradient(left, #7bc2a9, rgb(222, 201, 209));
+		background: -webkit-linear-gradient(left, #7bc2a9, rgb(222, 201, 209));
+		background: linear-gradient(to right, #7bc2a9, rgb(210, 215, 160));
+	}
+
+	40%{
+		background: -moz-linear-gradient(left, #7bc2a9, rgb(210, 215, 160));
+		background: -webkit-linear-gradient(left, #7bc2a9, rgb(210, 215, 160));
+		background: linear-gradient(to right, #7bc2a9, rgb(210, 215, 160));
+	}
+
+	60%{
+		background: -moz-linear-gradient(left, #7bc2a9, rgb(222, 181, 189));
+		background: -webkit-linear-gradient(left, #7bc2a9, rgb(222, 189, 189));
+		background: linear-gradient(to right, #7bc2a9, rgb(210, 215, 160));
+	}
+
+	80%{
+		background: -moz-linear-gradient(left, #7bc2a9, rgb(222, 171, 179));
+		background: -webkit-linear-gradient(left, #7bc2a9, rgb(222, 171, 179));
+		background: linear-gradient(to right, #7bc2a9, rgb(210, 215, 160));
+	}
+
+	100%{
+		background: -moz-linear-gradient(left, #7bc2a9, rgb(222, 161, 169));
+		background: -webkit-linear-gradient(left, #7bc2a9, rgb(222, 161, 169));
+		background: linear-gradient(to right, #7bc2a9, rgb(210, 215, 160));
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+/*----------------------------------文字の種類------------------------------------*/
+
+Gray {
+    color: rgb(80, 80, 74);/*色*/
+}
+
+Black {
+    color: rgba(7, 7, 7, 0.877);/*色*/
+}
+
+Orange{
+	color: rgb(255, 113, 31);
+}
+
+Pink {
+	color: fuchsia;
+}
+
+Yellow{
+	color: rgb(248, 248, 108);
+}
+
+
+h_big{
+	font-size: 22px;
+}
+
+h_middle{
+	font-size: 14px;
+}
+
+h_small{
+	font-size: 7px;
+}
+
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*----------------------------------{一般で使う}----------------------------------------------*/
+/*------------------------------------------------------------------------------------------*/
+
+
+/*メインの記述部分の属性(id) , <div>で指定 */
+#Inner{
+	position: relative;	
+	width: 90%;
+	top: 50px;
+	left: 5%;
+	right: 5%;
+
+}
+
+
+/*トップやタイトル*/
+.Introduction{
+	background: rgb(253, 253, 253);	
+	color: black;
+	padding: 30px;		
+	border : 4px solid;
+	border-color: black;
+	text-align: center;
+	
+	
+}
+
+
+
+
+/*
+	記事など、文章を書く用
+*/
+.Explanation{
+	background: rgb(253, 253, 253);	
+	margin-bottom: 40px;
+	color: black;
+	padding: 30px;		
+	
+}
+
+
+/*
+	枠線付きのbox
+*/
+.Box{
+	border : 1px solid;
+	border-color: black;
+	padding: 20px;	
+
+}
+
+/*
+	小さいBox
+*/
+.SmallBox{
+	border : 2px solid;
+	border-color: black;
+}
+
+
+
+/*
+	この中の要素は横並び
+*/
+.Horizon{
+	display: flex;
+}
+
+
+
+
+
+/*
+	ボタン
+*/
+
+.button_black{
+	color: black;
+	background-color: white;
+	font-size: 16px;
+	border: solid 3px gray;
+	
+}
+
+.button_black:hover{
+	color: black;
+	background-color: rgb(187, 184, 184);
+	
+}
+
+
+
+
+
+
+
+
+
+/*------------------------------------------------------------------------------------------*/
+/*----------------------------------{index.htmlで使う}---------------------------------------*/
+/*------------------------------------------------------------------------------------------*/
+
+
+
+/*トップやタイトル(index)用*/
+.Introduction_index{
+	background: rgb(114, 149, 177);	
+	color: rgb(215, 224, 226);
+	padding: 30px;		
+	border : 4px solid;
+	border-color: #a3a9ca;
+	text-align: center;
+	
+	
+}
+
+
+
+/*
+	ボタンを配置
+*/
+.ButtonBox_index{
+	position: relative;
+    margin: 0 auto;
+	width:100%;
+	height: auto;
+}
+
+
+/*
+	項目一覧...項目名は簡潔に
+*/
+.Index_index{
+	color: black;
+	width:25%;
+		
+}
+
+/*
+	項目の中身
+*/
+.article_index{
+	background: rgb(253, 253, 253);	
+
+	padding: 30px;		
+
+	opacity: 0.85;
+
+	border-radius: 20px;
+
+
+	width:85%;
+
+	position: relative;
+
+}
+
+
+/*
+	Indexの選択肢のボタン
+	animation付き
+	サイズはhtml(javascript)側で指定
+	ボタンの縁はjavascriptで変更する
+*/
+.button_index {
+	justify-content: center;
+	align-items: center;
+
+	background: rgb(219, 221, 224);
+	border: 2px solid rgb(102, 112, 168);
+	box-sizing: border-box;
+
+	width:200px;
+	height:200px;
+	border-radius: 100%;
+
+	
+	
+	color:  rgb(102, 112, 168);
+	font-size: 9px;
+	text-align: center;
+	text-decoration: firebrick;
+
+	position: absolute;
+
+
+	transition-duration: 0.2s;
+
+	
+
+}
+
+
+
+.button_index:hover {
+	background: rgb(104, 109, 160);
+	color: #fff;
+	animation: alternate;
+	border: 2px solid rgb(102, 112, 168);
+	color:  white;
+}
+
+
+
+
+/*
+	Aboutのボタン
+	サイズはjavascript内で調整
+*/
+.button_type2_index {
+	justify-content: center;
+	align-items: center;
+
+	/*
+		背景色とグラデーション
+	*/
+	background: -moz-linear-gradient(left, #e2e2bd, rgb(173, 173, 168));
+	background: -webkit-linear-gradient(left, #e2e2bd, rgb(173, 173, 168));
+	background: linear-gradient(to right, #e2e2bd, rgb(173, 173, 168));
+
+	border: 2px solid rgb(93, 108, 112);
+	
+	box-sizing: border-box;
+
+	width:200px;
+	height:200px;
+	border-radius: 10px;
+
+	
+	color:  rgb(73, 87, 165);
+	font-size: 7px;
+	text-align: center;
+	text-decoration: firebrick;
+
+	position: relative;
+
+
+	transition-duration: 0.2s;
+
+	
+
+}
+
+
+
+.button_type2_index:hover {
+	background: rgb(103, 104, 109);
+	color: #fff;
+	animation: alternate;
+}
+
+
+
+
+
+
+/*
+	記事を閉じるボタン
+*/
+
+.close_button_index{
+	justify-content: center;
+	align-items: center;
+
+	background: rgb(233, 235, 226);
+	border: 1px solid black;
+	box-sizing: border-box;
+
+	width:60px;
+	height:35px;
+	
+
+	color: rgb(243, 94, 67);
+	font-size: 14px;
+	text-align: center;
+	text-decoration: none;
+	position: relative;
+	transition-duration: 0.2s;
+}
+
+
+.close_button_index:hover{
+	background:rgb(118, 87, 230);
+	color: white;
+}

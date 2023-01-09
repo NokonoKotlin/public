@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ja">
+    <link rel="stylesheet" media="screen and (max-width:768px)" href="./../../css/sp_style.css">    
+    <link rel="stylesheet" media="screen and (min-width:769px)" href="./../../css/pc_style.css">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    </script>
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" }},
+        tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+        processEscapes: true
+        },
+        "HTML-CSS": { matchFontHeight: false },
+        displayAlign: "left",
+        displayIndent: "2em"
+    });
+    </script>
+    <title>modpow</title>
+        
+
+    </head>
+
+
+
+
+    <body>
+        
+         <!--軽くコメント-->
+        <div id="Inner">
+            <h_middle style = "text-align: left;"><a href="../../index.html">前のページ</a> </h_middle>
+            <section class = "Introduction">
+                
+                <h_big>   
+                    高速累乗とmodpow<br></h_big>
+
+
+            </section>
+
+
+            <section class = "Explanation">
+                C++には標準ライブラリに pow という関数があります。
+                <br>pow(a,b) := aのb乗 です。
+                <br>
+                <br>ここで、powの計算量はどうなっているのでしょうか。
+                <br>愚直に掛け算をしていくとO(b)かかりそうですが、実はpowの計算長はO(log b)です。
+                <br>
+                <br>まず、O(b)のアルゴリズムをかきます。
+                <br>&ensp;&ensp;&ensp;&ensp;O(b)アルゴ : 1 にaをb回かける。... a^b = a×a×a×...×a;
+                <br>これは、<Orange>0 に {1} を愚直に足しまくってbにするという操作</Orange>の計算量と同じです。
+                <br>
+                <br>このアルゴリズムを改善するために、
+                <br><Orange>0 に {1 , 2 , 4 , ... , 2^n} を効率的に足しまくってbにするという操作</Orange>を考えます。
+                <br>
+                <br>つまり、bを二進数表記にして、
+                <br>&ensp;&ensp;&ensp;&ensp;O(log b)アルゴ : b の二進数表示で1となるすべての桁 : i に関して 1 に a^(2^i) をかける。
+                <br>
+                <br>実際 , 2^i + 2^j + 2^k = b である場合、a^(2^i) × a^(2^j) × a^(2^k) = a^b となリます。
+                <br>
+                <br>
+                <br>また、a^(2^i)という形の累乗は前計算ですぐに求まります。
+                <br>
+                <br>a^(2^i) = a^(2^(i-1)) × a^(2^(i-1)) という計算を, i が小さい方から log(b)まで行います。ここで計算量がO(log b)です。
+                <br>
+                <br>a^(2^i) を前計算できたら、あとはbの二進数表示の1の桁に対応する a^(2^i) をかけるだけです。
+                <br>
+                <br>また、計算量が大きくになるような規模のa^bでは、まず間違いなくオーバーフローしてしまいます。
+                <br>ですので、int の pow 関数は基本的にmodを取りながら使うことになります。以下にはmodを取りながら使うmodpow関数を書きます。
+                <br>
+                <br>
+                <br>以下はコード例です。
+                <br>
+                <br>
+                <br>
+
+                <code>
+                    <ol style="list-style:decimal-leading-zero outside;padding-left:36px;margin:0;background-color:#EEF;width:90%;line-height: 14px;color:#000;font-size:12px;">
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"><font style="color:green;font-style:italic;">//include</font></li>
+                    <li style="background-color:#EFF;"><font style="color:green;font-style:italic;">//------------------------------------------</font></li>
+                    <li style="background-color:#EEF;">#include&lt;iostream&gt;</li>
+                    <li style="background-color:#EFF;">#include&lt;vector&gt;</li>
+                    <li style="background-color:#EEF;">#include&lt;queue&gt;</li>
+                    <li style="background-color:#EFF;">#include&lt;map&gt;</li>
+                    <li style="background-color:#EEF;">#include&lt;algorithm&gt;</li>
+                    <li style="background-color:#EFF;">using namespace std;</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">const long long INF = 1e18;</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">long long modpow(long long a, long long b , long long m){</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//bを二進数表示して、1になる位をbit配列に保存</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt; bit;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 0 ; i &lt;= 62;i++){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(b&amp;(1ll&lt;&lt;i))bit.push_back(i);</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//a^(2^i)の前計算</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;long long&gt; power(63 , 0);</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;power[0] = (a%m+m)%m;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int x = 1 ; x &lt;= 62 ; x++){</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;power[x] = power[x-1]*power[x-1];</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;power[x] %=m;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;<font style="color:green;font-style:italic;">//対応するものをかける</font></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;long long res = 1;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int b : bit){</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;res *= power[b];</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;res%=m;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;return res;</li>
+                    <li style="background-color:#EFF;">}</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">int main(){</li>
+                    <li style="background-color:#EFF;"></li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;long long MOD = 1000000007; </li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;long long a = 1561318923819;</li>
+                    <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;long long b = 1232123123212314;</li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; modpow(a,b,MOD) &lt;&lt; endl;</li>
+                    <li style="background-color:#EEF;"></li>
+                    <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;return 0;</li>
+                    <li style="background-color:#EEF;">}   </li>
+                    </ol>
+                </code>
+
+
+
+
+
+
+
+                
+            </section>
+
+
+
+        </div>
+
+
+
+    </body>
+
+
+</html>

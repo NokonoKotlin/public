@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ja">
+    <link rel="stylesheet" media="screen and (max-width:768px)" href="./../../css/sp_style.css">    
+    <link rel="stylesheet" media="screen and (min-width:769px)" href="./../../css/pc_style.css">
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    </script>
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" }},
+        tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+        processEscapes: true
+        },
+        "HTML-CSS": { matchFontHeight: false },
+        displayAlign: "left",
+        displayIndent: "2em"
+    });
+    </script>
+    <title>Problem_1</title>
+        
+
+    </head>
+
+
+
+
+    <body>
+        
+         <!--軽くコメント-->
+        <div id="Inner">
+            <h_middle style = "text-align: left;"><a href="../../index.html">前のページ</a> </h_middle>
+            <section class = "Introduction">
+                
+                <h_big>   
+                    典型テクニック<br></h_big>
+
+
+            </section>
+
+
+            <section class = "Explanation">
+                
+                <br>
+                <br>競プロでは、問題の要件さえ満たしていれば、(問題で要求されていても)無駄な操作は無視することがあります。
+                <br>
+                <br>
+                <br><h_big>問題:「大きいことは、気にするな！」</h_big>
+                
+                <br>長さが N の数列 A があります。
+                <br>初め、数列 B は空です。
+                <br>
+                <br>i 回目の操作では、B の末尾に A[i] を追加します。
+                <br>各操作終了時に、B のうち K 番目に小さい要素を出力してください。ただし、B の要素数が K 未満の場合は -1 を出力してください。
+                <br>
+                
+                <br>制約：
+                <br> N , K &lt; 200000
+                <br> A_i &lt; 1000000000
+                <br>
+                <br>
+                <br>
+                <section class="Box">
+                    <!-- 解説パート ...　長い-->
+                    <div id = "ProblemExplanation" style="display: none;">
+                        <center><input type="button"  id="Button_hide" class = "button_black" onclick="HideButton()"  value = "解説を隠す"></center>
+
+                            <br>
+                            <br>
+                            例えば、B の要素数がちょうど K の場合はどうでしょう。
+                            <br>この時、B のうち K 番目に小さい要素というのは、B の最大値になります。
+
+                            <br>
+                            <br>この問題を解くために、B のサイズが K であるような状況で考えていきます。
+                            <br>
+                            
+                            <br>サイズが K である場合に B に新たに要素を追加した時、B のうち K 番目に小さい要素はどのようになるでしょう。
+                            <br>
+                            <br>追加する要素を x , B の K 番目に小さい要素(最大値)を bk とすると、
+                            <br>
+                            <br>bk &lt;= x であるならBに追加する必要はありません。
+                            <br>なぜなら B には要素の追加しか行わないので、ある時点で 小さい方からK+1番目以降の要素は、今後もK番目にはなり得ないからです。
+                            <br>ただし下記と同様に、追加してから pop しても差し支えありません(全く無駄ですが)。
+                            <br>
+                            <br>また x &lt; bk の場合、 B に x を追加し、B の最大値をpopします。
+                            <br>B に x を追加したことにより、Bのサイズが K+1 になるので、B のうち小さい方から K+1 番目、つまりBの最大値をpopします。
+                            <br>
+                            <br>以上の操作を行うことにより、B のサイズを K に保ちつつ、本来追加されるはずの要素のうち、小さい方から K 個(問題の要件に必要な分だけ)を持つことができます。
+
+                            <br>
+                            <br>B のサイズが常に K なので、操作ごとに B の最大値を出力すれば良いです。
+                            <br>
+                            <br>最大値取得、挿入、最大値削除 の3つができるデータ構造があれば良いので、priority_queueを使いながら処理していけば良いです。
+                            <br>サイズが K 未満の場合、要素の追加だけして　-1 を出力すれば良いです。
+                            <br>
+                            
+                            <br>
+                            <br>
+                            <code>
+                                <ol style="list-style:decimal-leading-zero outside;padding-left:36px;margin:0;background-color:#EEF;width:90%;line-height: 14px;color:#000;font-size:12px;">
+                                <li style="background-color:#EFF;">#include&lt;iostream&gt;</li>
+                                <li style="background-color:#EEF;">#include&lt;vector&gt;</li>
+                                <li style="background-color:#EFF;">#include&lt;string&gt;</li>
+                                <li style="background-color:#EEF;">#include&lt;queue&gt;</li>
+                                <li style="background-color:#EFF;">using namespace std;</li>
+                                <li style="background-color:#EEF;"></li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;">int main(){</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;int N , K ;</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;cin &gt;&gt; N &gt;&gt; K;</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;vector&lt;int&gt; A(N);</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;priority_queue&lt;int&gt; B;</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;for(int i = 0 ; i &lt; N ; i++){</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cin &gt;&gt; A[i];</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;for( int i = 0 ; i &lt; N ; i++ ){</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(B.size()&gt;=K){</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(B.top() &lt;= A[i]){</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else{</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;B.push(A[i]);</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;B.pop();</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else{</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;B.push(A[i]);</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(B.size()&gt;=K){</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font style="color:brown;">"%d\n"</font>, B.top());</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}else{</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font style="color:brown;">"%d\n"</font>, -1);</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                                <li style="background-color:#EFF;">&nbsp;&nbsp;&nbsp;&nbsp;}</li>
+                                <li style="background-color:#EEF;">&nbsp;&nbsp;&nbsp;&nbsp;</li>
+                                <li style="background-color:#EFF;"></li>
+                                <li style="background-color:#EEF;">}</li>
+                                <li style="background-color:#EFF;"></li>
+                                </ol>
+                            </code>
+
+
+
+                    
+
+                            <br><br><br>
+
+
+
+
+                        <center><input type="button" id="Button_hide" class = "button_black" onclick="HideButton()" value = "解説を隠す"></center>
+                    </div>
+                    
+
+
+
+
+
+
+
+                    <div id = "HideCheck" style="display: block;">
+                        <center><input type="button"  id="Button_appear" class = "button_black" onclick="AppearButton()"  value = "解説を表示する"></center>
+                    </div>
+
+                    
+
+
+                </section>
+
+
+                
+
+                
+            </section>
+
+
+
+        </div>
+        <br>
+
+
+    </body>
+
+
+</html>
+
+
+<!--javascript partです-->
+<!--javascript partです-->
+<!--javascript partです-->
+<!--javascript partです-->
+
+
+<script>
+
+
+    function AppearButton(){
+        document.getElementById("ProblemExplanation").style.display = "block";
+        document.getElementById("HideCheck").style.display = "none";
+    }
+
+    function HideButton(){
+        document.getElementById("ProblemExplanation").style.display = "none";
+        document.getElementById("HideCheck").style.display = "block";
+    }
+</script>

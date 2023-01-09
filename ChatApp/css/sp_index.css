@@ -1,0 +1,112 @@
+
+/*------------------------------------------------------------------------------------------*/
+/*----------------------------------{index.htmlで使う}---------------------------------------*/
+/*------------------------------------------------------------------------------------------*/
+input,
+select,
+textarea {
+  -webkit-appearance: none;
+  border-radius: 0;
+}
+
+
+/*トップやタイトル(index)用*/
+.Introduction_index{
+	background: rgb(114, 149, 177);	
+	color: rgb(215, 224, 226);
+	padding: 30px;		
+	border : 4px solid;
+	border-color: #a3a9ca;
+	text-align: center;
+	
+	
+}
+
+
+
+
+
+
+
+
+/*
+	Indexの選択肢のボタン(左側)
+	animation付き
+	ボタンの縁はjavascriptで変更する
+	heightはjavascriptで指定
+*/
+.button_index {
+	justify-content: center;
+	align-items: center;
+	background: rgba(221, 228, 238, 0.6);
+	border: 2px solid rgb(124, 136, 206);
+	box-sizing: border-box;
+	width:100%;
+	color:  rgb(102, 112, 168);
+	
+	font-size: 14px;
+	text-align: center;
+	text-decoration: firebrick;
+	position: relative;
+	transition-duration: 0.2s;
+
+}
+
+.button_index:hover {
+
+	background-color: rgba(234, 235, 171, 0.692);
+}
+
+/*
+	記事を閉じるボタン
+*/
+
+.close_button_index{
+	justify-content: center;
+	align-items: center;
+
+	background: rgb(233, 235, 226);
+	border: 1px solid black;
+	box-sizing: border-box;
+
+	width:60px;
+	height:35px;
+	
+
+	color: rgb(243, 94, 67);
+	font-size: 14px;
+	text-align: center;
+	text-decoration: none;
+	position: relative;
+	transition-duration: 0.2s;
+}
+
+
+.close_button_index:hover{
+	background:rgb(118, 87, 230);
+	color: white;
+}
+
+.article_index{
+
+	background: rgb(253, 253, 253);	
+
+	padding: 30px;		
+
+	opacity: 0.85;
+
+	box-sizing: border-box;
+
+	width:100%;
+	
+	
+	z-index:3;
+	position:relative;
+}
+
+
+.Contents{
+	width:100%;
+	background-color: rgba(0,0,0,0);
+
+}
