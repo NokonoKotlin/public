@@ -1,5 +1,5 @@
 # レドメ
-[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username={NokonoKotlin})]
+[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username=NokonoKotlin)]
 (https://github.com/anuraghazra/github-readme-stats)
 
 
