@@ -1,139 +1,10 @@
+#include<iostream>
+#include<vector>
+#include<stack>
 
-//include
-//------------------------------------------
-#include <vector>
-#include <list>
-#include <map>
-#include <set>
-#include <unordered_set>
-#include <deque>
-#include <stack>
-#include <bitset>
-#include <algorithm>
-#include <functional>
-#include <numeric>
-#include <utility>
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <cstdio>
-#include <cmath>
-#include <cstdlib>
-#include <cctype>
-#include <string>
-#include <cstring>
-#include <ctime>
-#include<queue>
-#include<complex>
-#include <cassert>
+
 using namespace std;
-//conversion
-//------------------------------------------
-inline long long toint(string s) {long long v; istringstream sin(s);sin>>v;return v;}
-template<class T> inline string toString(T x) {ostringstream sout;sout<<x;return sout.str();}
-//math
-//-------------------------------------------
-template<class T> inline T sqr(T x) {return x*x;}
-//typedef
-//------------------------------------------
 typedef long long ll;
-typedef long long LL;
-typedef vector<int > vi;
-typedef vector<long long > VLL;
-typedef vector<long long > vll;
-typedef vector<string > ves;
-typedef vector<char > vech;
-
-typedef pair<long long , long long> pll;
-typedef pair<long long , long long> PLL;
-typedef map<ll , ll >mll;
-typedef map<int , int >mii;
-typedef map<char , int >mci;
-typedef map<char , ll >mcl;
-typedef vector<pair<ll , ll> > vpll;
-
-//container util
-//------------------------------------------
-#define ALL(a)  (a).begin(),(a).end()
-#define RALL(a) (a).rbegin(), (a).rend()
-#define VECMAX(x) *max_element(ALL(x))
-#define VECMIN(x) *min_element(ALL(x))
-#define PB push_back
-#define MP make_pair
-#define SZ(a) int((a).size())
-#define EACH(i,c) for(typeof((c).begin()) i=(c).begin(); i!=(c).end(); ++i)
-#define EXIST(s,e) ((s).find(e)!=(s).end())
-#define SORT(c) sort((c).begin(),(c).end())
-//repetition
-//------------------------------------------
-#define FOR(i,a,b) for(long long i=(a);i<(b);++i)
-#define REP(i,n)  FOR(i,0,n)
-//#define MULTIPLE(i,n,k) for(int i = (k) ; i<(n) ; i+=k+1)//倍数ループ
-//constant
-//------------------------------------------
-const double EPS = 1e-10;
-const double PI  = acos(-1.0);
-//clear memory
-#define CLR(a) memset((a), 0 ,sizeof(a))
-//debug
-#define dump(x)  cerr << #x << " = " << (x) << endl;
-#define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" << " " << __FILE__ << endl;
-#define SIZEOF(x) sizeof(x)/sizeof(x[0])
-
-
-const long long INF = 4e18;
-const long long NINF = 1 - INF;
-
-#define ENDL cout << endl;
-#define CIN(a) REP(i,a.size())cin >> a[i];
-
-//二次元座標の点を表す構造体。xとyをメンバに持つ
-struct POINT{
-    double x;
-    double y;
-
-};
-
-
-
-
-
-
-//最小公倍数、最大公約数
-
-ll gcd(ll x, ll y) { return y ? gcd(y, x % y) : x; }
-ll lcm(ll a, ll b) { return (a / gcd(a, b)) * b; }
-
-/*
-    nCr , 値が大きいとオーバーフローする
-    n<=kなら1 (0C1や1C5= 1)
-*/
-ll nCr(ll n,  ll r){
-  if ( r * 2 > n ) r = n - r;
-  ll dividend = 1;
-  ll divisor  = 1;
-  for ( unsigned int i = 1; i <= r; ++i ) {
-    dividend *= (n-i+1);
-    divisor  *= i;
-  }
-  return dividend / divisor;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -530,7 +401,7 @@ class LinkCutTree{
     void init(ll size_){
         Size = size_ + 10;
         Nodes = vector<LinkCutNode*>(Size);
-        REP(i,Size)Nodes[i] = new LinkCutNode(i,initializer);
+        for(int i = 0 ; i < Size ; i++)Nodes[i] = new LinkCutNode(i,initializer);
         Graph = vector<vector<int> > (Size);
     }
 
@@ -567,7 +438,7 @@ class LinkCutTree{
         int s = r;
         stack<int> st;
         st.push(s);
-        vll memo(Size,0);
+        vector<int> memo(Size,0);
         memo[s] = 1;
         while(!st.empty()){
             int now = st.top();
@@ -869,15 +740,6 @@ class LinkCutTree{
 
 
 
-
-
-
-
-
-
-
-
-
 int main(){
     LinkCutTree<long long > T(10);
 
@@ -903,42 +765,42 @@ int main(){
     T.update_val(9,1);
     T.update_val(10,5);
 
-    cout << "------------------------------" << endl;
+    cerr << "------------------------------" << endl;
 
     T.access(5);
     //パス:1-5 上の頂点の頂点の重みのマージを計算
-    cout << T.Nodes[5]->Sum << endl;
-    cout << T.Nodes[5]->Min << endl;
+    cerr << T.Nodes[5]->Sum << endl;
+    cerr << T.Nodes[5]->Min << endl;
 
-    cout << "------------------------------" << endl;
+    cerr << "------------------------------" << endl;
     //1が根である木でLCAを計算
-    cout << T.LCA(8,9) << endl;
+    cerr << T.LCA(8,9) << endl;
 
     //頂点を切って、張る
     T.cut(8);
     T.link(8,3);
-    cout << T.LCA(8,9) << endl;
+    cerr << T.LCA(8,9) << endl;
 
-    cout << "------------------------------" << endl;
+    cerr << "------------------------------" << endl;
     //根を変更する
     T.evert(5);
-    cout << T.LCA(6,3) << endl;
+    cerr << T.LCA(6,3) << endl;
 
-    cout << "------------------------------" << endl;
+    cerr << "------------------------------" << endl;
     //パス :  7 - 10 の長さを求める2つの方法
     //1 : 根を7に張り替えて、10までパスを繋げる
     T.evert(7);
     T.access(10);
-    cout << T.Nodes[10]->SubTreeSize - 1 << endl;
+    cerr << T.Nodes[10]->SubTreeSize - 1 << endl;
 
     //2 : LCA を求めて、余計な部分を減算する
-    ll d7 , d10 , d_lca;
+    int d7 , d10 , d_lca;
     T.evert(1);
     
     T.access(7);d7 = T.Nodes[7]->SubTreeSize-1;
     T.access(10);d10 = T.Nodes[10]->SubTreeSize-1;
     T.access(T.LCA(7,10));d_lca = T.Nodes[T.LCA(7,10)]->SubTreeSize-1;
-    cout << d7 + d10 - 2*d_lca << endl;
+    cerr << d7 + d10 - 2*d_lca << endl;
 
     
     return 0;

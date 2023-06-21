@@ -1,134 +1,9 @@
+#include<algorithm>
+#include<iostream>
+#include<map>
+#include<vector>
 
-//include
-//------------------------------------------
-#include <vector>
-#include <list>
-#include <map>
-#include <set>
-#include <unordered_set>
-#include <deque>
-#include <stack>
-#include <bitset>
-#include <algorithm>
-#include <functional>
-#include <numeric>
-#include <utility>
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <cstdio>
-#include <cmath>
-#include <cstdlib>
-#include <cctype>
-#include <string>
-#include <cstring>
-#include <ctime>
-#include<queue>
-#include<complex>
-#include <cassert>
 using namespace std;
-//conversion
-//------------------------------------------
-inline long long toint(string s) {long long v; istringstream sin(s);sin>>v;return v;}
-template<class T> inline string toString(T x) {ostringstream sout;sout<<x;return sout.str();}
-//math
-//-------------------------------------------
-template<class T> inline T sqr(T x) {return x*x;}
-//typedef
-//------------------------------------------
-typedef long long ll;
-typedef long long LL;
-typedef vector<int > vi;
-typedef vector<long long > VLL;
-typedef vector<long long > vll;
-typedef vector<string > ves;
-typedef vector<char > vech;
-
-typedef pair<long long , long long> pll;
-typedef pair<long long , long long> PLL;
-typedef map<ll , ll >mll;
-typedef map<int , int >mii;
-typedef map<char , int >mci;
-typedef map<char , ll >mcl;
-typedef vector<pair<ll , ll> > vpll;
-
-//container util
-//------------------------------------------
-#define ALL(a)  (a).begin(),(a).end()
-#define RALL(a) (a).rbegin(), (a).rend()
-#define VECMAX(x) *max_element(ALL(x))
-#define VECMIN(x) *min_element(ALL(x))
-#define PB push_back
-#define MP make_pair
-#define SZ(a) int((a).size())
-#define EACH(i,c) for(typeof((c).begin()) i=(c).begin(); i!=(c).end(); ++i)
-#define EXIST(s,e) ((s).find(e)!=(s).end())
-#define SORT(c) sort((c).begin(),(c).end())
-//repetition
-//------------------------------------------
-#define FOR(i,a,b) for(long long i=(a);i<(b);++i)
-#define REP(i,n)  FOR(i,0,n)
-//#define MULTIPLE(i,n,k) for(int i = (k) ; i<(n) ; i+=k+1)//倍数ループ
-//constant
-//------------------------------------------
-const double EPS = 1e-10;
-const double PI  = acos(-1.0);
-//clear memory
-#define CLR(a) memset((a), 0 ,sizeof(a))
-//debug
-#define dump(x)  cerr << #x << " = " << (x) << endl;
-#define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" << " " << __FILE__ << endl;
-#define SIZEOF(x) sizeof(x)/sizeof(x[0])
-
-
-const long long INF = 4e18;
-const long long NINF = 1 - INF;
-
-#define ENDL cout << endl;
-#define CIN(a) REP(i,a.size())cin >> a[i];
-
-//二次元座標の点を表す構造体。xとyをメンバに持つ
-struct POINT{
-    double x;
-    double y;
-
-};
-
-
-
-
-
-
-//最小公倍数、最大公約数
-
-ll gcd(ll x, ll y) { return y ? gcd(y, x % y) : x; }
-ll lcm(ll a, ll b) { return (a / gcd(a, b)) * b; }
-
-/*
-    nCr , 値が大きいとオーバーフローする
-    n<=kなら1 (0C1や1C5= 1)
-*/
-ll nCr(ll n,  ll r){
-  if ( r * 2 > n ) r = n - r;
-  ll dividend = 1;
-  ll divisor  = 1;
-  for ( unsigned int i = 1; i <= r; ++i ) {
-    dividend *= (n-i+1);
-    divisor  *= i;
-  }
-  return dividend / divisor;
-}
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -159,31 +34,52 @@ ll nCr(ll n,  ll r){
     }
     これらを駆使し、様々な操作を実装可能
 
+
+
     
+    この木では、ノードは常に連結であることを前提とした機能を搭載する
+    この木では、ノードは常に連結であることを前提とした機能を搭載する
+    この木では、ノードは常に連結であることを前提とした機能を搭載する
+    この木では、ノードは常に連結であることを前提とした機能を搭載する
+    この木では、ノードは常に連結であることを前提とした機能を搭載する
+
+
+    つまり、削除した扱いのノードは、連結のノードと区別するために bool isThisDeleted をもち、
+    split したまま放置はできない。
+    と言うのも、後述する pos[x] で、pos[x] に格納されてる Node をsplayしてrootにするのだが、
+    別の連結成分に属するNodeをrootにすると、バグってしまうのだ
+
+    sub 関数でpos を操作しないで！！！
+
+    
+
     get_position(x)で、数列内のxのindexをまとめたvectorを返す。
-    要素xを持つNODEを木に挿入したとき、pos[x] に 挿入したノードをプッシュするが、
-    Deleteするときは、特に何もしない
-    ただし、get_position(x)でpos[x]の中身を調べて、無効になっている要素があればpopする
+    要素xを持つNODEを木に挿入したとき、pos[x] に 挿入したノードをプッシュする
+    Deleteするときは、isThisDeleted をtrueにする
+    get_position(x)でpos[x]の中身を調べて、無効になっている(もしくは同じ要素だが、shiftなどで複数回挿入されている)要素があればpopする
 
 
-    posに入っているNODEは、SplayNodeのポインタなので、数列が更新されると、ポインタの中身も連動して更新される。よって、NODEの位置がを調べたい場合、
-    NODEの上の辺を辿っていき、自分の左側の頂点にきたときに、その頂点の部分木のサイズから、自分の位置を計算していける(これをindex()関数とする)
 
-    遅延評価のreverseもつけれそうだが、つけた場合、NODEのポインタを直接持っているときに,
-    NODE->index()でNODEの位置を受け取ったときに間違った位置が帰ってくる(遅延評価で位置関係の逆転を降ろしてきていないから)
-    これを解決するために、NODEのポインタを直接持っていて、その位置(index())を計算したい場合は、
-    そのNODEのparentを辿りながら、左右どっちに進んだかをメモしておいて、一番上からメモした道を辿りながら遅延評価を降ろしてこないといけない
-    そのとき、反転の遅延評価を降ろしてくると、辿る道も反転するので注意
+    posに入っているNODEは、SplayNodeのポインタなので、数列が更新されると、ポインタの中身も連動して更新される。
+    中身のポインタをsplayし、自分の位置を計算できる。ただし、splayした後はrootにすることを忘れないで
 
 
-    他のライブラリと違い、Delete(i)の後、temp.secondをnullptrにしている 
-    ただし、これはshift_subなどの内部の関数でDelete()ではなく、Delete_sub()を使うように統一しているからできることである。
+
+
+
+    遅延評価のreverseはつけれるかどうか不明
+
+
+    他のライブラリと違い、Delete(i)の後、削除したNodeのisThisDeletedをtrueにしている
+    ただし、これはshift_subなどの内部の関数でDelete_sub()を使う際は、削除したノードをまた挿入するので、
+    Delete_subではこの操作を行わない
+
 
 
 */
 template<class T>
 class SearchableArray{
-    public:
+    private:
 
 
     /*
@@ -411,29 +307,6 @@ class SearchableArray{
 
 
 
-        /*  
-            自分自身が木の中で右から何番目かを、上の辺を辿りながら、左の部分木の要素数を足し合わせて計算する
-            親が自分の左にあるとき、その親の部分木の左側の要素数を足し、右側なら何もしない
-        */
-        int index(){
-            int res_index = 0;
-            SplayNode *now = this;
-            if(isExist(now->left))res_index += now->left->SubTreeSize;
-            ///親に遷移し続ける(一番上に行くまでのぼる)
-            while(isExist(now->parent)){
-                
-                //親が自分より左のノードなら、indexにその親の左の部分木のサイズを足す
-                //右の親の場合、その親のindexは自分よりも大きいから何も足さない
-                if(now->state() == 2){
-                    //親の部分木のサイズから、自分の部分木のサイズを引くと、ちょうど親の部分木の左側になる
-                    res_index += now->parent->SubTreeSize - now->SubTreeSize;
-                }
-                now = now->parent;
-            }
-            return res_index;
-
-        }
-
     };
 
 
@@ -455,7 +328,7 @@ class SearchableArray{
 
 
     
-    int Size = 0;
+    
 
     //この木のroot,splitした後はmergeして戻す！！rootが迷子にならないように！！
     SplayNode *Root = nullptr;
@@ -466,13 +339,16 @@ class SearchableArray{
     //pos[x] := Value = xであるようなSplayNodeのポインタを入れておく。(Value = xであるような要素の探索に使える)
     map<T , vector<SplayNode*> > pos;
 
-    SearchableArray(){
+    /*
+        pos[x] の中身を見る中で、update_valなどの操作により、同じ要素(ポインタ)がpos[x]に複数存在する場合がある。
+        get_position を 呼び出した回数が get_pos_called_time 回で、pos[x] の中に位置が p の要素があった時、
+        checked[ p ] = get_pos_called_time を書き込み、すでに書き込んであったら重複しているとみなして pos[x]からeraseする。
+        これにより、checked を使い回すことができて、mapを使うよりも計算量を落とせる。
+    */
+    vector<int> checked;
+    int get_pos_called_time = 0;//get_position関数を呼び出した回数をメモ
 
-    }
 
-    SearchableArray(int size_){
-  
-    }
 
     bool isExist(SplayNode *Nd){
         if(Nd==nullptr){
@@ -492,11 +368,6 @@ class SearchableArray{
         ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     */
-
-
-    private:
-
-
 
 
 
@@ -627,14 +498,12 @@ class SearchableArray{
     */
     SplayNode  *insert_sub(int index , SplayNode *NODE , SplayNode *root){
         if(isExist(root) == false){
-            pos[NODE->Value].push_back(NODE);
             root=NODE;
             Size=1;
             return root;
         }
         if(Size<index || index<0)return root;
 
-        pos[NODE->Value].push_back(NODE);
         std::pair<SplayNode*,SplayNode*> Trees = split(index,root);
 
         SplayNode *leftRoot = Trees.first;
@@ -780,7 +649,11 @@ class SearchableArray{
 
 
 
-     public:
+    public:
+
+    int Size = 0;
+
+    SearchableArray(){}
 
 
 
@@ -805,12 +678,21 @@ class SearchableArray{
 
     /*
         index番目にSplayNode*を挿入
+        checked 配列のサイズも更新 
     */
     void insert(int index , SplayNode *NODE){
         if(index<0 || index> Size)return;
+        
+        //位置検索mapに追加
+        pos[NODE->Value].push_back(NODE);
 
         Root = insert_sub(index , NODE , Root);
         Root->update();
+
+        if(checked.size() <= Size){
+            int resize = checked.size()+1;//２倍ぐらい取るか ~
+            checked.resize(resize , -1);//要素が存在しうる位置の候補が増えたので、配列を拡張
+        }
         
 
         return;
@@ -967,11 +849,14 @@ class SearchableArray{
         if(isExist(Root)==false)return;
         Root->Value = y;
         Root->update();
-        
-        pos[y].push_back(Root);//pos[y]にpushするのを忘れずに
+
+        //位置検索mapに追加
+        pos[y].push_back(Root);
 
         return;
     }
+
+
 
 
     /*
@@ -995,51 +880,58 @@ class SearchableArray{
 
 
 
-    //数列内の、xの位置を全てvector<int>に入れて返す
-    vector<int> get_position(T x){
+    //数列内のxの位置を全てvector<int>に入れて返す , countを指定すると、指定した個数以下の個数(選び方がランダム)を返す
+    vector<int> get_position(T x , int count = 1000000000){
         if(Size == 0)return vector<int>(0);
+        get_pos_called_time++;//呼び出し回数をインクリメント
 
-        vector<SplayNode*> pos_x = pos[x];
-        vector<int> res;
+        vector<SplayNode*> *pos_x = &pos[x];//log を落とすためにポインタで O(1) でコピー
+        vector<int> res(0);
 
-        int size = pos_x.size();
-
+        int size = (*pos_x).size();
         
-        //shift_rightなどで、辺や頂点を切ったり張ったりすると,
-        //pos[x]の中で同じ頂点が重複して存在することになるので、そこも弾くためにチェック
-        map<int,bool> checked;
+        
 
         for(int i = size -1  ; i >= 0 ; i--){
-            SplayNode *Nd = pos_x[i];
+            if(res.size()>=count)break;
+            SplayNode *Nd = (*pos_x)[i];
             
  
             
-            if(Nd == nullptr)pos_x.erase(pos_x.begin()+i);
-            else if(Nd->isThisDeleted)pos_x.erase(pos_x.begin()+i);//削除済みを弾く
-            else if(Nd->Value != x)pos_x.erase(pos_x.begin()+i);//値の変更ずみを弾く
+            if(Nd == nullptr)(*pos_x).erase((*pos_x).begin()+i);
+            else if(Nd->isThisDeleted)(*pos_x).erase((*pos_x).begin()+i);//削除済みを弾く
+            else if(Nd->Value != x)(*pos_x).erase((*pos_x).begin()+i);//値の変更ずみを弾く
             else{
 
                 //NODEのindex関数で、上の辺を辿って、自分がどの位置にあるのかを取得(splayして自分を上に持って行ってもいいけど、Deleteで木から削除された頂点を弾く場合の処理が面倒)
-                int index = Nd->index();
-            
-                /* 
-                    また、木からDeleteされた頂点を弾くと書いたが、shiftなどの操作によって、一度は木から削除されたが、後に木に戻ってきた頂点は弾かないようにしている
-                */
-                T val = get(index).Value; 
+                
+                Nd->splay();
+                Nd->update();
+                int index = 0;
+                T val = Nd->Value;
+                if(isExist(Nd->left))index+=Nd->left->SubTreeSize;
+
 
                 //index番目が、本当にxと同じかどうかをチェック(deleteによって無効になったノードもあるので)
                 if(val == x){
-                    //すでにみていた場合、このNODEはshiftなどの操作により、pos[x]に複数存在するということなので、pop
-                    if(checked[index])pos_x.erase(pos_x.begin()+i);
-                    else res.push_back(index);    
+                    //このNODEはupdate_valなどの操作によりpos[x]に複数存在する場合はpop
+                    if(index < 0 || index > checked.size()){
+                        (*pos_x).erase((*pos_x).begin()+i);
+                    }else if(checked[index] == get_pos_called_time){// (*pos) に 同じノードが複数ある。
+                        (*pos_x).erase((*pos_x).begin()+i);
+                    }else{
+                        //見つけた場合、答えに追加して、checkedでメモ
+                        res.push_back(index);
+                        checked[index] = get_pos_called_time;
+                    }
 
-                    checked[index] = true;
-                }else pos_x.erase(pos_x.begin()+i);
+                }else (*pos_x).erase((*pos_x).begin()+i);
                 
+                Root = Nd;//ルートの更新を忘れずに
                 
             }
         }
-        pos[x] = pos_x;//削除とかをしたので、更新しておく
+
         
         sort(res.begin() , res.end());
         return res;
@@ -1081,39 +973,63 @@ class SearchableArray{
 
 
 
-
-
 int main(){
-
-    SearchableArray<long long > S;
-    vector<long long > A = { 1 , 5 , 2 , 1 , 4 , 3 , 2 };
-    for(long long c : A)S.push_back(c);
-    S.Debug();
-    vector<int> pos;
     
-    pos = S.get_position(1);
-    for(int i : pos)cout << i << " ";cout << endl;
-    cout << "------------------------------" << endl;
-    S.push(5,1);
-    S.push(2,1);
+    SearchableArray<int> S;
+    S.push_back(rand()%100);
+    S.push_back(rand()%100);
+    S.push_back(rand()%100);
+    S.push_back(rand()%100);
+    S.push_back(rand()%100);
+    S.push_back(rand()%100);
+    S.push_back(rand()%100);
+    S.push_back(rand()%100);
+    S.push_back(rand()%100);
+    S.push_back(rand()%100);
+    int Key = S.get(0).Value;
+    vector<int> pos = S.get_position(Key);
+    cerr << "Key is " << Key << "." << endl;
+    cerr << "----------------------------------------------------"<<endl;
     S.Debug();
-    pos = S.get_position(1);
-    for(int i : pos)cout << i << " ";cout << endl;
-    cout << "------------------------------" << endl;
-    S.Delete(0);
-    S.Delete(4);
-    S.Debug();
-    pos = S.get_position(1);
-    for(int i : pos)cout << i << " ";cout << endl;
-    cout << "------------------------------" << endl;
-    S.shift_right(3,S.Size);
-    S.Debug();
-    pos = S.get_position(1);
-    for(int i : pos)cout << i << " ";cout << endl;
-    cout << "------------------------------" << endl;
+    cerr << "Key("<<Key << ") is located at index of ";for(int p: pos)cerr << p << " , ";cerr << "now" << endl;
 
+    cerr << "----------------------------------------------------"<<endl;
+    S.shift_right(3,7);
+    cerr << "right shift [3 , 7) - "; 
     S.Debug();
-    cout << S.RangeMaxQuery(0,S.Size) << endl;
-    cout << S.RangeSumQuery(2,6) << endl;
+    pos = S.get_position(Key);
+    cerr << "Key("<<Key << ") is located at index of ";for(int p: pos)cerr << p << " , ";cerr << "now" << endl;
+
+    cerr << "----------------------------------------------------"<<endl;
+    S.Delete(5);
+    cerr << "deleted 5 th (0-index)"; 
+    S.Debug();
+    pos = S.get_position(Key);
+    cerr << "Key("<<Key << ") is located at index of ";for(int p: pos)cerr << p << " , ";cerr << "now" << endl;
+
+    cerr << "----------------------------------------------------"<<endl;
+    S.update_val(S.Size-1 , Key);
+    cerr << "update back - "; 
+    S.Debug();
+    pos = S.get_position(Key);
+    cerr << "Key("<<Key << ") is located at index of ";for(int p: pos)cerr << p << " , ";cerr << "now" << endl;
+
+    cerr << "----------------------------------------------------"<<endl;
+    S.shift_left(1,6);
+    cerr << "shift left [1 , 6) - "; 
+    S.Debug();
+    pos = S.get_position(Key);
+    cerr << "Key("<<Key << ") is located at index of ";for(int p: pos)cerr << p << " , ";cerr << "now" << endl;
+
+    cerr << "----------------------------------------------------"<<endl;
+    S.push(2,Key);
+    cerr << "insert - "; 
+    S.Debug();
+    pos = S.get_position(Key);
+    cerr << "Key("<<Key << ") is located at index of ";for(int p: pos)cerr << p << " , ";cerr << "now" << endl;
+    
+
+
+
     return 0;
 }

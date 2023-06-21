@@ -1,5 +1,6 @@
-README
-
+# レドメ
+[![Anurag's GitHub stats](https://github-readme-stats.vercel.app/api?username={NokonoKotlin})]
+(https://github.com/anuraghazra/github-readme-stats)
 
 
 Link-Cut Tree  :  グラフに関するデータ構造のライブラリ
@@ -19,8 +20,6 @@ Searchable Array  :  列に関するデータ構造のライブラリ
 	
 	メイン機能として、get_position(x) := 数列内に現れる値 : x の index を任意の個数列挙できる。
 	通常のvectorでこれを実装しようとすると、O(N^2) だが、このライブラリではO(NlogN)で解決。
-
-
 
 
 
