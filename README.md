@@ -15,9 +15,9 @@
 <h3 align="left">My WebSite:</h3>
 <p align="left">
 	<a href="https://nokonokotlin.github.io/Home/index.html" target="blank"><img align="center"
-	alt="nokonokotlin" height="30" width="30" src = "https://raw.githubusercontent.com/NokonoKotlin/public/master/static/images/NokonoKotlin.jpeg"></a>  
+	alt="nokonokotlin" height="30" width="30" src = "./static/images/NokonoKotlin.jpeg"></a>  
 	<a href="https://nokonokotlin.github.io/Home/database/algorithm_database/index.html" target="blank"><img align="center"
-	alt="nokonokotlin" height="30" width="40" src = "https://raw.githubusercontent.com/NokonoKotlin/public/master/static/images/algo.jpeg"></a>
+	alt="nokonokotlin" height="30" width="40" src = "./static/images/Algo.jpeg"></a>
 </p>
 
 
