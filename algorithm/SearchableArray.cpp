@@ -1,9 +1,44 @@
-#include<algorithm>
-#include<iostream>
-#include<map>
-#include<vector>
 
+//include
+//------------------------------------------
+#include <vector>
+#include <list>
+#include <map>
+#include <set>
+#include <unordered_set>
+#include <unordered_map>
+#include <deque>
+#include <stack>
+#include <bitset>
+#include <algorithm>
+#include <functional>
+#include <numeric>
+#include <utility>
+#include <sstream>
+#include <iostream>
+#include <iomanip>
+#include <cstdio>
+#include <cmath>
+#include <cstdlib>
+#include <cctype>
+#include <string>
+#include <cstring>
+#include <ctime>
+#include<queue>
+#include<complex>
+#include <cassert>
 using namespace std;
+typedef long long ll;
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -16,72 +51,26 @@ using namespace std;
 
 /*
 
-    splitした後はmergeを忘れずに！！(それかSplitした頂点のrootを覚えておこう)
-
-    頂点にアクセスしたら、その頂点をsplayするのを忘れるな！！
-    頂点をいじったらsplayの後、Updateするのを忘れないで(順番も注意)
-
-
-    rootを頂点とする部分木において{
-        split(l,root) := lで分割
-
-        merge(l_root , r_root) := 頂点がl_root ,r_rootであるような部分木を連結
-
-        insert_sub(ind,NODE,root) := ind番目にNODEが挿入される
-
-        Delete_sub(ind ,root) := ind番目を削除(返り値はfirstが新しいroot , secondが削除したNode)
-
-    }
-    これらを駆使し、様々な操作を実装可能
-
-
 
     
     この木では、ノードは常に連結であることを前提とした機能を搭載する
-    この木では、ノードは常に連結であることを前提とした機能を搭載する
-    この木では、ノードは常に連結であることを前提とした機能を搭載する
-    この木では、ノードは常に連結であることを前提とした機能を搭載する
-    この木では、ノードは常に連結であることを前提とした機能を搭載する
 
+    数列のうち、 a_i = x である様な i を検索できる。
+    そのために、以下のタイミングで、x を持つ要素へのポインタ pos[x] を編集する必要がある。
 
-    つまり、削除した扱いのノードは、連結のノードと区別するために bool isThisDeleted をもち、
-    split したまま放置はできない。
-    と言うのも、後述する pos[x] で、pos[x] に格納されてる Node をsplayしてrootにするのだが、
-    別の連結成分に属するNodeをrootにすると、バグってしまうのだ
+    ・insert するとき
+    ・Delete するとき
+    ・update_valするとき
 
-    sub 関数でpos を操作しないで！！！
-
-    
-
-    get_position(x)で、数列内のxのindexをまとめたvectorを返す。
-    要素xを持つNODEを木に挿入したとき、pos[x] に 挿入したノードをプッシュする
-    Deleteするときは、isThisDeleted をtrueにする
-    get_position(x)でpos[x]の中身を調べて、無効になっている(もしくは同じ要素だが、shiftなどで複数回挿入されている)要素があればpopする
-
-
-
-    posに入っているNODEは、SplayNodeのポインタなので、数列が更新されると、ポインタの中身も連動して更新される。
-    中身のポインタをsplayし、自分の位置を計算できる。ただし、splayした後はrootにすることを忘れないで
-
-
-
-
-
-    遅延評価のreverseはつけれるかどうか不明
 
 
     他のライブラリと違い、Delete(i)の後、削除したNodeのisThisDeletedをtrueにしている
     ただし、これはshift_subなどの内部の関数でDelete_sub()を使う際は、削除したノードをまた挿入するので、
     Delete_subではこの操作を行わない
 
-
-
 */
 template<class T>
 class SearchableArray{
-    private:
-
-
     /*
         ------------------------------------------------------------------------------------------------------------------------------------------------------------
         ------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -95,9 +84,9 @@ class SearchableArray{
     
     struct SplayNode{
 
-        SplayNode *parent;//親ノード
-        SplayNode *left;//左の子ノード
-        SplayNode *right;//右の子ノード
+        SplayNode *parent = nullptr;//親ノード
+        SplayNode *left = nullptr;//左の子ノード
+        SplayNode *right = nullptr;//右の子ノード
 
         T Value;//値(普通、頂点には値や重みが割り当てられることが多い)
         T Min,Max,Sum;//部分木のうち、値の最大、最小、和
@@ -326,18 +315,14 @@ class SearchableArray{
     */
 
 
+    private:
 
-    
-    
 
     //この木のroot,splitした後はmergeして戻す！！rootが迷子にならないように！！
     SplayNode *Root = nullptr;
 
-    //エラー時の返り値
-    T initializer;
-
     //pos[x] := Value = xであるようなSplayNodeのポインタを入れておく。(Value = xであるような要素の探索に使える)
-    map<T , vector<SplayNode*> > pos;
+    unordered_map<T , vector<SplayNode*> > pos;
 
     /*
         pos[x] の中身を見る中で、update_valなどの操作により、同じ要素(ポインタ)がpos[x]に複数存在する場合がある。
@@ -349,6 +334,8 @@ class SearchableArray{
     int get_pos_called_time = 0;//get_position関数を呼び出した回数をメモ
 
 
+
+    
 
     bool isExist(SplayNode *Nd){
         if(Nd==nullptr){
@@ -368,6 +355,11 @@ class SearchableArray{
         ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     */
+
+
+    
+
+
 
 
 
@@ -497,18 +489,16 @@ class SearchableArray{
         indexの場所を切り離して、NODEを追加して元に戻す(merge)
     */
     SplayNode  *insert_sub(int index , SplayNode *NODE , SplayNode *root){
+        NODE->update();// Min などのデータを計算しておく
         if(isExist(root) == false){
             root=NODE;
-            Size=1;
             return root;
         }
-        if(Size<index || index<0)return root;
 
         std::pair<SplayNode*,SplayNode*> Trees = split(index,root);
 
         SplayNode *leftRoot = Trees.first;
         SplayNode *rightRoot = Trees.second;
-        Size++;
 
         return merge(merge(leftRoot , NODE),rightRoot);
     }
@@ -532,11 +522,7 @@ class SearchableArray{
         if(isExist(root) == false){
             return std::make_pair(root,root);
         }
-
-        if(Size == 1){
-            Size = 0;
-            return std::make_pair(nullptr,root);
-        }
+        
 
         root = getNode(index,root);
         
@@ -549,7 +535,6 @@ class SearchableArray{
         root->left = nullptr;
         root->right = nullptr;
 
-        Size--;
         
         root->update();
         
@@ -649,22 +634,21 @@ class SearchableArray{
 
 
 
-    public:
+     public:
 
-    int Size = 0;
 
     SearchableArray(){}
 
-
+    int size(){
+        if(Root == nullptr)return 0;
+        return Root->SubTreeSize;
+    }
 
     /*
         木全体のindex番目のNode(値渡し)を取得
     */
     SplayNode get(int index){
-        if(index<0 || index>=Size){
-            std::cerr<< "index exceeds Size" << std::endl;
-            return SplayNode(initializer);
-        }
+        if(index<0 || index>=size())assert(0);
 
         Root = getNode(index,Root);
         Root->update();
@@ -681,7 +665,7 @@ class SearchableArray{
         checked 配列のサイズも更新 
     */
     void insert(int index , SplayNode *NODE){
-        if(index<0 || index> Size)return;
+        if(index<0 || index> size())assert(0);
         
         //位置検索mapに追加
         pos[NODE->Value].push_back(NODE);
@@ -689,7 +673,7 @@ class SearchableArray{
         Root = insert_sub(index , NODE , Root);
         Root->update();
 
-        if(checked.size() <= Size){
+        if(checked.size() <= size()){
             int resize = checked.size()+1;//２倍ぐらい取るか ~
             checked.resize(resize , -1);//要素が存在しうる位置の候補が増えたので、配列を拡張
         }
@@ -708,7 +692,8 @@ class SearchableArray{
 
     */
     void push_back(T val){
-        insert(Size , new SplayNode(val)); 
+        int back_ = size();
+        insert(back_ , new SplayNode(val)); 
 
         return;
     }
@@ -743,11 +728,8 @@ class SearchableArray{
     */
     T RangeMinQuery(int l , int r){
         l = max(0,l);
-        r = min(Size,r);
-        if(l>=r){
-            cerr << "right must be larger than left " << endl;
-            return initializer;
-        }
+        r = min(size(),r);
+        if(l>=r)assert(0);
 
         std::pair<SplayNode*,T> tmp = RangeQuery_sub(l,r,0,Root);
         Root = tmp.first;
@@ -763,11 +745,8 @@ class SearchableArray{
     */
     T RangeMaxQuery(int l , int r){
         l = max(0,l);
-        r = min(Size,r);
-        if(l>=r){
-            cerr << "right must be larger than left " << endl;
-            return initializer;
-        }
+        r = min(size(),r);
+        if(l>=r)assert(0);
 
         std::pair<SplayNode*,T> tmp = RangeQuery_sub(l,r,1,Root);
         Root = tmp.first;
@@ -783,11 +762,8 @@ class SearchableArray{
     */
     T RangeSumQuery(int l , int r){
         l = max(0,l);
-        r = min(Size,r);
-        if(l>=r){
-            cerr << "right must be larger than left " << endl;
-            return initializer;
-        }
+        r = min(size(),r);
+        if(l>=r)assert(0);
 
         std::pair<SplayNode*,T> tmp = RangeQuery_sub(l,r,2,Root);
 
@@ -807,8 +783,8 @@ class SearchableArray{
     */
     void shift_right(int l , int r){
         l = max(0,l);
-        r = min(Size,r);
-        if(l+1>=r)return;
+        r = min(size(),r);
+        if(l>=r)assert(0);
 
         Root = shift_right_sub(l,r,Root);
         Root->update();
@@ -825,8 +801,8 @@ class SearchableArray{
     */
     void shift_left(int l , int r){
         l = max(0,l);
-        r = min(Size,r);
-        if(l+1>=r)return;
+        r = min(size(),r);
+        if(l>=r)assert(0);
 
         Root = shift_left_sub(l,r,Root);
         Root->update();
@@ -843,7 +819,8 @@ class SearchableArray{
         木全体のx番目のvalueをyにする
     */
     void update_val(int x , T y){
-    
+        if(x<0 || x >= size())assert(0);
+
         Root = getNode(x,Root);
 
         if(isExist(Root)==false)return;
@@ -863,7 +840,7 @@ class SearchableArray{
         index番目のNodeを消去
     */
     void Delete(int index){
-        if(index<0 || index >= Size)return ;
+        if(index<0 || index >= size())assert(0);
         std::pair<SplayNode*,SplayNode*> tmp = Delete_sub(index,Root);
         Root = tmp.first;
         if(tmp.second != nullptr)tmp.second->isThisDeleted = true;
@@ -882,7 +859,7 @@ class SearchableArray{
 
     //数列内のxの位置を全てvector<int>に入れて返す , countを指定すると、指定した個数以下の個数(選び方がランダム)を返す
     vector<int> get_position(T x , int count = 1000000000){
-        if(Size == 0)return vector<int>(0);
+        if(size() == 0)return vector<int>(0);
         get_pos_called_time++;//呼び出し回数をインクリメント
 
         vector<SplayNode*> *pos_x = &pos[x];//log を落とすためにポインタで O(1) でコピー
@@ -908,32 +885,23 @@ class SearchableArray{
                 Nd->splay();
                 Nd->update();
                 int index = 0;
-                T val = Nd->Value;
                 if(isExist(Nd->left))index+=Nd->left->SubTreeSize;
 
+                //同じNODEへのポインタがupdate_valなどの操作によりpos[x]に複数存在する場合はpop
+                if(checked[index] == get_pos_called_time){// (*pos) に 同じノードが複数ある。
+                    (*pos_x).erase((*pos_x).begin()+i);
+                }else{
+                    //見つけた場合、答えに追加して、checkedでメモ
+                    res.push_back(index);
+                    checked[index] = get_pos_called_time;
+                }
 
-                //index番目が、本当にxと同じかどうかをチェック(deleteによって無効になったノードもあるので)
-                if(val == x){
-                    //このNODEはupdate_valなどの操作によりpos[x]に複数存在する場合はpop
-                    if(index < 0 || index > checked.size()){
-                        (*pos_x).erase((*pos_x).begin()+i);
-                    }else if(checked[index] == get_pos_called_time){// (*pos) に 同じノードが複数ある。
-                        (*pos_x).erase((*pos_x).begin()+i);
-                    }else{
-                        //見つけた場合、答えに追加して、checkedでメモ
-                        res.push_back(index);
-                        checked[index] = get_pos_called_time;
-                    }
-
-                }else (*pos_x).erase((*pos_x).begin()+i);
-                
                 Root = Nd;//ルートの更新を忘れずに
                 
             }
         }
 
-        
-        sort(res.begin() , res.end());
+
         return res;
     }
 
@@ -947,7 +915,7 @@ class SearchableArray{
     */
     void Debug(){
         std::cerr<<"DEBUG:" << std::endl;
-        for( int i = 0 ; i < Size ; i++){
+        for( int i = 0 ; i < size() ; i++){
             std::cerr<< get(i).Value << " ";
         }
         std::cerr<< std::endl;
@@ -957,9 +925,6 @@ class SearchableArray{
 
 
 };
-
-
-
 
 
 
@@ -1008,7 +973,7 @@ int main(){
     cerr << "Key("<<Key << ") is located at index of ";for(int p: pos)cerr << p << " , ";cerr << "now" << endl;
 
     cerr << "----------------------------------------------------"<<endl;
-    S.update_val(S.Size-1 , Key);
+    S.update_val(S.size()-1 , Key);
     cerr << "update back - "; 
     S.Debug();
     pos = S.get_position(Key);
