@@ -40,19 +40,17 @@ typedef long long ll;
 
 
 
-/*
 
+
+
+/*
     木構造
     辺を切ったり貼ったりできる
-
     辺をHeavyEdge と LightEdgeに分けて管理、
-
     add_edgeでとりあえず無向辺を作り、
     build(r)で指定したrootに向かって向きをつける
-
     accessがとっても大事！！忘れないでね！！
     頂点の所得は Nodes から直接とってもいいです(accessは忘れないでね)。
-
     evert(x) := xを連結成分のrootに
     link(x,y) := xを連結成分(path)のrootにしたのちに、yの子供として連結する(すでに連結ならpass)
     cut(x) := xをrootとする部分木を親から切り離す
@@ -72,348 +70,192 @@ typedef long long ll;
     identify_upper(x,y) := x,yが同じ連結成分内の頂点の時、上の方(rootに近い方)を返す
     identify_lower(x,y) := x,yが同じ連結成分内の頂点の時、下の方(rootから遠い方)を返す
     find_parent(x) := xの親を返す
-
-
     isExist_Edge (u,v) := 辺(u,v)が存在するか
     
-
     パスに対して、一律に更新 (add や update) をしたい場合は、reverse と同様に遅延評価したら良い
     辺の表現には頂点拡張をすると良い
-
     バグっている可能性もあるので、安心しないでね
-
 */
 template<class T>
 class LinkCutTree{
-    public:
-
-
+    private:
     /*
-        ------------------------------------------------------------------------------------------------------------------------------------------------------------
-        ------------------------------------------------------------------------------------------------------------------------------------------------------------
+        -----------------------------------------------------------------
+        -----------------------------------------------------------------
             LinkCutTreeの、Nodeのデータ構造。splay木のノードとほぼ同じ
-        ------------------------------------------------------------------------------------------------------------------------------------------------------------
-        ------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+        -----------------------------------------------------------------
+        -----------------------------------------------------------------
     */
     
     struct LinkCutNode{
-
         LinkCutNode *parent = nullptr;//親ノード
         LinkCutNode *left = nullptr;//左の子ノード
         LinkCutNode *right = nullptr;//右の子ノード
-
         T Value;//値(普通、頂点には値や重みが割り当てられることが多い)
         T Min,Max,Sum;//部分木のうち、値の最大、最小、和
-
         int id = -1;//頂点番号
-
         int SubTreeSize = 1;//1は初期化値(自分自身)
-
         bool reverse_flag_lazy = false;
         void set_lazyReverse(){
             this->reverse_flag_lazy = !(this->reverse_flag_lazy);//反転flagを更新
         }
 
-        LinkCutNode(){
-            parent = nullptr;
-            left = nullptr;
-            right = nullptr;
-            
-        }
-
-
+        LinkCutNode(){}
         LinkCutNode(int id_ ,T val){
-            parent = nullptr;
-            left = nullptr;
-            right = nullptr;
             id = id_;
             Value = val;
             Min = val;
             Max = val;
             Sum = val;
         }
-
-
-        bool isExist(LinkCutNode *Nd){
-            if(Nd!=nullptr)return true;
-            else return false;
-        }
         
-
-        /*
-            自分がSplayTreeの根かどうか(多分いらない)
-        */
-        bool isRoot(){
-            //親がいない || 親の子が自分ではない(親から自分にheavy edge が出てない)
-            return (isExist(this->parent) == false || (this->parent->left != this && this->parent->right!=this));
-        }
-
-
-
-
-        /*
-            ある地点を回転させる
-            遅延評価の順番には注意！
-            回転時、自分自身(this)と親(Parent)の位置関係が逆になる
-            よって、
-            下から　Parent ⇨  this の順番でupdateする
-
-            lazy作用については結構ややこしい図を書いて理解しないといけないが、とりあえずは
-            回転を行う前にthisから遅延評価を降ろして、
-            回転後にParent(回転後は子)のlazy作用値をthisに移動(swapで解決)
-            その後Parentの左右の子の遅延評価を降ろし、Parent->thisの順にupdate()
-        */
+        // this - this->parent を回転させる (親との Heavy Edge は必ず存在するものとし、位置関係も誤りがないものとする)
         void rotate(){
-
-            LinkCutNode *Parent , *GrandParent , *Child;
-            Parent = this->parent;
+            //GrandParentの子を張り替え (light edge かどうかもチェック)
+            if(this->parent->parent){
+                if(this->parent == this->parent->parent->left)this->parent->parent->left = this;
+                else if(this->parent == this->parent->parent->right)this->parent->parent->right = this; 
+            }
             
-            Child = nullptr;
-
-            if(isExist(Parent) == false){
-                return;
-            }
-            GrandParent = Parent->parent;
-
-                        
-            Parent->eval();//回転を行う前にevaluate
-            this->eval();//回転を行う前にevaluate
-
-
+            this->parent->eval();
+            this->eval();
+            
             //元の親に対する位置で場合分け
-            if(Parent->left == this){
-                Child = this->right;//Childはnullptrかもしれない
-                this->right = Parent;
-                Parent->left = Child;
-
-            }else if(Parent->right == this){
-                Child = this->left;
-                this->left = Parent;
-                Parent->right = Child;
-
+            if(this->parent->left == this){
+                this->parent->left = this->right;
+                if(this->right)this->right->parent = this->parent;
+                this->right = this->parent;
+                this->parent = this->right->parent;
+                this->right->parent = this;
+                this->right->update();
+            }else{
+                this->parent->right = this->left;
+                if(this->left)this->left->parent = this->parent;
+                this->left = this->parent;
+                this->parent = this->left->parent;
+                this->left->parent = this;
+                this->left->update();
             }
 
-            if(isExist(GrandParent) ){
-                //GrandParentのどちらの辺なのかで場合分け
-                if(Parent == GrandParent->left){
-                    GrandParent->left = this;
-
-                }else if(Parent == GrandParent->right){
-                    GrandParent->right = this;
-                    
-                }
-            }
-
-            //GrandParentがnullptrの場合でも代入OK
-            this->parent = GrandParent;
-
-            //親と位置を入れ替えるので
-            Parent->parent = this;
-
-            //Childは移動するので。
-            if(isExist(Child))Child->parent = Parent;
-
-            Parent->update();
             this->update();
-
             return;
         }
-
-
-
-
-
-
-
         /*
-            自分の親から見た自分の位置
-            0 -> 親がそもそもいない or 例外の場合
+            自分の親から見た自分の位置 (親は必ず存在し、位置関係に誤りがないものとする)
+            0 -> 親がない or 親方向が light edge (LinkCutTree は特別)
             1 -> 親から見て左の子の場合
             2 -> 親から見て右の子の場合
-            3 -> 親と自分に辺が通っていない時(自分からの有向辺のみがある場合)
         */
         int state(){
-            if(isExist(this->parent)== false ){
-                return 0;
-            }else{
-                if(this->parent->left == this){
-                    return 1;
-                }else if(this->parent->right == this){
-                    return 2;
-                }else {
-                    return 0;
-                }
+            if(bool(this->parent)== false )return 0; // 親がない
+            else{
+                this->parent->eval();
+                if(this->parent->left == this)return 1;
+                else if(this->parent->right == this)return 2;
+                else return 0; // light edge 
             }
         }
-
-
-
-
-
-
-
         /*
             あるNodeを回転を駆使し一番上まで持っていく
             この時、回転する順番に注意
         */
-        void splay(){
-            
-            if(isExist(this) == false)return;
+        void splay(){ 
             this->eval();
-            
-            while(this->state()!=0){//親がいない or 親から自分に辺が繋がっていない
-                
+            while(this->state()!=0){ // light edge まで上がる
                 if(this->parent->state()==0){
                     //(自分のGrandParentがいない場合、rotateは一回のみ)
                     this->rotate();
+                    return ;
                 //それ以外の場合、(自分、親、親の親)の位置関係が大事
-                }else if(this->state() == this->parent->state()){
+                }else if(this->parent->state() == this->state()){
                     //GrandParentからの道が(右、右)or (左、左)の場合
                     //GrandParentを一つ下に下ろして、自分を上げる
                     this->parent->rotate();
                     this->rotate();
-
                 }else{
-
                     //それ以外の場合、単純に自分を2回上に上げれば良い
                     this->rotate();
                     this->rotate();
                 }
             }
-
-
-
             return;
         }
-
-
-
-
-
-
         /*
             サイズなど、Nodeの持っている情報をupdateする(順番大事)
-            evaluate = trueなら遅延評価を下に伝播
-            
         */
-        void update(bool evaluate = true){
-            if(isExist(this) == false)return;
-
-            /*  
-                */
-            if(evaluate)this->eval();
-            if(isExist(this->left) && evaluate)this->left->eval();
-            if(isExist(this->right) && evaluate)this->right->eval();
-
-
+        void update(){
+            this->eval();
             this->SubTreeSize = 1;
             this->Min = this->Value;
             this->Max = this->Value;
             this->Sum = this->Value;
-
-
-            if(isExist(this->left)){
+            if(bool(this->left)){
+                this->left->eval();
                 this->SubTreeSize += this->left->SubTreeSize;
                 if(this->left->Min < this->Min)this->Min = this->left->Min;
                 if(this->left->Max > this->Max)this->Max = this->left->Max;
                 this->Sum += this->left->Sum;
             }
-
-            if(isExist(this->right)){
+            if(bool(this->right)){
+                this->right->eval();
                 this->SubTreeSize += this->right->SubTreeSize;
                 if(this->right->Min < this->Min)this->Min = this->right->Min;
                 if(this->right->Max > this->Max)this->Max = this->right->Max;
                 this->Sum += this->right->Sum;
-
             }
-
             
-
             return;
         }
-
-
-
         void eval(){
             if(this->reverse_flag_lazy){
                 swap(this->left , this->right);
                 //下に伝播
-                if(isExist(this->left))this->left->set_lazyReverse();
-                if(isExist(this->right))this->right->set_lazyReverse();
+                if(bool(this->left))this->left->set_lazyReverse();
+                if(bool(this->right))this->right->set_lazyReverse();
                 this->reverse_flag_lazy = false;
             }
         }
-
-        
-
-
     };
 
-
-
-
-
-
-
-    /*
-        ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        ここからは、クラス内で動かす関数たちです。俗にいうブラックボックスです。
-        ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    */
-
-
     private:
-
-
+                   
+    int V = 0;// サイズ
+    //Nodes[i] := 頂点 i のポインタ
+    vector<LinkCutNode*> Nodes;
+    
     // root を根とするような 連結成分(パス)のうち、左から i 番目のノードを取得
     // root とは、木の根ではなく splay tree の根のこと。つまり access(root)しておく必要がある
     LinkCutNode *getNode(int index , LinkCutNode *root){
-        if(isExist(root)==false)return root;
+        if(bool(root)==false)return root;
         LinkCutNode *now = root;
-        while(1){
-            now->eval();
+        while(true){
+            now->eval(); // ノードを見る前にeval
             int left_size = 0;
-            if(isExist(now->left))left_size = now->left->SubTreeSize;            
-            if(index < left_size){
-                now = now->left;
-            }else if(index == left_size){
+            if(bool(now->left))left_size = now->left->SubTreeSize;
+            if(index < left_size)now = now->left;
+            else if(index == left_size){
                 now->splay();
                 break;
-            }else if(index > left_size){
+            }else{
                 now = now->right;
                 index = index - left_size-1;
             }
         }
         return now;
     }
-
-
-    bool isExist(LinkCutNode *Nd){
-        if(Nd==nullptr){
-            return false;
-        }else{
-            return true;
-        }
-    }
-
-
     /*
         Nodeまでheavy edgeで繋げて、heavy edgeで繋げたpathをsplay木として管理する
         splay木で左の頂点ほど、根に近い
-
         最後にlight edgeを辿った先の頂点のidを返す(LCAを求めるときに使う)
     */
     int access_sub(LinkCutNode* Node){
-        if(isExist(Node) == false)return -1;//存在しない場合
+        if(bool(Node) == false)return -1;//存在しない場合
         int res = Node->id;
         while(1){
             Node->splay();
             Node->right = nullptr;
             Node->update();
-            if(isExist(Node->parent) == false)break;
+            if(bool(Node->parent) == false)break;
             res = Node->parent->id;
             
             Node->parent->splay();
@@ -422,69 +264,43 @@ class LinkCutTree{
         }
         return res;
     }
-
-
-
-
-
-
-
     /*
         c -> p に辺をリンク
         副作用 : p にアクセスする
     */
     void link_sub(LinkCutNode* c , LinkCutNode* p ){
-        if(isExist(c) && isExist(p)){
+        if(bool(c) && bool(p)){
             evert_sub(c);
             access_sub(p);
             c->parent = p;
             p->update(); // light edge の情報を持たせる場合は update が必要
         }
     }
-
-
-
     /*
         Nodeを根にもつ部分木をCutする
         (Nodeより上に頂点がなければCutできない)
     */
     void cut_sub(LinkCutNode* Node){
-        if(isExist(Node) == false)return;
+        if(bool(Node) == false)return;
         access_sub(Node);
-        if(isExist(Node->left) == false)return;
+        if(bool(Node->left) == false)return;
         Node->left->parent = nullptr;
         Node->left = nullptr;
         Node->update();
     }
-
-
     /*
         Nodeを , Nodeが属するHeavy Edgeの連結成分のrootに
         つまり、Nodeが属するheavy edgeの向きを上下反転する
     */
     void evert_sub(LinkCutNode *Node){
-        if(isExist(Node) == false)return;
+        if(bool(Node) == false)return;
         access_sub(Node);
         Node->set_lazyReverse();
         Node->update();
         access_sub(Node);
     }
-
-
-
-
     public:
-
-
-
     
-    int V = 0;
-
-
-    //Nodes[i] := 頂点 i のポインタ
-    vector<LinkCutNode*> Nodes;
-
-
     
     // 頂点数と、各頂点が持つ値の初期値
     LinkCutTree(int size_ , T init_ = 0){
@@ -492,18 +308,9 @@ class LinkCutTree{
         Nodes = vector<LinkCutNode*>(V);
         REP(i,V)Nodes[i] = new LinkCutNode(i,init_);
     }
-
-
-
-
-
-
     /*
-    
         クラス外で使うよう
-
     */
-
     /*
         頂点:idにアクセス
         最後にlight edgeを辿った先の頂点番号を返す(LCA用)
@@ -511,9 +318,6 @@ class LinkCutTree{
     int access(int id){
         return access_sub(Nodes[id]);
     }
-
-
-
     /*
         頂点 i のもつ値(value)を x に変更する
         副作用 : access(i)
@@ -523,10 +327,6 @@ class LinkCutTree{
         Nodes[i]->Value = x;
         Nodes[i]->update();
     }
-
-
-
-
     /*
         頂点 x が属する部分木(連結成分)のrootを求める(エラー時は-1を返す)
         副作用 : x が属する部分木の root に access する
@@ -536,7 +336,7 @@ class LinkCutTree{
         access(x);
         LinkCutNode* now = Nodes[x];
         now->eval();
-        while(isExist(now->left)){
+        while(bool(now->left)){
             now = now->left;
             now->eval();
         }
@@ -545,9 +345,6 @@ class LinkCutTree{
         access(now->id);
         return now->id;
     }
-
-
-
     /*
         同じ連結成分に属する 頂点 x と、頂点 y のどちらが深さが浅い頂点か(同じ深さの場合は-1を返す)
         副作用 : 浅い方の頂点にアクセスする
@@ -566,8 +363,6 @@ class LinkCutTree{
             return y;
         }else return -1;
     }
-
-
     /*
         同じ連結成分に属する 頂点 x と、頂点 y のどちらが深さが深い頂点か(同じ深さの場合は-1を返す)
         副作用 : 下の方の頂点にアクセスする
@@ -584,25 +379,21 @@ class LinkCutTree{
             return -1;
         }
     }
-
-
-
-
     /*
         頂点 x の親を見つける(存在しないなら-1を返す)
         副作用 : 親が存在するなら、その親にaccessする
     */
     int find_parent(int x){
         if(x < 0 || x >= Nodes.size())assert(0);
-        if(isExist(Nodes[x])==false)assert(0);
+        if(bool(Nodes[x])==false)assert(0);
         access(x);
         LinkCutNode* now = Nodes[x];
         now->eval();
-        if(isExist(now->left) == false)return -1;
+        if(bool(now->left) == false)return -1;
         now = now->left;
         now->eval();
         
-        while(isExist(now->right) == true){
+        while(bool(now->right) == true){
             now = now->right;
             now->eval();
         }
@@ -613,9 +404,6 @@ class LinkCutTree{
         return now->id;
         
     }
-
-
-
     /*
         辺(u-v)が存在するか
         副作用 : どこかしらに access した
@@ -628,20 +416,14 @@ class LinkCutTree{
         if(upv == p && upv != -1 && lwv != -1 && p!= -1)return true;
         else return false;
     }
-
-
-
     /*
         頂点xを , 頂点xが属するHeavy Edgeの連結成分のrootに
         つまり、頂点xが属するheavy edgeの向きを上下反転する
     */
     void evert(int x){
         evert_sub(Nodes[x]);
-    }   
-
-
-
-    /*  
+    }
+    /*
         c - p をつなげる
         c の親をpにする
         副作用 : 親の方にaccessする
@@ -650,9 +432,6 @@ class LinkCutTree{
         if(find_root(c) == find_root(p))return;
         link_sub(Nodes[c] , Nodes[p]);
     }
-
-
-
     /*
         頂点番号がidの頂点をねとする部分木を、木から切り離す
         つまり、辺:(id , idの親)をなくす
@@ -662,7 +441,6 @@ class LinkCutTree{
         if(id < 0 || id>=V)return;
         cut_sub(Nodes[id]);
     }
-
                    
     /*
         辺 u-v をカット
@@ -674,8 +452,6 @@ class LinkCutTree{
         cut(identify_lower(u,v));
         return true;
     }
-
-
     /*
         xとyのLCAを求める
         無効なクエリなら、-1
@@ -683,7 +459,6 @@ class LinkCutTree{
     */
     int LCA(int x , int y){
         if(min(x,y) < 0 || max(x,y) >= V)assert(0);
-
         if(find_root(x) != find_root(y))return -1;
         else {
             access(x);//最後にlightedgeを辿って到達した、先を返すので、ちょうど分岐点を返すようになっている
@@ -691,10 +466,8 @@ class LinkCutTree{
             access(lca);
             return lca;
         }
-
     }
-
-    /* 
+    /*
         v の属する連結成分の根から頂点 v までのパスのうち、根から x 番目(0-index)の頂点の番号
         未定義なら -1 を返す。
         副作用 : access(v) する
@@ -708,18 +481,17 @@ class LinkCutTree{
         access(v); // 副作用を統一
         return nd->id;
     }
-
-
+    // read-only で ノード のコピーを取得 ( 副作用で ノードに access (重要) )
+    LinkCutNode operator [](int nodeID){
+        assert(nodeID>=0 && nodeID < int(Nodes.size()) );
+        access(nodeID);
+        return *(Nodes[nodeID]);
+    }
+    // 頂点数
+    int size(){
+        return V;
+    }
 };
-
-
-
-
-
-
-
-
-
 
 
 

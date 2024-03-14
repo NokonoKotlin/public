@@ -39,6 +39,12 @@ typedef long long ll;
 
 
 
+
+
+
+
+
+
 /*
     クラス冒頭の関数で抽象化されています。  各演算の説明は以下の通りです。
     S : 木が持つデータの型 - dp/rdp
@@ -51,8 +57,9 @@ typedef long long ll;
         S_ie : S 型の単位元
         leaf_init : 子がない頂点における accum_ の項の値
         
-        const S leaf_init = 1;// 葉頂点 : 次数 1 の頂点の dp,rdp の初期値 
+        const S leaf_init;// 葉頂点 : 次数 1 の頂点の dp,rdp の初期値 
 
+        // merge 関数で流用できるように、できれば OP(a , b , c , d) == OP(OP(OP(a,b),c),d) を満たしているとありがたい
         S S_op(const S a ,const S b) : 
             : dp 遷移で辺の先のマージ方法(Σなら+ , Πなら* , 最大値なら max)
 
@@ -122,23 +129,32 @@ class rerooting{
     const S S_ie = 1; // S 型 op の単位元 (+ なら 0 , × なら 1 , max なら NINF など)
     const S leaf_init = 1;// 葉頂点は子を持たないので、子がない場合の accum_ の項の初期化が必要
     // (add_SubRoot(leaf_init,v) は行われるので。それを考慮した初期化をする必要がある)
+    // (add_SubRoot(leaf_init,v) は行われるので。それを考慮した初期化をする必要がある)
+    // (add_SubRoot(leaf_init,v) は行われるので。それを考慮した初期化をする必要がある)
 
-    // dp 遷移で辺の先のマージ方法(Σなら+ , Πなら* , 最大値なら max)
+                   
+    // dp 遷移で辺の先のマージ方法(Σなら+ , Πなら* , 最大値なら max) 
+    // merge 関数で流用できるように、できれば OP(a , b , c , d) == OP(OP(OP(a,b),c),d) を満たしているとありがたい
+    // merge 関数で流用できるように、できれば OP(a , b , c , d) == OP(OP(OP(a,b),c),d) を満たしているとありがたい
     S S_op(const S a ,const S b){ 
         return a*b%m; // 今回は Π に対応
     }
 
-    //ΣやΠ などに対応する累積データ accum_ に、辺 e の先の情報をマージする。関数の中で ΣやΠ の内側の式を書く
-    void S_merge(S& accum_,const edge &e){ 
-        S subt;// 辺の先の部分木の情報
-        if(dist[e.from] < dist[e.to])subt = dp[e.to];
-        else subt = rdp[e.from];
+                   
+    // ΣやΠ などに対応する累積データ accum_ に、辺 e の先の情報をマージする。関数の中で ΣやΠ の内側の式を書く
+    // rev が true なら e は v から見て上側 (tmp_root の方向) に伸びる辺 (rdp の計算時など)
+    void S_merge(S& accum_,const edge &e , bool rev){ 
+        S subt = dp[e.to];;
+        if(rev)subt = rdp[e.from];
         S f = subt + 1;// ΠやΣの内側の式
         accum_ = S_op(accum_ , f );  // Π(subt+1) であるということに対応
     }
 
+                   
     // 頂点 v から出る辺の先の累積データに、頂点 v のデータをマージする
-    S add_SubRoot(const S accum_ ,const int v){ 
+    // rev が true ならv から見て上側 (tmp_root の方向) を対象にマージを行う
+    // ( Euler Tour を使いながらの 全方位木DP だと、rev が意味をなす)
+    S add_SubRoot(const S accum_ ,const int v , bool rev){ 
         return accum_%m + 0; // ( Π%m + 0 という遷移式に対応)
     }
 
@@ -148,17 +164,17 @@ class rerooting{
 
     const P P_ie = S_ie;
     const P ans_init = leaf_init;// 次数 0 の頂点は、うまく処理できないので初期値で初期化する
+    // (add_Root(ans_init,v) は行われるので。それを考慮した初期化をする必要がある)
+                   
 
-    P P_op(P a , P b){
-        return S_op(a,b);
+    void P_merge(P& accum_ , const edge &e , bool rev){
+        S_merge(accum_ , e , rev);
     }
 
-    void P_merge(P& accum_ , const edge &e){
-        S_merge(accum_ , e);
-    }
 
+    // 頂点 v の ++全方位の++ 辺をマージした後に、頂点 v 自身の情報を計算する
     P add_Root(const P accum_ , const int v){ 
-        return add_SubRoot(accum_,v);
+        return accum_%m;
     }
     
 
@@ -172,11 +188,12 @@ class rerooting{
     int V; // 頂点数 (0 ~ V-1)
     vector<vector<edge> > G;// 隣接リスト [x] = {from:x自身 , to:辺の先 , w:辺の重み} 
     vector<S> val; // [v] := 頂点 v が持つデータ
-    
+    int tmp_root;// 計算用の root 
 
     public : 
 
-    rerooting(int v ,long long m = 998244353) : m(m){
+    rerooting(int v ,int t_root_ = 1 , long long m = 998244353) : m(m){
+        tmp_root = t_root_;
         V = v;
         init();
     }
@@ -186,7 +203,7 @@ class rerooting{
     //通常の木DP
     vector<S> dp;
         
-    // rdp[v] := vからroot方向に向かう辺の先の部分木の演算結果
+    // rdp[v] := vからroot方向に向かう辺の先の部分木の演算結果 (v 自身を含まないことに注意)
     vector<S> rdp;
 
     // [v] := v を根とした時、v から出る辺の先の部分木のデータを Pマージ した結果
@@ -233,11 +250,11 @@ class rerooting{
         全方位木DPのプロトタイプ(問題:EDPC-V:subtree)
         root は計算用
     */
-    void build(int root = 1){
+    void build(){
 
         stack<int> st , back;
-        st.push(root);
-        dist[root] = 0;
+        st.push(tmp_root);
+        dist[tmp_root] = 0;
         
         
         // dfs して、dfsの逆順をメモ
@@ -251,30 +268,33 @@ class rerooting{
             }
         }
 
-        // 下方向の部分木を計算
+        // 下方向の部分木 (dp) を計算
         while(!back.empty()){
             int now = back.top();back.pop();
-            if(now != root && int(G[now].size())==1){// 葉ノード = 次数 1 の場合
-                dp[now] = add_SubRoot(leaf_init , now);
+            if(now != tmp_root && int(G[now].size())==1){// 葉ノード = 次数 1 の場合
+                dp[now] = add_SubRoot(leaf_init , now , false);
                 continue;
             }
             S accum_ = S_ie; // 部分木の情報の累積マージ
-            for(const edge &e : G[now]) if(dist[e.from] < dist[e.to]) S_merge( accum_ , e );
-            dp[now] = add_SubRoot(accum_ , now);//最後に頂点の情報もマージ
+            for(const edge &e : G[now]) if(dist[e.from] < dist[e.to]) S_merge( accum_ , e , false);
+            dp[now] = add_SubRoot(accum_ , now , false);//最後に頂点の情報もマージ
         }
         queue<long long > que; 
-        if(int(G[root].size())>0)que.push(root);
+        if(int(G[tmp_root].size())>0)que.push(tmp_root);
         
         while(!que.empty()){//BFS
             int now = que.front();que.pop();
             int sz = int(G[now].size());
+            if(now != tmp_root && int(G[now].size())<=1)continue;
 
-            if(now == root && int(G[now].size())==1){// root が 次数 1 の場合はrdpを初期化する
+            // root が 次数 1 の場合はrdpを初期化する 
+            // (マージする辺がない場合の初期値は必ず leaf_init にする)
+            if(now == tmp_root && int(G[now].size())==1){
                 int to = G[now].front().to;
-                rdp[to] = add_SubRoot(leaf_init , now);
+                rdp[to] = add_SubRoot(leaf_init , now , true);
                 que.push(to);
                 continue;
-            }else if(now != root && int(G[now].size())<=1)continue;
+            }
 
             // 自分から下方向に出てる辺の先の累積マージ(左右から)
             vector<S> MergeLeft(sz); 
@@ -284,14 +304,14 @@ class rerooting{
 
             S accum_left = S_ie;// 下方向の辺の先の累積マージ (左から)
             for( int i = 0 ; i  < sz ; i++){
-                if(dist[now]<dist[G[now][i].to])S_merge( accum_left , G[now][i] );
+                if(dist[now]<dist[G[now][i].to])S_merge( accum_left , G[now][i] , false);
                 else e_to_parent = G[now][i];// 上方向の辺をついでにメモ
                 MergeLeft[i] = accum_left;
             }
 
             S accum_right = S_ie;// 下方向の辺の先の累積マージ (右から)
             for( int i = sz-1 ; i  >=0  ; i--){
-                if(dist[now]<dist[G[now][i].to])S_merge( accum_right , G[now][i] );
+                if(dist[now]<dist[G[now][i].to])S_merge( accum_right , G[now][i] , false);
                 MergeRight[i] = accum_right;
             }
 
@@ -302,11 +322,12 @@ class rerooting{
                 if(dist[e.from] < dist[e.to]){
                     S accum_ = S_ie; // 下方向の辺の先の累積マージ
                     // 累積マージ同士の演算は、S_op を使う!!
-                    if(i>=1)accum_ = S_op(accum_ , MergeLeft[i-1]);
-                    if(i+1<sz)accum_ = S_op(accum_ , MergeRight[i+1]);
+                    if(0 <= i - 1 && i+1 < sz)accum_ = S_op(MergeLeft[i-1] , MergeRight[i+1]);
+                    else if(i - 1< 0 && i+1 < sz)accum_ = MergeRight[i+1];
+                    else if(i+1>=sz && i - 1 >= 0)accum_ = MergeLeft[i-1];
 
-                    if(now != root)S_merge(accum_ , e_to_parent);// 上方向の辺の先もマージする
-                    rdp[e.to] = add_SubRoot(accum_ , e.from); //最後に頂点の情報もマージ
+                    if(now != tmp_root)S_merge(accum_ , e_to_parent , true);// 上方向の辺の先もマージする
+                    rdp[e.to] = add_SubRoot(accum_ , e.from , true); //最後に頂点の情報もマージ
                     que.push(e.to);
                 }
             }
@@ -317,12 +338,13 @@ class rerooting{
 
         for(int v = 0 ; v < V ; v++){
             if(int(G[v].size()) == 0){
-                ans[v] = add_Root(ans_init , v);
+                ans[v] = add_Root(ans_init,v);
                 continue;
             }
             P accum_ = P_ie; // 部分木と辺の情報の累積マージ
             for(const edge &e : G[v]){
-                P_merge(accum_ , e);
+                if(dist[e.from] < dist[e.to])P_merge(accum_ , e , false);
+                else P_merge(accum_ , e , true);
             }
             ans[v] = add_Root(accum_ , v); //最後に頂点 v の情報もマージ
         }
@@ -334,5 +356,12 @@ class rerooting{
 
 };
 
+
+
+
+
+
+
+                   
 
 

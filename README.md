@@ -68,20 +68,15 @@ LCAや、根の張り替えにも対応。構築以外の各操作はO(logN)
 ```
   
     
-## algorithm/Searchable Array  
+## algorithm/ExtendedArray
 ```
-配列としての基本操作は、vectorなどと同じ追加、削除、アクセスが可能	 
-ただしどの操作も O(logN)かかる (対して、std::vectorは基本的にO(1)だが、メモリの操作に時間がかかることがある)  
-また基本操作に加え、任意の区間の和、最小値などの値を取得可能   
-発展的な操作として、任意の区間に対して右/左シフトが可能 (右シフトの例 : { 1 3 2 } → { 2 1 3 } )   
-	
-メイン機能として、get_position(x) := 数列内に現れる値 : x の index を任意の個数列挙できる。   
-通常のvectorでこれを実装しようとすると、O(N) だが、このライブラリではO(logN*(取得する個数))で解決。   
+数列タイプの平衡二分木とほぼ同じ操作が可能。  
+また、index の型が自由であり、index 値の範囲が計算量に影響しない。  
 ```
 
 ## algorithm/Kd Segment Tree
 ```
-K 次元のグリッド上での矩形取得/点更新が可能、
+K 次元のグリッド上での{矩形取得,点更新} または {矩形更新、点取得} が可能。
 ```
 
 ## algorithm/Kd Tree
@@ -93,10 +88,8 @@ K 次元の空間内の点集合に対する操作が可能
 ## algorithm/mod library
 ```
 定数 p に対して、剰余環 Z/pZ 内での数学的処理を行う。
-
     modint : Z/pZ の整数型
     FFT    : 高速フーリエ変換 (+畳み込み)
-    FPS    : 多項式(冪級数)ライブラリ
 ```
 
 
@@ -110,25 +103,13 @@ K 次元の空間内の点集合に対する操作が可能
 ## algorithm/Suffix Tree
 ```
 列に対して接尾辞木を構築する。
-Ukkonen's Algorithm を採用(オンライン構築可能)。
-
-解ける典型問題
-
-    Is S a substr of T?    : T の Suffix Tree を構築し、根ノードから S の方向に移動し切れるかどうか
-    suffix array           : 根ノードから、先頭の要素が辞書順で小さい辺を優先する dfs を行い、葉ノードを到達順に並べる。
-    LCP array              : suffix array の各要素を、対応する葉ノードと捉える。隣接する葉ノードの LCA を並べる。
-
-    count common substr of S and T 
-        : T ? S ! の Suffix Tree を構築し、ある内部ノード以降に 開始地点が S,T それぞれに対応する葉ノードが存在するかを木 DP 
-    matching statistics            
-        : T の Suffix Tree を構築。S の x 文字目読み込みを開始し、Suffix Tree 上を移動する。
-          移動できなくなったらその時点の深さが x に対する答えであり、Suffix Link を移動すれば、x + 1 からの答えを引き続き探索できる。
-
+Ukkonen's Algorithm を採用(オンライン構築可能)。  
+部分文字列系の問題に対する解決策として tier 1 
 ```
 
 
 
-## 
+## 開発
 
 
 ## ChatApp 
