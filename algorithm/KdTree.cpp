@@ -1,53 +1,4 @@
-
-//include
-//------------------------------------------
-#include <vector>
-#include <list>
-#include <map>
-#include <set>
-#include <unordered_set>
-#include <unordered_map>
-#include <deque>
-#include <stack>
-#include <bitset>
-#include <algorithm>
-#include <functional>
-#include <numeric>
-#include <utility>
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <cstdio>
-#include <cmath>
-#include <cstdlib>
-#include <cctype>
-#include <string>
-#include <cstring>
-#include <ctime>
-#include<queue>
-#include<complex>
-#include <cassert>
-using namespace std;
-typedef long long ll;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#include "MyTemplate.hpp"
 
 
 
@@ -153,18 +104,6 @@ class kdTree{
     */
 
 
-    
-    
-
-
-    //点a , b のdimension番目の座標で比較
-    static bool comp_point(Point a , Point b){
-        return a.focus < b.focus;
-    }
-
-
-
-
     /*
         P_listを元に木を作る。
         [lef,rig) の区間に対応する部分木の根を作る。
@@ -206,8 +145,6 @@ class kdTree{
         
         T d = 0;//距離
         REP(i,K)d += (X[i]-p.A[i])*(X[i]-p.A[i]);
-        
-
         if(r.second == -1 || d < r.second) r = make_pair(p, d);
 
         /*      
@@ -226,15 +163,49 @@ class kdTree{
 
         if(nd->left != nullptr && is_included_in_left_field) r = find_nearest_point_sub(X,  depth+1 , nd->left , r);
         if(nd->right != nullptr && is_included_in_right_field) r = find_nearest_point_sub(X,  depth+1 , nd->right , r);
-        
-
-
         return r;
     }
 
 
 
+    /*
+        K次元の点 A , B を対角とする矩形領域内の点のidを,found_Points_IDに入れていく
+        周上も含む
+    */
+    void find_included_points_sub(Node *nd, vector<T> &A , vector<T> &B, int depth) {
+        if(nd == nullptr)return;
 
+        ll dimension_now = depth%K;
+        REP(i,K){
+            if(A[i] > B[i])swap(A[i],B[i]);
+        }
+        Point p = nd->val;
+        
+
+        //area[i]:=i番目の座標(次元)で、A,Bの矩形領域に入っている区間
+        T area[K][2];
+
+        REP(i,K){
+            area[i][0] = min(A[i],B[i]);
+            area[i][1] = max(A[i],B[i]);
+        }
+        bool fl = 1;
+        //pが矩形領域内かどうか
+        REP(i,K)if(!(area[i][0] <= p.A[i] && p.A[i] <= area[i][1]))fl = 0;
+        
+        if(fl!=0)found_Points.push_back(p);
+                
+        if(nd->left != nullptr && area[dimension_now][0] <= p.A[dimension_now]) {
+            find_included_points_sub(nd->left,A,B, depth+1);
+        }
+
+        if(nd->right != nullptr && p.A[dimension_now] <= area[dimension_now][1]) {
+            find_included_points_sub(nd->right, A,B, depth+1);
+        }
+    
+        
+
+    }
 
 
 
@@ -254,6 +225,10 @@ class kdTree{
         ただし、追加した後はbuildで木を構築しないといけないので、追加はO(n)
     */
     vector<Point> P_list;
+    /*
+        find_included_pointsで取得した点を入れる配列
+    */
+    vector<Point> found_Points;
 
     /*
         Pointを追加。ただし、追加した後に木を構築しないといけないので、O(n)
@@ -268,8 +243,6 @@ class kdTree{
         P_list.push_back(Point(X,id_));
     }
 
-
-
     /*
         build_subを使い、Rootを求める
     */
@@ -277,11 +250,6 @@ class kdTree{
         Root = nullptr;//前の情報が残っていたらなんか嫌だから
         Root = build_sub();
     }
-
-
-
-
-
 
     /*
         点Xから、一番近い点とその距離(の二乗)を求める
@@ -296,34 +264,19 @@ class kdTree{
     }
 
 
-
+    /*
+        K次元の点A,Bを対角に持つ矩形領域に含まれる点のidを,found_Points_IDに入れていく
+        
+    */
+    void find_included_points(vector<T> A , vector<T> B){
+        vector<Point>(0).swap(found_Points);
+        if(A.size()!=K || B.size()!=K){
+            return;
+        }        
+        find_included_points_sub(Root , A,B , 0);
+    }
 
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,34 +1,230 @@
+#include "MyTemplate.hpp"
 
-//include
-//------------------------------------------
-#include <vector>
-#include <list>
-#include <map>
-#include <set>
-#include <unordered_set>
-#include <unordered_map>
-#include <deque>
-#include <stack>
-#include <bitset>
-#include <algorithm>
-#include <functional>
-#include <numeric>
-#include <utility>
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <cstdio>
-#include <cmath>
-#include <cstdlib>
-#include <cctype>
-#include <string>
-#include <cstring>
-#include <ctime>
-#include<queue>
-#include<complex>
-#include <cassert>
-using namespace std;
-typedef long long ll;
+
+
+/*
+    S の Suffix Tree。
+    接尾辞を***辞書順***に Suffix Tree に追加していく。   
+
+    ある接尾辞を追加する時、一つ前に追加した接尾辞との LCP が、Suffix Tree に接尾辞を追加する時の共有パスとなる。  
+    
+    新たに接尾辞を追加する際に分岐する地点を、ひとつ前に追加した接尾辞に対応する葉ノードから親に遡って探索する。
+
+    追加する時に見る頂点の移動とその順番に注目すると、
+    これは完成後の Suffix Tree で辞書順に辺を選ぶ DFS を行う時の移動経路と同じになる。
+
+    よって、接尾辞の追加を行う際の分岐点を愚直に探しても O(|S|) で構築可能。  
+
+    boid build(): 文字列 s_ , その Suffix Array と LCP Array から Suffix Tree を構築
+        Suffix Array は以下の要件を満たす必要がある。  
+            ・0-index 
+        LCP Array は以下の要件を満たす必要がある。  
+            ・LCP[0] = 0
+            ・LCP[x] := suffix_array[i-1] と suffix_array[i] の LCP
+*/
+template<typename T = long long>
+class StaticSuffixTree{ 
+    private:
+    struct Node{
+        Node(pair<int,int> cover , int id_ = -1 , Node* parent_ = nullptr):cover(cover),id(id_),parent(parent_){}
+
+        int path_length = 0;//根からこのノードまでの文字(葉ノードの深さは不定)
+        //このノードに入ってくる辺がどの連続部分列をカバーしてるか(閉区間 [l , r] を表す) (1-index)
+        pair<int ,int> cover = make_pair(-1,-2);
+
+        int cover_length(){
+            if(this->parent == nullptr)return 0;// root の場合
+            return cover.second - cover.first + 1;
+        }
+
+        int id = -1;//id(頂点番号 ... 追加された順に割り振る)
+    
+        unordered_map<T , Node*> child;//[ x ] :=  要素 x で続く辺の先のノード(遅ければ unordered にする)
+        Node* parent = nullptr;//親ノード( nullptr <=> このノードがroot )
+
+        int suffix_id = -1; // この Node が 何文字目から始まる接尾辞を表しているか(1-index) (接尾辞に対応していない場合は -1)
+        bool is_endpoint(){return (this->suffix_id >= 1);}// 接尾辞に対応するノードかどうか
+
+        int SubTreeLeafCount = 0;          // 自分以降の部分木が持つ葉の個数(専用の初期化関数で初期化)
+        long long SubTreeKindOfPrefix = 0; // このノードから移動して得られる文字列の種類数 (ただし、終端文字や空文字列を含まない)
+    };
+
+    /*
+        Suffix Tree 上の地点を表すデータ(辺の途中の場合もある) : 
+        ちょうど 頂点 x の上である場合、RecentNode = x , NextNode = nullptr , place = 0 で統一する
+    */
+    struct PositionData{
+        Node* RecentNode = nullptr;//すでに到達したノードで、直近のもの(これまで到達した中で、今いる地点に一番近いノード)
+        Node* NextNode = nullptr;//次に向かうノード(今いる辺の先)
+        int place = 0;// 辺の何文字目の箇所か
+
+        // 根から現在地までのパス上の文字数(距離)
+        int get_path_length(){return this->RecentNode->get_path_length() + this->place;}
+
+        // 地点が同じ地点かどうか
+        bool operator ==(PositionData& b){
+            return (this->RecentNode == b.RecentNode && this->NextNode == b.NextNode && this->get_path_length() == b.get_path_length());
+        }
+
+        void deb(){
+            cerr<< "now on : " << RecentNode->id;
+            if(NextNode!=nullptr)cerr <<  " → " << NextNode->id << " : " << place;
+            cerr << endl;
+        }
+        
+    };
+
+    static bool cmp_char(pair<char,Node*> a ,pair<char ,Node*> b){
+        return a.first<b.first;
+    };
+
+
+    // 根頂点
+    Node* root;
+    vector<T> S;
+    int vertex_id = 0;
+    
+    void init(){
+        vertex_id=0;
+        S.clear();
+        root = new Node({-1,-2} , vertex_id++ , nullptr);
+    }
+    
+    /*
+        文字列 s_ , その Suffix Array と LCP Array から Suffix Tree を構築
+        Suffix Array は以下の要件を満たす必要がある。  
+            ・0-index 
+        LCP Array は以下の要件を満たす必要がある。  
+            ・LCP[0] = 0
+            ・LCP[x] := suffix_array[i-1] と suffix_array[i] の LCP
+    */
+    void build_sub(vector<T> s_ , vector<int> suffix_array , vector<int> lcp_array){
+        init();
+        S = s_;
+        Node* now = root;// 最後に見た頂点
+
+        // 空文字列は無視
+        for(int i = 0 ; i < suffix_array.size() ; i++){
+            if(suffix_array[i] >= S.size())continue;// 空文字列の分は無視
+            Node* NewLeaf;
+            int depth = lcp_array[i];
+            int suffix_id = suffix_array[i] + 1;// 1-index
+            T c = S[suffix_id-1];
+            // 必要な分だけ戻る
+            while(depth < now->path_length)now = now->parent;
+            
+            // 新たに分岐点を作る必要がある場合
+            if(depth != now->path_length){
+                T edge_id = S[suffix_id + now->path_length - 1];
+                Node* next = now->child[edge_id];// 辺の先の頂点
+                int lef = next->cover.first;
+                int mid = lef + depth - now->path_length - 1;
+
+                Node* NewBranch = new Node({lef,mid} , vertex_id++ , now);
+                NewBranch->path_length = depth;
+                NewBranch->child[S[mid]] = next;
+
+                // 分岐点の追加に伴う変数の再計算をする
+                next->cover.first = mid+1;
+                next->parent = NewBranch;
+                now->child[edge_id] = NewBranch;
+                now = NewBranch;
+            }
+
+            // 辞書順に接尾辞を見ているので、この時点で接尾辞を追加するノードは必ず葉であることが保証される
+            NewLeaf = new Node({suffix_id + now->path_length ,S.size()} , vertex_id++ , now);// 区間は 1-index の閉区間
+            NewLeaf->suffix_id = suffix_id;
+            NewLeaf->path_length = now->path_length + NewLeaf->cover_length();
+            now->child[S[NewLeaf->cover.first-1]] = NewLeaf;
+            now = NewLeaf;
+        }
+    }
+
+
+
+
+    // 外部向け機能
+    public:// findValidPath と walkdown も public で使えるべき
+
+
+    StaticSuffixTree(){}
+    ~StaticSuffixTree(){}
+
+
+    // 地点 : dataから要素 x に向かって進むことができるかを判定
+    bool findValidPath(T x , PositionData& data){
+        if(data.NextNode == nullptr )return (data.RecentNode->child[x] != nullptr);// ノードの上にいる場合は、x 方向に辺があるかを確かめる
+        else return (S[data.NextNode->cover.first + data.place - 1] == x);// 辺の上にいるときは、次の文字を確かめる
+    }
+
+
+    // 地点 : data から x の方向に 1 進み、data を更新する
+    bool walkdown( T x , PositionData& data ){
+        if(findValidPath(x,data) == false)return false;//進めない
+        Node* branch = data.NextNode;
+        //分岐点にいる場合
+        if(data.NextNode == nullptr)data.NextNode = data.RecentNode->child[x];
+        data.place++;//進む
+        // 分岐点に到達した場合、RecentNode が分岐点を表す様にフォーマットする        
+        if(data.NextNode != nullptr && data.place == data.NextNode->cover_length()){
+            data.RecentNode = data.NextNode;
+            data.NextNode = nullptr;
+            data.place = 0;
+        }
+        return true;
+    }
+
+    
+    /*
+        文字列 s_ , その Suffix Array と LCP Array から Suffix Tree を構築
+        Suffix Array は以下の要件を満たす必要がある。  
+            ・0-index 
+        LCP Array は以下の要件を満たす必要がある。  
+            ・LCP[0] = 0
+            ・LCP[x] := suffix_array[i-1] と suffix_array[i] の LCP
+    */
+    void build(string& s , vector<int>& suffix_array , vector<int>& lcp_array){
+        vector<T> s_;
+        for(char c : s)s_.push_back(T(c));
+        build(s_,suffix_array,lcp_array);
+    }
+    void build(vector<T>& s , vector<int>& suffix_array , vector<int>& lcp_array){build_sub(s,suffix_array,lcp_array);}
+
+    // dfs 順の Node* を返す (辞書順に dfs するかを、引数で指定)
+    vector<Node*> dfs(bool lexicographical = false){
+        vector<Node*> res;
+        if(root == nullptr)return res;
+        stack<Node*> s;
+        s.push(root);
+        while(!s.empty()){
+            Node* now = s.top();s.pop();
+            res.push_back(now);
+            vector<pair<char , Node*> > nxt;
+            for(pair<char , Node*> nx : now->child )if(nx.second != nullptr)nxt.push_back(nx);
+            if(lexicographical)sort(nxt.rbegin() , nxt.rend() , cmp_char);//辺の最初の文字でソート
+            for(pair<char , Node*> nx : nxt )s.push(nx.second);
+        }
+        return res;
+    }
+
+
+    void debug_dfs(){
+        vector<Node*> d = dfs();
+        vector<pair<int,int> > links;
+        for(Node* now : d){
+            if(now != root)cerr << now->parent->id << " → " << now->id << endl;
+            if(now != root)cerr << "cover : " << now->cover.first << " " << now->cover.second << endl;
+        }
+    }
+
+
+};
+
+
+
+
+
+
 
 
 
@@ -705,6 +901,80 @@ class SuffixTree{
 
 
 
+
+
+
+
+
+void sa(){
+    string s;cin >> s;SuffixTree T;T.build(s);
+    vector<int> sa = T.suffix_array();
+    sa.erase(sa.begin());
+    for(int x : sa)cout << x-1 << " ";
+    cout << endl;
+}
+
+
+
+
+// https://onlinejudge.u-aizu.ac.jp/problems/ALDS1_14_A
+void lca_test(){
+    string s ,t;cin >> s >> t;
+    SuffixTree S;
+    S.push(s);
+    S.determine();
+    if(!S.find(t))return;
+    auto t_data = S.search(t);
+    REP(i,s.size()){
+        auto leaf = S.get_suffix_node(i+1);
+        auto lca = S.LCA(leaf , t_data);
+        if(lca == t_data)cout << i << endl;
+    }
+}
+
+
+
+// s , t の共通の部分文字列の個数(unique : 区間が異なるものを重複して数えるかどうか)
+void common_substr(bool unique = true){
+    string s , t;
+    cin >> s >> t;
+    SuffixTree T;
+
+    // s + ? + t + ! を入れる
+    T.push(s);
+    T.push(INF);
+    T.push(t);
+    T.determine();
+
+    // 数え方(uniqueによる) 
+    function<int(int,int)> op = [&](int a , int b){
+        if(unique)return a|b;
+        else return a+b;
+    };
+
+    vector<int> dp_s(T.tree_size() , 0);// [x] := 頂点 x の部分木に s の leaf が幾つ存在するか(or 単に存在するかどうか)
+    vector<int> dp_t(T.tree_size() , 0);// [x] := 頂点 x の部分木に t の leaf が幾つ存在するか(or 単に存在するかどうか)
+    auto dfs = T.dfs(); reverse(dfs.begin() , dfs.end());
+
+    for(auto now : dfs){
+        if(now->isEndPoint()){
+            if(now->suffix_id == s.size() + 1)continue;
+            if(now->suffix_id == s.size() + t.size() + 2)continue;
+
+            if(now->suffix_id <= s.size())dp_s[now->id] = 1;
+            else dp_t[now->id] = 1;
+        }
+        if(now->parent != nullptr)dp_s[now->parent->id] = op(dp_s[now->parent->id], dp_s[now->id]);
+        if(now->parent != nullptr)dp_t[now->parent->id] = op(dp_t[now->parent->id], dp_t[now->id]);
+    }
+    ll ans = 0;
+    REP(x,T.tree_size()){
+        auto now = T.get_node(x);
+        // 部分木の葉のうち、(s , t) の組み合わせを考える
+        if(!now->isEndPoint())ans += now->cover_length()*dp_s[now->id]*dp_t[now->id];
+    }
+    cout << ans << endl;
+}
 
 
 

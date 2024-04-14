@@ -1,50 +1,4 @@
-
-//include
-//------------------------------------------
-#include <vector>
-#include <list>
-#include <map>
-#include <set>
-#include <unordered_set>
-#include <unordered_map>
-#include <deque>
-#include <stack>
-#include <bitset>
-#include <algorithm>
-#include <functional>
-#include <numeric>
-#include <utility>
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <cstdio>
-#include <cmath>
-#include <cstdlib>
-#include <cctype>
-#include <string>
-#include <cstring>
-#include <ctime>
-#include<queue>
-#include<complex>
-#include <cassert>
-using namespace std;
-typedef long long ll;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#include "MyTemplate.hpp"
 
 
 
@@ -101,7 +55,11 @@ typedef long long ll;
 
 
     内部実装では SplayTree の [l,r) の部分木の遅延評価やマージを行うので、座標と混同しないように注意。
-
+    |
+    - 計算量について :
+        |- 遅い時はいらない集約や遅延評価を消す。
+        |- eval() しなくていい時は、eval() の中身を全消ししたり、eval() を呼び出さなくするとかなり速くなる
+    |
     重要実装方針 : modify という内部関数を使う。
         座標の半開区間区間 [lef,rig) にクエリが飛んできた時、 
         [lef,rig) が、set で管理される区間の集合でちょうどカバーできるように
@@ -164,16 +122,13 @@ class ExtendedArray{
             
 
         SplayNode(){}
- 
+        
         SplayNode(T l , T r , T2 Value_){
-            if(l >= r)swap(l,r);
+            assert(l < r);
             R = r;
             L = l;
-            length_sum = R-L;
             Value = Value_;
-            Min = Value;
-            Max = Value;
-            Sum = Value;
+            update();
         }
  
  
@@ -208,36 +163,31 @@ class ExtendedArray{
             return;
         }
         /*
-            自分の親から見た自分の位置 (親は必ず存在し、位置関係に誤りがないものとする)
-            1 -> 親から見て左の子の場合
-            2 -> 親から見て右の子の場合
+            自分から見た親の位置
+            0 -> 親が存在しない
+            1 -> 親の左の場合
+            2 -> 親の右の場合
         */
         int state(){
-            this->parent->eval();// zig-zag を正しく選択するため
+            if(this->parent == nullptr)return 0;
+            this->parent->eval();// reverse を反映
             if(this->parent->left == this)return 1;
-            else return 2;
+            return 2;
         }
 
         // あるNodeを回転を駆使し一番上まで持っていく
         void splay(){
-            this->eval();
             while(bool(this->parent)){
-                if(bool(this->parent->parent)==false){
-                    //(自分のGrandParentがいない場合、rotateは一回のみ)
+                if(this->parent->state() == 0){
                     this->rotate();
-                    return;
-                //それ以外の場合、(自分、親、親の親)の位置関係が大事
-                }else if(this->parent->state() == this->state()){
-                    //GrandParentからの道が(右、右)or (左、左)の場合
-                    //GrandParentを一つ下に下ろして、自分を上げる
-                    this->parent->rotate();
-                    this->rotate();
-                }else{
-                    //それ以外の場合、単純に自分を2回上に上げれば良い
-                    this->rotate();
-                    this->rotate();
+                    break;
                 }
+                // 親の state をすでに計算しているので、親の親 → 親 → 自分に reverse の評価を降ろせている
+                if( this->parent->state() == this->state() )this->parent->rotate();
+                else this->rotate();
+                this->rotate();
             }
+            this->update();// while が呼ばれなかった場合のため
             return;
         }
 
@@ -299,13 +249,8 @@ class ExtendedArray{
 
     //この木のroot,splitした後はmergeして戻す！！rootが迷子にならないように！！
     SplayNode *Root = nullptr;
-
-    
-    
+        
     // Node の比較を定義 (遅延評価が載っていない前提が必要)
-
-    // Node a , bが等しいかどうか...type == 0ならKeyのみの比較。そうでないなら(Key,Value)の比較
-    bool isEqual(SplayNode *a , SplayNode *b){return a->R == b->R;}
     // Node a , bに関して a <= b かどうかの演算 (<= であることが必須)
     bool CompareNode(SplayNode *a , SplayNode *b){return a->R <= b->R;}
  
@@ -329,71 +274,46 @@ class ExtendedArray{
         return now;
     }
  
+
  
     /*
-        それぞれ、leftrootとrightrootが根であるような部分木をくっつける
-        splitしたまま放置すると分割された木のrootが行方不明になりそう
+        merge と split が反対の操作であることで、計算量を削減できる
+        merge(lef,rig) : rig の左の子に lef をつける
+        split(i,rt) : i 番目のノードの左の辺を無くし、(lef,rig) のペアを返す
     */
+    // それぞれ、leftrootとrightrootが根であるような部分木をくっつけた木の根を返す
+    // それぞれは update() されている必要がある
     SplayNode *merge(SplayNode *leftRoot , SplayNode *rightRoot){
-        if(bool(leftRoot) == false)return rightRoot;//右のみあり
+        //怖いのでここで update かけときます。大したコストではないです
+        if(leftRoot!=nullptr)leftRoot->update();
+        if(rightRoot!=nullptr)rightRoot->update();
+        if(bool(leftRoot ) == false)return rightRoot;//右のみあり
         if(bool(rightRoot) == false )return leftRoot;//左のみあり
-        leftRoot = getNode(leftRoot->SubTreeSize-1 , leftRoot);
-        leftRoot->right = rightRoot;
-        rightRoot->parent = leftRoot;
-        leftRoot->update();
-        return leftRoot;
+        rightRoot = getNode(0,rightRoot);
+        rightRoot->left = leftRoot;
+        leftRoot->parent = rightRoot;
+        rightRoot->update();
+        return rightRoot;
     }
+    
  
- 
- 
-    /*
-        rootを根とする部分木において、
-        左からleftnum番目の頂点で左右にsplit。
-        splitした後はmergeしないと,splitした木の頂点が行方不明になりそう
-    */
+    // rootを根とする部分木において、
+    // 左からleftnum番目の頂点で左右にsplit。
+    // splitした後はmergeしないと,splitした木の頂点が行方不明になりそう
     std::pair<SplayNode*,SplayNode*> split(int leftnum, SplayNode *root){
-        if(leftnum<=0)return std::make_pair(nullptr , root); 
+        if(leftnum<=0)return std::make_pair(nullptr , root);
         if(leftnum >= root->SubTreeSize)return std::make_pair(root, nullptr);
- 
-        root = getNode(leftnum , root);       
-        SplayNode *leftRoot , *rightRoot;
-        leftRoot = root->left;
-        rightRoot = root;
+        root = getNode(leftnum , root);
+        SplayNode *leftRoot = root->left;
+        SplayNode *rightRoot = root;
         if(bool(rightRoot))rightRoot->left = nullptr;
         if(bool(leftRoot))leftRoot->parent = nullptr;
+        leftRoot->update();
         rightRoot->update();
         return std::make_pair(leftRoot,rightRoot);
     }
+    
 
-
-    /*
-        SplayTree の左から l 以上 r 未満の ++ノード++ からなる部分木を切り取る。
-        <root , 切り取った部分木> を返す
-    */
-    pair<SplayNode*,SplayNode*> splitSubTree(int l , int r , SplayNode* root){
-        SplayNode *leftRoot , *centerRoot , *rightRoot;
-        std::pair<SplayNode*,SplayNode*> tmp = split(r,root);
-        rightRoot = tmp.second;
-        tmp = split(l,tmp.first);
-        leftRoot = tmp.first;
-        centerRoot = tmp.second;
-        return {merge(leftRoot,rightRoot) , centerRoot};
-    }
-
-    /*
-        SplayTree の左から index 番目にノードを挿入する (部分木の根でもOK)
-    */
-    SplayNode *insertNode_sub(int index , SplayNode *NODE , SplayNode *root){
-        NODE->update();// Min などのデータを計算しておく
-        if(bool(root) == false){
-            root=NODE;
-            return root;
-        }
-        std::pair<SplayNode*,SplayNode*> Trees = split(index,root);
-        SplayNode *leftRoot = Trees.first;
-        SplayNode *rightRoot = Trees.second;
-        return merge(merge(leftRoot , NODE),rightRoot);
-    }
 
     /*
         rootを根とする部分木において、
@@ -436,17 +356,6 @@ class ExtendedArray{
         return merge(merge(tmp.first,tmp.second),rightRoot);
     }
 
-    // SplayTree の左から l 以上 r 未満の ++ノード++ が持つ区間全てを右に +x する
-    SplayNode* RangeNodeShift_sub(int l , int r , T x , SplayNode* root){
-        SplayNode *leftRoot , *centerRoot , *rightRoot;
-        std::pair<SplayNode*,SplayNode*> tmp = split(r,root);
-        rightRoot = tmp.second;
-        tmp = split(l,tmp.first);
-        tmp.second->set_lazyShift(x);
-        return merge(merge(tmp.first,tmp.second),rightRoot);
-    }
-
-
     /*
         rootが根であるような部分木で、以下の条件を満たすノード x の個数を返す (比較 <= は ComparNode の意味)
         lower = true : x < node (lower_bound)
@@ -479,39 +388,37 @@ class ExtendedArray{
         return std::make_pair(now ,res);
     }
  
+    // root が根の splaytree に NODE (別の連結成分)を挿入する
+    // NODE は update されている必要がある
+    SplayNode *insertNode_sub(SplayNode *NODE , SplayNode *root){
+        NODE->update();// 集約と遅延評価をしておく
+        if(bool(root) == false)return NODE;
+
+        // lower_bound で、x < NODE の境界となる x を取得 (ただし境界の右側か左側かは不定)
+        root = bound_sub(NODE,root,true).first;
+        // root が x < NODE の境界の左右どちらかによって、NODE を配置する場所が変わる
+        if(!CompareNode(NODE , root)){// root < NODE の場合は root の右に
+            if(root->right != nullptr)root->right->parent = NODE;
+            NODE->right = root->right;
+            root->right = nullptr;
+            NODE->left = root;
+        }else{// NODE <= root の場合は root の左に
+            if(root->left != nullptr)root->left->parent = NODE;
+            NODE->left = root->left;
+            root->left = nullptr;
+            NODE->right = root;
+        }
+        root->parent = NODE;
+        root->update();
+        NODE->update();
+        return NODE;// NODE が根になっている
+    }
+
 
     // _sub ではないけど、クラス内部でのみ使う処理
     // _sub ではないけど、クラス内部でのみ使う処理
     // _sub ではないけど、クラス内部でのみ使う処理
     // _sub ではないけど、クラス内部でのみ使う処理
-
-    /*
-        Rがx未満の頂点の個数を返す
-    */
-    int lower_bound(T x){
-        if(SplayTreeSize() == 0)return 0;
-        SplayNode* nd = new SplayNode(x,x,T2());
-        std::pair<SplayNode*,int> tmp = bound_sub(nd,Root,true);
-        Root = tmp.first;
-        Root->update();
-        delete nd;
-        return tmp.second;
-    }
- 
- 
-    /*
-        Rがx以下の頂点の個数を返す
-        重要 : 座標 x が含まれる区間のノードを探すときは、upper_bound(x) すると良い。
-    */
-    int upper_bound(T x){
-        if(SplayTreeSize() == 0)return 0;
-        SplayNode* nd = new SplayNode(x,x,T2());
-        std::pair<SplayNode*,int> tmp = bound_sub(nd,Root,false);
-        Root = tmp.first;
-        Root->update();
-        delete nd;
-        return tmp.second;
-    }
 
  
     // Value に x を持つ区間 [lef,rig) を set に挿入する
@@ -520,8 +427,7 @@ class ExtendedArray{
         assert(leftmost <= lef && rig <= rightmost);
         if(lef == rig)return;
         assert(lef < rig);
-        int it = upper_bound(lef);
-        Root = insertNode_sub(it ,new SplayNode(lef,rig,x) ,Root);
+        Root = insertNode_sub(new SplayNode(lef,rig,x) ,Root);
         Root->update();
         return;
     }
@@ -539,23 +445,10 @@ class ExtendedArray{
         return;
     }
 
-    // ノードの個数
-    int SplayTreeSize(){if(Root==nullptr)return 0;return Root->SubTreeSize;}
- 
-    /*
-        木全体のindex番目のNode(値渡し)を取得
-    */
-    SplayNode get(int index){   
-        assert(0<=index && index < SplayTreeSize());
-        Root = getNode(index,Root);
-        Root->update();
-        return *(Root);
-    }
 
 
     /*
-        座標 i に切れ込みを入れ、
-        切れ込みを入れた地点の両側の区間の、Splay Tree における index を返す
+        座標 i に切れ込みを入れ、切れ込みを入れた地点の両側の区間の、Splay Tree における index を返す
                 i
         <...><.......>......><..>
                    ↓↓↓
@@ -568,8 +461,9 @@ class ExtendedArray{
         ただし、leftmost や rightmost に切れ込みを入れた場合、SplayTree の index 範囲外を返すことに注意
     */
     pair<int,int> modify(T i){
-        assert(leftmost <= i && i <= rightmost);
-        pair<int,int> res;
+        if(i == leftmost)return {-1,0};
+        if(i == rightmost)return {SplayTreeSize()-1,SplayTreeSize()};
+        assert(leftmost < i && i < rightmost);
         
         int it_ = lower_bound(i);
         
@@ -577,7 +471,6 @@ class ExtendedArray{
         Root->update();
 
         if(i == Root->L)return {it_-1,it_};// i が 左端と一致する場合 (i が leftmost の時のみ)
-        
         // 通常、it_-1 番目の区間の右端 : lR == Root->L < i であることが保証される。
         if( i < Root->R ){
             T nR = Root->R;
@@ -590,9 +483,10 @@ class ExtendedArray{
     }
 
 
+
     // このクラスで扱う区間の範囲は leftmost 以上、rightmost 未満とする。
-    T leftmost ; 
-    T rightmost;
+    const T leftmost ; 
+    const T rightmost;
 
     /*
         ここからは、クラスの外で動かす関数たちです。
@@ -604,9 +498,7 @@ class ExtendedArray{
     public:
     
     // 座標がとりうる値の範囲 (半開区間) を指定し、全ての要素を init_ で初期化する。
-    ExtendedArray(T leftmost_ , T rightmost_ ,T2 init_){
-        leftmost = leftmost_;
-        rightmost = rightmost_;
+    ExtendedArray(T leftmost_ , T rightmost_ ,T2 init_):leftmost(leftmost_),rightmost(rightmost_){
         insertNode(leftmost,rightmost,init_);
     }
 
@@ -614,6 +506,43 @@ class ExtendedArray{
     // 座標の上限と下限
     T Llimit(){return leftmost;}
     T Rlimit(){return rightmost;}
+
+    // ノードの個数
+    int SplayTreeSize(){if(Root==nullptr)return 0;return Root->SubTreeSize;}
+                   
+    // Rがx未満のSplayNodeの個数を返す    
+    int lower_bound(T x){
+        if(SplayTreeSize() == 0)return 0;
+        SplayNode* nd = new SplayNode(leftmost,x,T2());
+        std::pair<SplayNode*,int> tmp = bound_sub(nd,Root,true);
+        Root = tmp.first;
+        Root->update();
+        delete nd;
+        return tmp.second;
+    }
+ 
+ 
+    /*
+        Rがx以下のSplayNodeの個数を返す
+        重要 : 座標 x が含まれる区間のノードを探すときは、upper_bound(x) すると良い。
+    */
+    int upper_bound(T x){
+        if(SplayTreeSize() == 0)return 0;
+        SplayNode* nd = new SplayNode(leftmost,x,T2());
+        std::pair<SplayNode*,int> tmp = bound_sub(nd,Root,false);
+        Root = tmp.first;
+        Root->update();
+        delete nd;
+        return tmp.second;
+    }
+                   
+    // 木のindex番目のSplayNodeのコピーを取得
+    SplayNode get(int index){   
+        assert(0<=index && index < SplayTreeSize());
+        Root = getNode(index,Root);
+        Root->update();
+        return *(Root);
+    }
 
     /*  
         |x| <= (rig-lef) であることが必要(座標が数値型の時のみ有効)
@@ -629,12 +558,12 @@ class ExtendedArray{
 
         // 左に |x| シフトするのは、右に rig-lef-|x| シフトするのと同じ
         if(x < 0)x = rig-lef+x;
-
         assert(0 < x && x < rig - lef);
+
         
         // 1-: lef , mid , rig で modify する。
-        // 2-: [rig-x,rig) に x-rig+lef を遅延評価シフトし、[lef,rig-x) に x を遅延評価シフトする
-        // 3-: 元 [rig-x,rig) の区間を upper_bound(l) の地点に挿入する 
+        // 2-: [-∞ , lef) ,[lef , mid) , [mid , rig) ,[rig,∞) の 4 区間に分割する
+        // 3-: [lef , mid) に +x シフト、[mid , rig) に +(x-rig+lef) シフトして、マージする
         
         // lef < mid < rig が保証されている。
         T mid = rig - x;
@@ -642,19 +571,22 @@ class ExtendedArray{
         int it_l = modify(lef).second;// 左端が lef である区間の index
         int it_m = modify(mid).second;// 左端が mid である区間の index
         int it_r = modify(rig).first; // 右端が rig である区間の index
+        assert(0 <= it_l && it_l < it_m && it_m <= it_r && it_r < SplayTreeSize());
+        // 4 つの部分に分割して、p2,p3 を適切にシフトする
+        pair<SplayNode*,SplayNode*> tmp = split(it_r+1 , Root);
+        SplayNode* p4 = tmp.second;
+        tmp = split(it_m,tmp.first);
+        SplayNode* p3 = tmp.second;
+        tmp = split(it_l,tmp.first);
+        SplayNode* p2 = tmp.second;
+        SplayNode* p1 = tmp.first;
 
-        // rig を通り越して lef 側に移動する区間に対応する部分木を取得(部分木取得も半開区間であることに注意)
-        pair<SplayNode*,SplayNode*> tmp = splitSubTree(it_m,it_r+1,Root);
-        SplayNode* SubTree = tmp.second;
-        SubTree->set_lazyShift(T(x-rig+lef));// lef 側に移動させる
-        Root = tmp.first;
-        Root->update();
-
-        // 左側の区間 [lef,mid) に対応する部分木にシフト遅延評価を +x 載せる
-        Root = RangeNodeShift_sub(it_l,it_m,x,Root);
-        Root->update();
-        Root = insertNode_sub(it_l,SubTree,Root);// it_l は使い回すことができる。
-        Root->update();    
+        p2->set_lazyShift(x);
+        p3->set_lazyShift(T(x-rig+lef));// lef 側に移動させる
+        
+        p2->update();
+        p3->update();
+        Root = merge(merge(merge(p1,p3),p2),p4);
     }
  
     /*
@@ -773,7 +705,8 @@ class ExtendedArray{
 
     // 座標 x の値のコピーを渡す
     T2 operator [](T x){
-        assert(leftmost <= x && x <= rightmost);
+        if(x == leftmost)return get(0).Value;
+        assert(leftmost < x && x < rightmost);
         int it_ = upper_bound(x);
         return get(it_).Value;
     }
@@ -794,3 +727,142 @@ class ExtendedArray{
 };
  
  
+
+
+
+int test_ExtendedArray(){
+    ll n = 100000;
+    vll A(n,0) ,A_cop(n,0);
+    ExtendedArray<ll,ll> S(0,n,0);
+    ll cnt = 0;
+    bool ok = true;
+    /*
+        t = 
+        0 : update_val(i,x);
+        1 : RangeAdd(l,r,x);
+        2 : RangeUpdate(l,r,x);
+        3 : circular_shift(l,r,1)
+        4 : circular_shift(l,r,-1)
+        5 : push(p_i,x) : RPush,LPush 両方テスト
+        6 : judge ? A[i] = S.get(i).Value
+        7 : judge  each Max Min Sum , range(l,r)
+        8 : judge all element
+        9 : delete(i) : 
+        10 : rangeDelete(l,r) : LErase,RErase 両方テスト
+    */ 
+    while(n > 0){
+        cnt++;
+        ll t = rand()%11;
+        ll l , r , ind , x , p_i;
+        ind = rand()%n;
+        p_i = rand()%(n);
+        ll l_ = rand()%n;
+        ll r_ = rand()%n;
+        l = min(l_,r_);
+        r = max(r_,l_)+1;
+        x = rand()%1000;
+        bool judge = true;
+
+        if(t == 0){ 
+            A[ind] = x;
+            S.RangeUpdate(ind,ind+1,x);
+        }else if(t == 1){
+            S.RangeAdd(l,r,x);
+            FOR(i,l,r)A[i] += x;
+        }else if(t == 2){
+            S.RangeUpdate(l,r,x);
+            FOR(i,l,r)A[i] = x;
+        }else if(t == 3){
+            S.circular_shift(l,r,1);
+            A_cop = A;
+            FOR(i,l,r){
+                ll L = l + (i-l+1+r-l)%(r-l);
+                A[L] = A_cop[i];
+            }
+        }else if(t == 4){
+            S.circular_shift(l,r,-1);
+            A_cop = A;
+            FOR(i,l,r){
+                ll L = l + (i-l-1+r-l)%(r-l);
+                A[L] = A_cop[i];
+            }
+        }else if(t == 5){
+            // 2 通りでテスト   
+            if(rand()%2)S.RPush(p_i,p_i+1,x);
+            else {
+                S.circular_shift(S.Llimit(),S.Rlimit(),1);
+                S.LPush(p_i,p_i+1,x);
+            }
+            A.insert(A.begin() + p_i , x);
+            A.pop_back();
+        }else if(t == 6){
+            if(A[ind] != S[ind]){
+                judge = false;
+                cerr << "NG : type = 6 " << endl;
+                S.Debug();
+                cerr << "A : " << endl;
+                REP(i,n)cerr << A[i] << " ";
+                
+                ENDL;
+            }
+        }else if(t == 7){
+            ll mn = INF;
+            ll mx = NINF;
+            ll sum = 0;
+            FOR(i,l,r){
+                sum += A[i];
+                mn = min(mn,A[i]);
+                mx = max(mx,A[i]);
+            }
+            if(mn != S.RangeMinQuery(l,r) || mx != S.RangeMaxQuery(l,r) || sum != S.RangeSumQuery(l,r)){
+                judge = false;
+                cerr << "NG : type = 7 " << endl;
+                cerr << "min : " << " " << mn << " " << S.RangeMinQuery(l,r) << endl;
+                cerr << "max : " << " " << mx << " " << S.RangeMaxQuery(l,r) << endl;
+                cerr << "sum : " << " " << sum << " " << S.RangeSumQuery(l,r) << endl;
+            }
+        }else if(t == 8){
+            REP(i,n){
+                if(A[i] != S[i]){
+                    judge = false;
+                }
+            }            
+            if(!judge){
+                judge = false;
+                cerr << "NG : type = 8 " << endl;
+                //cerr << "A : " << endl;REP(i,n)cerr << A[i] << " ";ENDL;
+                //cerr << "S : " << endl;REP(i,n)cerr << S[i] << " ";ENDL;
+            }
+
+        }else if(t == 9){
+            A_cop = A;
+            vll(0).swap(A);
+            
+            REP(i,n)if(i != ind)A.push_back(A_cop[i]);
+            S.LErase(ind,ind+1,0);
+        }else if(t ==10){
+            if(r-l >= n /40 )continue;
+            A_cop = A;
+            vll(0).swap(A);
+            REP(i,A_cop.size())if(l > i || i >= r)A.push_back(A_cop[i]);
+
+            // 2 通りでテスト
+            if(rand()%2){
+                S.RErase(l,r,0);
+                S.circular_shift(S.Llimit() , S.Rlimit(),-(r-l));
+            }else{
+                S.LErase(l,r,0);
+            }
+
+            
+        }
+        n = A.size();
+        if(cnt % 5000 == 0)cerr << "OK !  cnt = " << cnt << "  Size  = " << n << endl;
+        
+        if(!judge)break;
+    }   
+    return 0;
+}
+
+
+
