@@ -58,6 +58,11 @@
 
 以上 2 つ以外の用途は認めません。
 
+## ポートフォリオ
+
+<a href = "https://nokonokotlin.github.io/Home/database/algorithm_database/index.html">こちらのページ</a> にアルゴリズムや自作ライブラリの記事を載せています。
+
+
 
 ## algorithm/LinkCutTree  
 ```
@@ -71,7 +76,7 @@ LCAや、根の張り替えにも対応。構築以外の各操作はO(logN)
 ## algorithm/ExtendedArray
 ```
 数列タイプの平衡二分木とほぼ同じ操作が可能。  
-また、index の型が自由であり、index 値の範囲が計算量に影響しない。  
+index の型が自由であり、index 値の範囲が計算量に影響しない。  
 ```
 
 ## algorithm/Kd Segment Tree
@@ -90,13 +95,14 @@ K 次元の空間内の点集合に対する操作が可能
 定数 p に対して、剰余環 Z/pZ 内での数学的処理を行う。
     modint : Z/pZ の整数型
     FFT    : 高速フーリエ変換 (+畳み込み)
+    FPS    : 多項式を表現したクラス
 ```
 
 
 ## algorithm/Rerooting
 ```
 全方位木 DP
-    木 T の全ての頂点に対して、その頂点が根である場合の評価値を計算する。
+    木 T の全ての頂点に対して、その頂点が根である場合の集約を計算する。
 ```
 
 
