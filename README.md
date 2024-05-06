@@ -1,5 +1,7 @@
 # NokonoKotlin Library
 
+
+<!-- github ステータス -->
 <p align="left">
 	 <img alt="Top Langs" height="160px" src="https://github-readme-stats.vercel.app/api/top-langs/?username=NokonoKotlin&layout=compact&count_private=true&show_icons=true&theme=tokyonight" />
 	<img alt="github stats" height="160px" src="https://github-readme-stats.vercel.app/api?username=NokonoKotlin&theme=tokyonight&show_icons=ture" />
@@ -51,29 +53,26 @@
 </p>
 
 
-# ライセンス的なもの
-このリポジトリにあるコードに関して、以下は許します。  
-- 他人に共有しない場所で個人使用する。  
-- このコードを使い、競技プログラミングの提出コードとして提出する(ただし、その提出を他者に共有するのは禁止)。  
+## ライセンス (license)
+Copyright (c) 2024 NokonoKotlin
+Released under the MIT license
+https://opensource.org/licenses/mit-license.php
 
-以上 2 つ以外の用途は認めません。
+
+## NokonoKotlin からのお願い
+- 他人に共有しない場所で個人使用してほしいよ。
+- 競プロの提出とかも、ここのコードを使っているなら他人に共有しないでほしいよ。
+- ライブラリに組み込むのは自由だけど、自分のライブラリと称するのはやめてほしいよ。
+
+
 
 ## ポートフォリオ
 
 <a href = "https://nokonokotlin.github.io/Home/database/algorithm_database/index.html">こちらのページ</a> にアルゴリズムや自作ライブラリの記事を載せています。
 
 
-## CompetitiveProgramming
+## Cpp_Library
 
 競プロに関するコード&ドキュメントのフォルダです。自慢のコードが置いてあります。
 
 
-
-## ChatApp 
-```
-初めて作った動くアプリケーション。コードに関してメモがあるが、あまり覚えてはいない。  
-flaskで作った。
-チャットメッセージをデータベースに入れたり出したりして表示、受信する。   
-一番大事な特徴は、位置情報を使っており、自分の近くにいる人とのみ会話可能(厳密には少し違うけど)   
-注意 : 本当にダメなコード/設計で、本当に読まない方がいいです。
-```
