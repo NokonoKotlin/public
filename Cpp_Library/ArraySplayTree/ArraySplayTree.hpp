@@ -3,10 +3,10 @@
 
 
 
-/*
 
-*/
-template<class T , bool _find_= false >
+
+
+template<class T , bool _find_=false>
 class ArraySplayTree{
     private:
     
@@ -18,13 +18,6 @@ class ArraySplayTree{
         T Min,Max,Sum;//部分木のうち、値の最大、最小、和
         bool isThisDeleted = false;//このノードが、木から削除されたか( find() で使用する。)
         int SubTreeSize = 1;//部分木のサイズ. 1 は自分自身の分
-
-        /*
-            遅延評価が存在するかをフラグで持っておき、この頂点にアクセスされた時にtrueなら評価を行い、左右の子に伝播させる
-            reverse : 左右の子を反転させる(左右の子に伝播させることで、結果的に対応する区間全てが反転する)
-            affine : 部分木が対応する区間のValueすべてに A 掛けた後 B 足す
-            update : 部分木が対応する区間のValueをすべて x にする
-        */
 
         // 反転 flag と、反転 flag のセット
         bool reverse_flag_lazy = false;
@@ -92,7 +85,8 @@ class ArraySplayTree{
             if(this->parent == nullptr)return 0;
             this->parent->eval();// reverse を反映
             if(this->parent->left == this)return 1;
-            return 2;
+            else if(this->parent->right == this)return 2;
+            return 0;
         }
 
         // あるNodeを回転を駆使し一番上まで持っていく
@@ -133,15 +127,7 @@ class ArraySplayTree{
             } 
             return;
         }
-        /*
-            この頂点にアクセスされるたびに、各flagがtrueなら遅延させていた処理を実行し、左右の子にflagを伝播する
-                - reverse : 自分の左右の子を入れ替えて、左右の子に遅延伝播(最終的に区間全体が反転する)
-                - affine : 自分自身以下の部分木のValueをアフィン変換する (A 掛けて B 足す) 
-                - update : 自分自身以下の部分木のValueを一律更新(再代入)する
-                - Min,Max,Sum なども、遅延している値から計算する
-            更新クエリは update が優先されるので、update 以前に溜まった affine の遅延評価は消えている(set_lazyupdateを参照)
-            よって、update の遅延から評価する
-        */
+        
         void eval(){
             if(this->reverse_flag_lazy){
                 swap(this->left , this->right);
@@ -289,7 +275,7 @@ class ArraySplayTree{
 
     // 常に Root が根であるようにする (merge した後は Root に代入するなど)
     SplayNode *Root = nullptr;
-    unordered_map<T , vector<SplayNode*> > pos; // T=modint などの自作クラスの時は、T の代わりに long long とする
+    map<T , vector<SplayNode*> > pos; 
     vector<int> checked;
     int find_called_time = 0;//find 関数を呼び出した回数をメモ
     /*

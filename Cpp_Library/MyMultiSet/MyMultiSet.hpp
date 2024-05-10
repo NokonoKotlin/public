@@ -4,10 +4,6 @@
 
 
 
-
-/*
-
-*/
 template<class type_key , class type_value>
 class MyMultiSet{
     private:
@@ -68,18 +64,18 @@ class MyMultiSet{
             2 -> 親の右の場合
         */
         int state(){
+            if(this->parent == nullptr)return 0;
             if(this->parent->left == this)return 1;
-            return 2;
+            else if(this->parent->right == this)return 2;
+            return 0;
         }
-
         // あるNodeを回転を駆使し一番上まで持っていく
         void splay(){
             while(bool(this->parent)){
-                if(this->parent->parent == nullptr){
+                if(this->parent->state() == 0){
                     this->rotate();
                     break;
                 }
-                // 回転の方法
                 if( this->parent->state() == this->state() )this->parent->rotate();
                 else this->rotate();
                 this->rotate();
@@ -272,6 +268,7 @@ class MyMultiSet{
  
   
     protected:
+
     //この木のroot,splitした後はmergeして戻す！！rootが迷子にならないように！！
     SplayNode *Root = nullptr;
     // (Key,Value) の両方が有効な値かどうか
@@ -285,43 +282,53 @@ class MyMultiSet{
         Root = nullptr;
         _paired = true; 
     }
+    // 先頭要素のアドレスを取得。
+    const SplayNode* const begin(){
+        if(size() == 0)return nullptr;
+        Root = getNode(0,Root);
+        return Root;
+    }
 
     public:
 
-    explicit MyMultiSet(){init();}
+    MyMultiSet(){init();}
     ~MyMultiSet(){release();}
     // 複雑な挙動を回避するので、コンストラクタによるコピー/ムーブを一律に禁止する。コピーは copy() 関数に任せる
-    MyMultiSet(const MyMultiSet<type_key,type_value> & T) = delete ;
-    MyMultiSet& operator = ( const MyMultiSet<type_key,type_value> & T) = delete ;
-    MyMultiSet ( MyMultiSet<type_key,type_value>&& T){assert(0);}
-    MyMultiSet& operator = ( MyMultiSet<type_key,type_value>&& T){assert(0);}
+    MyMultiSet(const MyMultiSet<type_key,type_value> & x) = delete ;
+    MyMultiSet& operator = ( const MyMultiSet<type_key,type_value> & x) = delete ;
+    MyMultiSet ( MyMultiSet<type_key,type_value>&& x){assert(0);}
+    MyMultiSet& operator = ( MyMultiSet<type_key,type_value>&& x){assert(0);}
     // 宣言後に代入する用に、コピーコンストラクタとは別のコピー関数を用意 
-    // T へのアクセスは T の構造を変化させるので、const をつけて右辺値を取得できない。
+    // アクセスは構造を変化させるので、const をつけて右辺値を取得できない。
     // よって、右辺値 copy と左辺値の copy を両方実装する
-    void copy(MyMultiSet<type_key,type_value>&& T){
+    void copy(MyMultiSet<type_key,type_value>&& x){
+        // 自己代入禁止
+        assert(this->begin() != x.begin());
         release();
         init();
-        for(int i = 0 ; i < T.size() ; i++ ){
-            SplayNode t = T.get(i);
+        for(int i = 0 ; i < x.size() ; i++ ){
+            SplayNode t = x.get(i);
             this->insert_pair(t.Key,t.Value);// T の _paired を無視してとりあえずペアを入れる
         }
-        this->_paired = T._paired;// _paired の状態はコピー元を参照。
+        this->_paired = x._paired;// _paired の状態はコピー元を参照。
     }
-    void copy(MyMultiSet<type_key,type_value>& T){
+    void copy(MyMultiSet<type_key,type_value>& x){
+        // 自己代入禁止
+        if(this->begin() == x.begin())return;// 先頭要素のアドレスだけ見れば、同一オブジェクトかを判定できる
         release();
         init();
-        for(int i=0;i<T.size();i++){
-            SplayNode t=T.get(i);
+        for(int i=0;i<x.size();i++){
+            SplayNode t=x.get(i);
             this->insert_pair(t.Key,t.Value);
         }
-        this->_paired = T._paired;
+        this->_paired = x._paired;
     }
     
     int size(){
         if(Root == nullptr)return 0;
         return Root->SubTreeSize;
     }
- 
+
     // 左から i 番目のNodeのコピーを取得 (0-index)
     // ただし、値の取得が目的なので right などの隣接頂点へのアクセスを封印する
     SplayNode get(int i){
