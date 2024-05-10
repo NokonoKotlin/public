@@ -18,7 +18,7 @@
 <p align="left">
 	<a href="https://nokonokotlin.github.io/Home/index.html" target="blank"><img align="center"
 	alt="nokonokotlin" height="30" width="30" src = "./static/images/NokonoKotlin.jpeg"></a>  
-	<a href="https://nokonokotlin.github.io/Home/database/algorithm_database/index.html" target="blank"><img align="center"
+	<a href="https://nokonokotlin.github.io/Home/Contents/algorithm_database/index.html" target="blank"><img align="center"
 	alt="nokonokotlin" height="30" width="40" src = "./static/images/Algo.jpeg"></a>
 </p>
 
@@ -68,7 +68,7 @@ https://opensource.org/licenses/mit-license.php
 
 ## ポートフォリオ
 
-<a href = "https://nokonokotlin.github.io/Home/database/algorithm_database/index.html">こちらのページ</a> にアルゴリズムや自作ライブラリの記事を載せています。
+<a href = "https://nokonokotlin.github.io/Home/database/Contents/index.html">こちらのページ</a> にアルゴリズムや自作ライブラリの記事を載せています。
 
 
 ## Cpp_Library
