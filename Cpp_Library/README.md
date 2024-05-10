@@ -27,6 +27,19 @@ https://opensource.org/licenses/mit-license.php
 
 ## 索引と簡単な説明
 
+
+#### ArraySplayTree
+```
+列型 SplayTree。SplayTree ライブラリの基本型。
+```
+
+
+#### MyMultiSet  
+```
+Set 型平衡二分木。機能面では C++ の std::set の上位互換。(互換性は全くない)
+```
+
+
 #### ArithmeticProgression
 ```
 区間に等差数列を 加算/代入 するやつ。スプレー木なのでセグ木より遅いが、挿入/削除をサポートする。
