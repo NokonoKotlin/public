@@ -6,6 +6,10 @@
 
 
 
+
+
+
+/**/
 template<class T , bool _find_=false>
 class ArraySplayTree{
     private:
@@ -18,6 +22,13 @@ class ArraySplayTree{
         T Min,Max,Sum;//部分木のうち、値の最大、最小、和
         bool isThisDeleted = false;//このノードが、木から削除されたか( find() で使用する。)
         int SubTreeSize = 1;//部分木のサイズ. 1 は自分自身の分
+
+        /*
+            遅延評価が存在するかをフラグで持っておき、この頂点にアクセスされた時にtrueなら評価を行い、左右の子に伝播させる
+            reverse : 左右の子を反転させる(左右の子に伝播させることで、結果的に対応する区間全てが反転する)
+            affine : 部分木が対応する区間のValueすべてに A 掛けた後 B 足す
+            update : 部分木が対応する区間のValueをすべて x にする
+        */
 
         // 反転 flag と、反転 flag のセット
         bool reverse_flag_lazy = false;
@@ -127,7 +138,15 @@ class ArraySplayTree{
             } 
             return;
         }
-        
+        /*
+            この頂点にアクセスされるたびに、各flagがtrueなら遅延させていた処理を実行し、左右の子にflagを伝播する
+                - reverse : 自分の左右の子を入れ替えて、左右の子に遅延伝播(最終的に区間全体が反転する)
+                - affine : 自分自身以下の部分木のValueをアフィン変換する (A 掛けて B 足す) 
+                - update : 自分自身以下の部分木のValueを一律更新(再代入)する
+                - Min,Max,Sum なども、遅延している値から計算する
+            更新クエリは update が優先されるので、update 以前に溜まった affine の遅延評価は消えている(set_lazyupdateを参照)
+            よって、update の遅延から評価する
+        */
         void eval(){
             if(this->reverse_flag_lazy){
                 swap(this->left , this->right);
@@ -384,11 +403,11 @@ class ArraySplayTree{
     }
     
     // index番目のNodeを消去
-    void Delete(int index , bool force__ = false){
+    void Delete(int index){
         if(index<0 || index >= size())assert(0);
         std::pair<SplayNode*,SplayNode*> tmp = Delete_sub(index,Root);
         Root = tmp.first;
-        if(_find_ && !force__ )tmp.second->isThisDeleted = true;
+        if(_find_)tmp.second->isThisDeleted = true;
         else delete tmp.second;
         return;
     }

@@ -1,3 +1,6 @@
+# タイトル
+`ドキュメント最終更新 : yyyy/mm/dd`
+
 ## ライセンス (license)
 Copyright (c) 2024 NokonoKotlin
 Released under the MIT license

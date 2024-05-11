@@ -8,12 +8,7 @@
 
 
 
-
-
-
-/*
-    Li-Chao Tree
-*/
+/**/
 template<class T , class Integer_>
 class LiChaoTree{
 
@@ -159,9 +154,9 @@ class LiChaoTree{
     // 全域に y = ax+b を追加
     void add_line(Integer_ a , Integer_ b){add_segment(Llimit(),Rlimit(),a,b);}
 
-    // 点(a,b) から 点(c,d) に線分をひく。
+    // 点(a,b) から 点(c,d) に線分をひく。(y 座標は T 型で OK)
     // exclusive が true なら端点は含めない
-    void write_segment(Integer_ a , Integer_ b , Integer_ c , Integer_ d , bool exclusive = false){
+    void write_segment(Integer_ a , T b , Integer_ c , T d , bool exclusive = false){
         if(a == c){
             if(exclusive && b == d)assert( 0 && "線分の領域が null です。");
             // 90° の直線なら、端点の y 座標を見る (exclusive の場合も、極限を考えて端点を採用することにする)
@@ -171,7 +166,6 @@ class LiChaoTree{
             if(c < a){swap(a,c);swap(b,d);} 
             T p = T(d-b)/T(c-a);
             T q = T(b-p*a);
-            //cerr << "y = " << p << "x + " << q << endl;
             // 端点を含まない場合、線分を追加する両端を縮小
             if(exclusive){a++;c--;}
             if(a>c)return; 
