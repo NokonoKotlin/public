@@ -17,6 +17,13 @@
 
 
 
+
+
+
+
+
+
+
 /**/
 template<typename node_type , typename T>
 class EulerTourTree{
@@ -480,21 +487,27 @@ class EulerTourTree{
     void SubTreeAdd(node_type u , node_type p , T x){SubTreeAffine(u,p,T(1),x);}
 
     // 頂点 u の部分木に対応するオイラーツアーの区間を表す SplayNode のコピーを取得
-    // ただし、u の親 p を引数で与えないといけない (lct と併用すると ok)
+    // u の親 p を引数で与えないといけない (lct と併用すると ok)
+    // ただし、u が根の場合は p はなんでも OK 
     // read-only なので SplayNode の隣接ノードへのポインタを封印したものを返す
     SplayNode SubTree(node_type u , node_type p){ 
-        // 辺が存在する
-        assert(EdgeFactor[p][u] != nullptr);
-        long long l = find_EdgeFactor(p,u);
-        long long r = find_EdgeFactor(u,p);
-        // (p→u) が (u→p) より左なら p の情報は正しい
-        assert(l < r);
-        NodeFactor[u]->splay();
-        std::pair<SplayNode*,SplayNode*> tmp = split(r,NodeFactor[u]);
-        SplayNode* rightRoot = tmp.second;
-        tmp = split(l+1,tmp.first);
-        SplayNode res = (*tmp.second);// 真ん中をコピー
-        merge(merge(tmp.first, tmp.second),rightRoot);
+        SplayNode res;
+        // u が全体の根の場合。
+        if(root(u) == u){   
+            NodeFactor[u]->splay();
+            res = (*NodeFactor[u]);
+        }else{
+            assert(EdgeFactor[p][u] != nullptr);// 辺が存在するか assert
+            long long l = find_EdgeFactor(p,u);// u に入るタイミング
+            long long r = find_EdgeFactor(u,p);// u から出るタイミング
+            assert(l < r);// p の情報が正しいか assert        
+            NodeFactor[u]->splay();
+            std::pair<SplayNode*,SplayNode*> tmp = split(r,NodeFactor[u]);
+            SplayNode* rightRoot = tmp.second;
+            tmp = split(l+1,tmp.first);
+            res = (*tmp.second);// 真ん中をコピー
+            merge(merge(tmp.first, tmp.second),rightRoot);
+        }
         res.parent = res.left = res.right = nullptr;
         return res;// コピーを返す
     }
@@ -554,16 +567,6 @@ class EulerTourTree{
         return res;
     }
 };
-
-
-
-
-
-
-
-
-
-
 
 
 
