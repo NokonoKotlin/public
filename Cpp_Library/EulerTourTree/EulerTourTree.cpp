@@ -9,9 +9,15 @@
 
 
 
-/*
 
-*/
+
+
+
+
+
+
+
+/**/
 template<typename node_type , typename T>
 class EulerTourTree{
     private:
@@ -246,25 +252,7 @@ class EulerTourTree{
         return std::make_pair(leftRoot,rightRoot);
     }
     
-
-
-    // root が根の SplayTree の半開区間[l , r)の要素のValue全てに A 掛けて、その後 B 足す(区間アフィン変換)
-    SplayNode* RangeAffine_sub(long long l , long long r , T A , T B , SplayNode* root){
-        std::pair<SplayNode*,SplayNode*> tmp = split(r,root);
-        SplayNode* rightRoot = tmp.second;
-        tmp = split(l,tmp.first);
-        tmp.second->set_lazyAffine(A,B);
-        return merge(merge(tmp.first, tmp.second),rightRoot);
-    }
-
-    // root が根の SplayTree の半開区間[l , r)の要素のValue全てをxにする(区間更新クエリ)
-    SplayNode* RangeUpdate_sub(long long l , long long r , T x , SplayNode* root){
-        std::pair<SplayNode*,SplayNode*> tmp = split(r,root);
-        SplayNode* rightRoot = tmp.second;
-        tmp = split(l,tmp.first);
-        tmp.second->set_lazyUpdate(x);
-        return merge(merge(tmp.first, tmp.second),rightRoot);
-    }
+    
 
     /*
         オイラーツアー木としての内部処理
@@ -439,35 +427,56 @@ class EulerTourTree{
         delete_edge(u,v);
         delete_edge(v,u);
     }
-
-
     // 頂点 u の部分木の頂点全ての Value を x にする
-    // ただし、u の親 p を引数で与えないといけない (lct と併用すると ok)
+    // u の親 p を引数で与えないといけない (lct と併用すると ok)
+    // ただし、u が根の場合は p はなんでも OK 
     void SubTreeUpdate(node_type u , node_type p , T x ){
-        // 辺が存在する
-        assert(EdgeFactor[p][u] != nullptr);
-        long long l = find_EdgeFactor(p,u);
-        long long r = find_EdgeFactor(u,p);
-        // (p→u) が (u→p) より左なら p の情報は正しい
-        assert(l < r);
+        // u が全体の根の場合。
+        if(root(u) == u){   
+            NodeFactor[u]->splay();
+            NodeFactor[u]->set_lazyUpdate(x);
+            NodeFactor[u]->update();
+            return;
+        }
+        assert(EdgeFactor[p][u] != nullptr);// 辺が存在するか assert
+        long long l = find_EdgeFactor(p,u);// u に入るタイミング
+        long long r = find_EdgeFactor(u,p);// u から出るタイミング
+        assert(l < r);// p の情報が正しいか assert
         NodeFactor[u]->splay();
-        RangeUpdate_sub(l+1,r,x,NodeFactor[u]);
+        std::pair<SplayNode*,SplayNode*> tmp = split(r,NodeFactor[u]);
+        SplayNode* rightRoot = tmp.second;
+        tmp = split(l+1,tmp.first);
+        tmp.second->set_lazyUpdate(x);
+        tmp.second->update();
+        merge(merge(tmp.first, tmp.second),rightRoot);
     }
 
     // 頂点 u の部分木の頂点全ての Value を A*Value + B にする
-    // ただし、u の親 p を引数で与えないといけない (lct と併用すると ok)
+    // u の親 p を引数で与えないといけない (lct と併用すると ok)
+    // ただし、u が根の場合は p はなんでも OK 
     void SubTreeAffine(node_type u , node_type p , T A , T B){
-        // 辺が存在する
-        assert(EdgeFactor[p][u] != nullptr);
-        long long l = find_EdgeFactor(p,u);
-        long long r = find_EdgeFactor(u,p);
-        // (p→u) が (u→p) より左なら p の情報は正しい
-        assert(l < r);
+        // u が全体の根の場合。
+        if(root(u) == u){   
+            NodeFactor[u]->splay();
+            NodeFactor[u]->set_lazyAffine(A,B);
+            NodeFactor[u]->update();
+            return;
+        }
+        assert(EdgeFactor[p][u] != nullptr);// 辺が存在するか assert
+        long long l = find_EdgeFactor(p,u);// u に入るタイミング
+        long long r = find_EdgeFactor(u,p);// u から出るタイミング
+        assert(l < r);// p の情報が正しいか assert
         NodeFactor[u]->splay();
-        RangeAffine_sub(l+1,r,A,B,NodeFactor[u]);
+        std::pair<SplayNode*,SplayNode*> tmp = split(r,NodeFactor[u]);
+        SplayNode* rightRoot = tmp.second;
+        tmp = split(l+1,tmp.first);
+        tmp.second->set_lazyAffine(A,B);
+        tmp.second->update();
+        merge(merge(tmp.first, tmp.second),rightRoot);
     }
     // 頂点 u の部分木の頂点全ての Value を Value + x にする
-    // ただし、u の親 p を引数で与えないといけない (lct と併用すると ok)
+    // u の親 p を引数で与えないといけない (lct と併用すると ok)
+    // ただし、u が根の場合は p はなんでも OK 
     void SubTreeAdd(node_type u , node_type p , T x){SubTreeAffine(u,p,T(1),x);}
 
     // 頂点 u の部分木に対応するオイラーツアーの区間を表す SplayNode のコピーを取得
@@ -545,6 +554,9 @@ class EulerTourTree{
         return res;
     }
 };
+
+
+
 
 
 
