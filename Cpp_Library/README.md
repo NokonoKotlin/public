@@ -24,7 +24,94 @@ https://opensource.org/licenses/mit-license.php
 
 
 
-## 索引と簡単な説明
+## ライブラリデザイン
+ライブラリのデザインについて、方針などをまとめます。
+全てのライブラリは `/template/template.hpp` に置いてある `競プロテンプレート` に依存しています。
+
+### 全体の思想&方針
+
+- **「使い勝手/汎用性」,「拡張性/保守性,「シンプルかつ理解しやすい実装/ロジック」** を意識する。
+- 依存関係を作らないようにするが、他のライブラリと併用できるような設計にはしておく。  
+    - modint を ArraySplayTree に載せるとか  
+- **ライブラリ全体を通して、似た機能は同じ方針で設計する。**  
+- AtCoder の言語環境に合わせ、新しい良い言語機能はどんどん採用する。
+    - 新しい機能にする必要性がない場合や、可読性が下がる場合は採用しない。
+        - 例えば `for(auto x : p)` はライブラリでこう書くモチベーションがあまりない。
+
+### クラスに用意するもの
+- 基本的に C++ の思想に沿う
+    - 目的が競プロである以上、コードのシンプルさを損ねるようなものは書かない方針で行きます。
+        - コピーしないクラスのコピーコンストラクタとか
+- **メンバとして用意する機能について**
+    - クラスの特有/基本的な機能
+    - 実用上クラスのメンバにした方が良い機能
+    - 実装が複雑で、あらかじめ特殊化しておきたい機能
+- **メンバとして用意する例**
+    - SuffixTree クラスで SuffixLink を経由して移動するメソッド
+    - セグメントツリーの $i$ 番目の要素にアクセスするため、`[]` オペレータを定義する。
+    - モノイドの設計が大変なので、Sum,Min,Max に特殊化してクラスに書き込む。
+- **メンバとして用意しない例**
+    - グリッド上でダイクストラ法を行うことを想定して、頂点番号を整数のペア $(i,j)$ として扱う機能
+        - 基本的でも特有でもない上、設計のシンプルさを破壊する。
+        - ダイクストラ法にこの機能を用意すると、頂点を扱う他のクラスにも同様の機能を持たる必要が出る。
+
+### 演算子オーバーロード
+- modint , Fraction , MyVector などのオブジェクトは、演算子をオーバーロードして直感的に使えるようにする。
+- 演算子の設計は C++ の int などの演算子の設計に準拠する (代入の結合など)。
+- 左辺値/右辺値 について
+    - 基本的に演算子の両辺は const 参照 (`const T&`) で書くが、SplayTree や FPS は勝手に自己の構成を変更するので、場合によっては右辺値参照 (`T&&`) を受け取るようにする。
+        - const なメンバ関数 `F` は `F() const& {}` にしておくと右辺値参照でも const 参照でも呼び出せる(当然`F`は const である前提)
+    - const に関しての資料はこちら (**TODO:記事を書く**)
+- **順序比較について**
+    - **`std::partial_ordering <=>(T a , T b)` を使う (`C++20` の機能で、三方演算子というらしい)**
+        - `<=>` の実装が返す以下の結果から、`< , <= , > , >=` 演算の結果を作るすごいやつ。
+            - `std::partial_ordering::equivalent` : `a` と `b` が等しい
+            - `std::partial_ordering::less` : `a` が `b` 未満である
+            - `std::partial_ordering::greater` : `a` が `b` より大きい
+            - `std::partial_ordering::unordered` : `a` と `b` の順序が未定義
+    - 例えば、`0 <=> ∞` が less を返すように実装する。すると、`0 < ∞` の結果が `true` になる。
+    - unordered について
+        - `a,b` の順序比較ができない時、`unordered` を返し、全ての順序演算が `false` を返す(無限大同士の比較など)。
+            - `unordered` な順序があるバブルソートは永遠に終わらない
+            - `unordered` な順序がある列をソートすると、`unordered` な順序以外の要素も正しくソートされない
+            - できるだけ `unordered` な順序がある要素を比較しない
+### **キャストについて**
+- **`標準の型/クラス` → `自作クラス` のキャストは暗黙で OK**
+    - 基本的に自作クラスの方の機能を参照させたい。
+- **`自作クラス` → `標準の型/クラス` のキャストは明示的にする!!!**
+    - コンパイラに参照される関数が重複してしまうのを避ける。
+
+
+#### 実装例
+`modint` 同士の比較 ( `modint` の順序は未定義だが、`std::map` に載せるために機能だけ持たせておく。)
+```cpp
+template<long long mod>
+class modint{
+    protected:
+    long long v;// 内部でもつ値
+    public:
+
+    // コンストラクタ兼 int (long long)からの暗黙キャスト
+    modint(long long v_){
+        v = v_%mod;
+        if(v<0)v+=mod;
+    }
+
+    // 明示的キャスト
+    template<typename T>
+    explicit operator T(){return T(this->v);}
+
+    // これだけで modint の <,<=,>,>= の機能を定義できる
+    // int → modint は暗黙にキャストされるので、int と modint の比較も定義されている
+    // int と int の比較はここでは呼ばれない。(おそらく C++ のキャストの順序の関係??? 要勉強 )
+    friend std::partial_ordering <=>(const modint<mod>& a , const modint<mod>&b){
+        return (a.v <=> b.v); // long long の <=> に丸投げする
+    }
+}
+```
+
+
+## ライブラリの索引と簡単な説明
 
 
 #### ArraySplayTree
@@ -83,158 +170,3 @@ Ukkonen's Algorithm を採用(オンライン構築可能)。
 - 暇な時に随時追加していきます。
 
 
-## 競プロテンプレート
-
-`/template/template.hpp` に置いてあります。 
-
-```
-
-
-//------------------------------------------
-// include
-//------------------------------------------
-#include <vector>
-#include <list>
-#include <map>
-#include <set>
-#include <unordered_set>
-#include <unordered_map>
-#include <deque>
-#include <stack>
-#include <bitset>
-#include <algorithm>
-#include <functional>
-#include <numeric>
-#include <utility>
-#include <sstream>
-#include <iostream>
-#include <iomanip>
-#include <cstdio>
-#include <cmath>
-#include <cstdlib>
-#include <cctype>
-#include <string>
-#include <cstring>
-#include <ctime>
-#include<queue>
-#include<complex>
-#include <cassert>
-using namespace std;
-
-
-//------------------------------------------
-// typename
-//------------------------------------------
-
-typedef long long ll;
-typedef vector<long long > vll;
-typedef pair<long long , long long> pll;
-typedef map<ll , ll >mll;
-typedef vector<pair<ll , ll> > vpll;
-
-//------------------------------------------
-// const
-//------------------------------------------
-
-const int DOUBLE_PRECISION = 20;// 出力の有効数字(適用のためには別で宣言が必要)
-const double EPS = 1e-12;// double の最小単位
-const double PI  = acos(-1.0); // 
-// long long の ∞/-∞。差が 63 bit に入る
-const long long INF = 4e18;
-const long long NINF = -4e18;
-
-//------------------------------------------
-// macro
-//------------------------------------------
-
-#define ALL(a)  (a).begin(),(a).end()
-#define RALL(a) (a).rbegin(), (a).rend()
-#define SORT(c) sort((c).begin(),(c).end())
-#define FOR(i,a,b) for(long long i=(a);i<(b);++i)
-#define REP(i,n)  FOR(i,0,n)
-// input/output
-#define dump(x)  cerr << #x << " = " << (x) << endl;
-#define debug(x) cerr << #x << " = " << (x) << " (L" << __LINE__ << ")" << " " << __FILE__ << endl;
-#define ENDL cout << endl;
-#define Read(x) cin >> x;
-#define CinLL(x) long long x;cin>>x;
-#define CinSTR(x) string x;cin>>x;
-#define CinVec(a) for(auto& xxxxxxxxxx_uniquename_xxxxxxxxxxx : a)cin >> xxxxxxxxxx_uniquename_xxxxxxxxxxx;
-#define CinTable(a) for(auto& asdfghjkl : a)for(auto& zxcvbnm : asdfghjkl)cin >> zxcvbnm;
-
-//------------------------------------------
-// template 
-//------------------------------------------
-
-// num <-> string
-long long toInt(string s) {long long v; istringstream sin(s);sin>>v;return v;}
-double toReal(string s){// 計算時間は大富豪だし、色々とこわいので注意
-    if(s.find('.') == s.size())return double(toInt(s));string t = s.substr(s.find('.')+1);
-    return double(toInt(s.substr(0,s.find('.')))) + double(toInt(t))*pow(0.1,double(t.size()));
-}
-template<class T> inline string toString(T x) {ostringstream sout;sout.precision(DOUBLE_PRECISION);sout<<x;return sout.str();}
-int getdigit(ll n){return toString(n).size();}// 整数 n の桁数
-string tobinary(ll x){
-    string res = "";
-    do{res+='0' + x%2;}while((x>>=1) > 0);
-    while(res.size() > 1 && res.back() == '0')res.pop_back();
-    reverse(res.begin(),res.end());
-    return res;
-}
-
-
-// 2 次元のテーブルを出力 (T << オペレータを持つ型)。セル幅と行数と幅を指定。(セル幅は 3 以上、行幅はセル幅 * 2 + 3 以上)
-template<class T> void DebugTable(vector<vector<T>> A , const int cellwidth = 7 , const int linewidth = 89 , const int line_num_lim = 100){
-    while(A.size() > line_num_lim)A.pop_back();
-    A.insert(A.begin(),vector<T>(0));vector<T>(linewidth+1,0).swap(A[0]);
-    for(int i = 0; i < A[0].size() ; i++)A[0][i] = i;// index ををメモするところを追加
-    vector<vector<char>> buffer((A.size())*2+1,vector<char>(linewidth,' '));
-    for(int i = 0 ; i < buffer.size() ; i++)if(i%2==0)for(int j = 0; j < linewidth ; j++)buffer[i][j] = ('-');// 初期化値
-    for(int i = 0 ; i < buffer.size() ; i++)buffer[i][0] = '|';
-    for(int i = 0 ; i < buffer.size() ; i++)buffer[i].back() = '|';
-    for(int i = 0 ; i < A.size() ; i++){
-        for(int j = 0 ; j <= linewidth ; j++){
-            ll lef = (cellwidth+1)*(j+1) + 1;
-            if(lef >= linewidth)break;
-            buffer[i*2+1][lef-1] = '|';// 縦の仕切り棒
-        }
-    }
-    for(int i = 0 ; i < A.size() ; i++){
-        for(int j = 0 ; j < A[i].size() ; j++){
-            T x = A[i][j];string tmp = toString(x);
-            ll lef = (cellwidth+1)*(j+1) + 1;if(lef+tmp.size() >= linewidth)break;
-            if(tmp.size() > cellwidth){
-                while(tmp.size() > cellwidth)tmp.pop_back();
-                tmp.back() = '~';// 切り捨てたことを知らせるため
-            }
-            for(int k = 0 ; k < tmp.size() ; k++)buffer[i*2+1][lef + k] = tmp[k];
-        }
-    }
-    buffer[1][(cellwidth)/2] = 'i';buffer[1][(cellwidth)/2+1 ] = ',';buffer[1][(cellwidth)/2+2 ] = 'j';
-    for(int i = 1 ; i < A.size() ; i++){
-        T x = i-1;string tmp = toString(x);
-        ll lef = 1;if(lef+tmp.size() >= linewidth)break;
-        if(tmp.size() > cellwidth){
-            while(tmp.size() > cellwidth)tmp.pop_back();
-            tmp.back() = '~';// 切り捨てたことを知らせるため
-        }
-        for(int k = 0 ; k < tmp.size() ; k++)buffer[i*2+1][lef + k] = tmp[k];
-    }
-    cerr << " DEBUG TABLE : " << endl;
-    cerr << "(セル幅 - " <<  cellwidth << ") , (行幅 - " << linewidth << ") , (行数 - " << line_num_lim << ")" << endl;
-    for(auto& r : buffer){for(char& c : r)cerr << char(c);ENDL;}
-    return;
-}
-// DebugTable に依存
-template<class T> void DebugArray(vector<T> A){
-    vector<vector<T>> Table = {A};
-    DebugTable(Table);
-}
-
-
-
-
-
-
-
-```
