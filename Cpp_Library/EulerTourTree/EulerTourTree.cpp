@@ -3,29 +3,7 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**/
-template<typename node_type , typename T>
+template<typename T>
 class EulerTourTree{
     private:
     
@@ -40,7 +18,7 @@ class EulerTourTree{
         long long  SubTreeSize = 1;
 
         /* Euler Tour の要素 */
-        node_type from , to;// オイラーツアーの移動方向の両端点
+        long long from , to;// オイラーツアーの移動方向の両端点
         bool isNodeFactor = false;// NodeFactor かどうか (NodeFactor のみ Value を持つ)
         long long SubTreeNodeFactorCount = 0;// SplayTree としての部分木に NodeFactor がいくつ含まれているか
 
@@ -62,10 +40,10 @@ class EulerTourTree{
         
         SplayNode(){}
         // EdgeFactor としての SplayNode
-        SplayNode(node_type u_, node_type v_)
+        SplayNode(long long u_, long long v_)
             :from(u_),to(v_),isNodeFactor(false){update();}
         // NodeFactor としての SplayNode
-        SplayNode(node_type u_, node_type v_, T val)
+        SplayNode(long long u_, long long v_, T val)
             :from(u_),to(v_),isNodeFactor(true),Value(val){update();}
 
 
@@ -141,26 +119,42 @@ class EulerTourTree{
                 this->Min = numeric_limits<T>::max();
                 this->Max = numeric_limits<T>::min();
             }
-            if(bool(this->left)){
+            if(this->left != nullptr){
                 this->left->eval();
                 this->SubTreeSize += this->left->SubTreeSize;
                 this->SubTreeNodeFactorCount += this->left->SubTreeNodeFactorCount;
-                if(this->left->Min < this->Min)this->Min = this->left->Min;
-                if(this->left->Max > this->Max)this->Max = this->left->Max;
-                this->Sum += this->left->Sum;
             }
-            if(bool(this->right)){
+            if(this->right != nullptr){
                 this->right->eval();
                 this->SubTreeSize += this->right->SubTreeSize;
                 this->SubTreeNodeFactorCount += this->right->SubTreeNodeFactorCount;
-                if(this->right->Min < this->Min)this->Min = this->right->Min;
-                if(this->right->Max > this->Max)this->Max = this->right->Max;
+            }
+            // NodeFactor がない区間は集約せず、Sum などはモノイドの単位元を維持する
+            if(this->SubTreeNodeFactorCount == 0)return;
+            
+            if(this->left != nullptr){
+                this->left->eval();
+                this->Min = min<T>(this->left->Min,this->Min);
+                this->Max = max<T>(this->left->Max,this->Max);
+                this->Sum += this->left->Sum;
+            }
+            if(this->right != nullptr){
+                this->right->eval();
+                this->Min = min<T>(this->right->Min,this->Min);
+                this->Max = max<T>(this->right->Max,this->Max);
                 this->Sum += this->right->Sum;
             } 
             return;
         }
         /*この頂点にアクセスされるたびに、各flagがtrueなら遅延させていた処理を実行し、左右の子にflagを伝播する*/
         void eval(){
+            // NodeFactor がない区間は遅延評価をかけず、Sum などはモノイドの単位元を維持する 
+            if(this->SubTreeNodeFactorCount == 0){
+                this->lazy_update.first = false;// 遅延評価を解消するのを忘れずに
+                this->lazy_affine.first = false;// 遅延評価を解消するのを忘れずに
+                return;
+            }
+
             //updateクエリの処理が先
             if(this->lazy_update.first){
                 this->Value = this->lazy_update.second;// NodeFactor じゃなくても、どうせアクセスしないので代入して OK 
@@ -269,28 +263,28 @@ class EulerTourTree{
 
     
     // [x] := 頂点 x を表す特殊 SplayNode (x→x で、EulerTour に一度のみ登場する )
-    unordered_map<node_type,SplayNode*> NodeFactor;
+    unordered_map<long long,SplayNode*> NodeFactor;
     // [u][v] := u → v の移動を表す SplayNode 
-    unordered_map<node_type,unordered_map<node_type,SplayNode*>> EdgeFactor;
+    unordered_map<long long,unordered_map<long long,SplayNode*>> EdgeFactor;
     // 頂点が持つ値の初期値 (NodeFactor のみ値を持つ)
     T init_v;
 
 
     // 頂点集合を明示的に宣言しない関係上、必要なタイミングで一度 NodeFactor を確保する必要がある。
-    bool register_node(node_type u , T val = T()){
+    bool register_node(long long u , T val = T()){
         if(NodeFactor[u] != nullptr)return false;
         NodeFactor[u] = new SplayNode(u,u,init_v);
         return true;
     }
     // 必要なタイミングで一度 EdgeFactor を確保する必要がある。
     // 片方向の有向辺なことに注意
-    bool register_edge(node_type u , node_type v){
+    bool register_edge(long long u , long long v){
         if(EdgeFactor[u][v] != nullptr)return false;
         EdgeFactor[u][v] = new SplayNode(u,v);
         return true;
     }
     // (u→v) の EdgeFactor 削除/解放 する
-    bool delete_edge(node_type u , node_type v){
+    bool delete_edge(long long u , long long v){
         if(EdgeFactor[u][v] == nullptr)return false;// すでに解放済み
         delete EdgeFactor[u][v];
         EdgeFactor[u][v] = nullptr;
@@ -299,7 +293,7 @@ class EulerTourTree{
 
     // u が属する木のオイラーツアーでの、u の NodeFactor の出現位置を答える (0-index)
     // 副作用 : u の NodeFactor が splay される
-    long long find_NodeFactor(node_type u){
+    long long find_NodeFactor(long long u){
         register_node(u);
         NodeFactor[u]->splay();
         if(NodeFactor[u]->left != nullptr)return NodeFactor[u]->left->SubTreeSize;
@@ -309,7 +303,7 @@ class EulerTourTree{
     // u,v が属する木のオイラーツアーでの、u→v と移動する EdgeFactor の出現位置を答える (0-index)
     // なければ -1
     // 副作用 : u の NodeFactor が splay される
-    long long find_EdgeFactor(node_type u , node_type v){
+    long long find_EdgeFactor(long long u , long long v){
         register_node(u);
         register_node(v);
         if(EdgeFactor[u][v] == nullptr)return -1;
@@ -319,11 +313,35 @@ class EulerTourTree{
     }
 
 
+    // 頂点 u を根とする部分木のオイラーツアーに対応する区間の SplayNode* (SpalyTree の根) を切り離す。
+    // {切り離した区間の SplayNode , {左側 の SplayNode , 右側の SpalyNode }}
+    // 必ず戻す必要がある (辺を cut するわけではない)
+    pair<SplayNode*,pair<SplayNode*,SplayNode*>> SplitSubTree(long long u , long long p){
+        register_node(u);
+        register_node(p);
+        long long rt = root(u);// 木の根
+        // u が木の根の場合
+        if(u == rt){
+            NodeFactor[u]->splay();
+            return {NodeFactor[u],{nullptr,nullptr}};
+        }
+        assert(EdgeFactor[p][u] != nullptr);// 辺が存在するか assert
+        // u の部分木のオイラーツアー区間を切り取る (入る辺 , 出る辺も含む)
+        long long l = find_EdgeFactor(p,u);
+        long long r = find_EdgeFactor(u,p);
+        assert(l < r);// p の情報が正しいか assert
+        NodeFactor[u]->splay();
+        pair<SplayNode*,SplayNode*> tmp = split(r+1,NodeFactor[u]);
+        SplayNode* rightnode = tmp.second;
+        tmp = split(l,tmp.first);
+        return {tmp.second,{tmp.first,rightnode}};
+    }
+
     
     void release(){
-        for(pair<node_type,SplayNode*>p : NodeFactor)if(p.second != nullptr)delete p.second;
-        for(pair<node_type,unordered_map<node_type,SplayNode*>> table : EdgeFactor){
-            for(pair<node_type,SplayNode*>e : table.second)delete e.second;
+        for(pair<long long,SplayNode*>p : NodeFactor)if(p.second != nullptr)delete p.second;
+        for(pair<long long,unordered_map<long long,SplayNode*>> table : EdgeFactor){
+            for(pair<long long,SplayNode*>e : table.second)delete e.second;
         }
     }
     public:
@@ -334,30 +352,30 @@ class EulerTourTree{
     // デストラクタ
     ~EulerTourTree(){release();}
     // 複雑な挙動を回避するので、コンストラクタによるコピー/ムーブを一律に禁止する。コピーは copy() 関数に任せる
-    EulerTourTree(const EulerTourTree<node_type,T> &x) = delete ;
-    EulerTourTree<node_type,T> & operator = (const EulerTourTree<node_type,T> &x) = delete ;
-    EulerTourTree ( EulerTourTree<node_type,T> && x){assert(0);}
-    EulerTourTree<node_type,T> & operator = ( EulerTourTree<node_type,T> && x){assert(0);}
+    EulerTourTree(const EulerTourTree<T> &x) = delete ;
+    EulerTourTree<T> & operator = (const EulerTourTree<T> &x) = delete ;
+    EulerTourTree ( EulerTourTree<T> && x){assert(0);}
+    EulerTourTree<T> & operator = ( EulerTourTree<T> && x){assert(0);}
     
 
     // u が属する木のオイラーツアーのサイズ
     // 属する木のサイズ個 NodeFactor と、(サイズ-1)×2 個の EdgeFactor からなる
     // 副作用 : u の NodeFactor が splay される
-    long long EulerTourSize(node_type u){
+    long long EulerTourSize(long long u){
         register_node(u);
         NodeFactor[u]->splay();
         return NodeFactor[u]->SubTreeSize;
     }
     // u が属する木のサイズ
     // 副作用 : u の NodeFactor が splay される
-    long long ComponentSize(node_type u){
+    long long ComponentSize(long long u){
         register_node(u);
         return (EulerTourSize(u) + 2)/3;// 復元する
     }
 
     // 頂点 u が属する木の根の番号
     // 副作用 : u の NodeFactor が splay される
-    node_type root(node_type u){
+    long long root(long long u){
         register_node(u);
         SplayNode* tmp = NodeFactor[u];
         tmp->splay();
@@ -372,11 +390,11 @@ class EulerTourTree{
 
     // u,v が同じ連結成分に属するか
     // 副作用 : u,v の NodeFactor が未定義の順に splay される
-    bool same(node_type u ,node_type v){return bool(root(u) == root(v));}
+    bool same(long long u ,long long v){return bool(root(u) == root(v));}
 
     // 頂点 i のもつ値(value)を x に変更する
     // 副作用 : i の NodeFactor を splay
-    void update_val(node_type i , T x){
+    void update_val(long long i , T x){
         register_node(i);
         NodeFactor[i]->splay();
         NodeFactor[i]->Value = x;
@@ -386,7 +404,7 @@ class EulerTourTree{
     // 頂点 u を、属する木の根とする。
     // evert(u) すると、u の NodeFactor (u→u) が オイラーツアーの先頭になる
     // 副作用 : u の NodeFactor が splay される
-    void evert(node_type u){
+    void evert(long long u){
         register_node(u);
         if(ComponentSize(u) == 1)return;
         long long c = find_NodeFactor(u);
@@ -398,7 +416,7 @@ class EulerTourTree{
 
     // u-v をリンクする (u の子に v をつける)
     // 副作用 : u の NodeFactor が splay される
-    void link(node_type u , node_type v){
+    void link(long long u , long long v){
         assert(!same(u,v));
         register_node(u);
         register_node(v);
@@ -414,7 +432,7 @@ class EulerTourTree{
 
     // u-v をカットする。(辺が存在している前提)
     // 副作用 : u,v の NodeFactor を splay する
-    void cut(node_type u , node_type v){
+    void cut(long long u , long long v){
         register_node(u);
         register_node(v);
         assert(EdgeFactor[u][v] != nullptr && EdgeFactor[v][u] != nullptr);
@@ -437,77 +455,39 @@ class EulerTourTree{
     // 頂点 u の部分木の頂点全ての Value を x にする
     // u の親 p を引数で与えないといけない (lct と併用すると ok)
     // ただし、u が根の場合は p はなんでも OK 
-    void SubTreeUpdate(node_type u , node_type p , T x ){
-        // u が全体の根の場合。
-        if(root(u) == u){   
-            NodeFactor[u]->splay();
-            NodeFactor[u]->set_lazyUpdate(x);
-            NodeFactor[u]->update();
-            return;
-        }
-        assert(EdgeFactor[p][u] != nullptr);// 辺が存在するか assert
-        long long l = find_EdgeFactor(p,u);// u に入るタイミング
-        long long r = find_EdgeFactor(u,p);// u から出るタイミング
-        assert(l < r);// p の情報が正しいか assert
-        NodeFactor[u]->splay();
-        std::pair<SplayNode*,SplayNode*> tmp = split(r,NodeFactor[u]);
-        SplayNode* rightRoot = tmp.second;
-        tmp = split(l+1,tmp.first);
-        tmp.second->set_lazyUpdate(x);
-        tmp.second->update();
-        merge(merge(tmp.first, tmp.second),rightRoot);
+    void SubTreeUpdate(long long u , T x , long long p){
+        register_node(u);
+        pair<SplayNode*,pair<SplayNode*,SplayNode*>> tmp = SplitSubTree(u,p);
+        tmp.first->set_lazyUpdate(x);
+        tmp.first->update();
+        merge(merge(tmp.second.first, tmp.first),tmp.second.second);
     }
 
     // 頂点 u の部分木の頂点全ての Value を A*Value + B にする
     // u の親 p を引数で与えないといけない (lct と併用すると ok)
     // ただし、u が根の場合は p はなんでも OK 
-    void SubTreeAffine(node_type u , node_type p , T A , T B){
-        // u が全体の根の場合。
-        if(root(u) == u){   
-            NodeFactor[u]->splay();
-            NodeFactor[u]->set_lazyAffine(A,B);
-            NodeFactor[u]->update();
-            return;
-        }
-        assert(EdgeFactor[p][u] != nullptr);// 辺が存在するか assert
-        long long l = find_EdgeFactor(p,u);// u に入るタイミング
-        long long r = find_EdgeFactor(u,p);// u から出るタイミング
-        assert(l < r);// p の情報が正しいか assert
-        NodeFactor[u]->splay();
-        std::pair<SplayNode*,SplayNode*> tmp = split(r,NodeFactor[u]);
-        SplayNode* rightRoot = tmp.second;
-        tmp = split(l+1,tmp.first);
-        tmp.second->set_lazyAffine(A,B);
-        tmp.second->update();
-        merge(merge(tmp.first, tmp.second),rightRoot);
+    void SubTreeAffine(long long u , T A , T B , long long p){
+        register_node(u);
+        pair<SplayNode*,pair<SplayNode*,SplayNode*>> tmp = SplitSubTree(u,p);
+        tmp.first->set_lazyAffine(A,B);
+        tmp.first->update();
+        merge(merge(tmp.second.first, tmp.first),tmp.second.second);
     }
     // 頂点 u の部分木の頂点全ての Value を Value + x にする
     // u の親 p を引数で与えないといけない (lct と併用すると ok)
     // ただし、u が根の場合は p はなんでも OK 
-    void SubTreeAdd(node_type u , node_type p , T x){SubTreeAffine(u,p,T(1),x);}
+    void SubTreeAdd(long long u , T x , long long p ){SubTreeAffine(u,T(1),x,p);}
 
     // 頂点 u の部分木に対応するオイラーツアーの区間を表す SplayNode のコピーを取得
     // u の親 p を引数で与えないといけない (lct と併用すると ok)
     // ただし、u が根の場合は p はなんでも OK 
     // read-only なので SplayNode の隣接ノードへのポインタを封印したものを返す
-    SplayNode SubTree(node_type u , node_type p){ 
+    SplayNode SubTree(long long u , long long p){ 
         SplayNode res;
-        // u が全体の根の場合。
-        if(root(u) == u){   
-            NodeFactor[u]->splay();
-            res = (*NodeFactor[u]);
-        }else{
-            assert(EdgeFactor[p][u] != nullptr);// 辺が存在するか assert
-            long long l = find_EdgeFactor(p,u);// u に入るタイミング
-            long long r = find_EdgeFactor(u,p);// u から出るタイミング
-            assert(l < r);// p の情報が正しいか assert        
-            NodeFactor[u]->splay();
-            std::pair<SplayNode*,SplayNode*> tmp = split(r,NodeFactor[u]);
-            SplayNode* rightRoot = tmp.second;
-            tmp = split(l+1,tmp.first);
-            res = (*tmp.second);// 真ん中をコピー
-            merge(merge(tmp.first, tmp.second),rightRoot);
-        }
+        register_node(u);
+        pair<SplayNode*,pair<SplayNode*,SplayNode*>> tmp = SplitSubTree(u,p);
+        res = (*tmp.first);// 真ん中をコピー
+        merge(merge(tmp.second.first, tmp.first),tmp.second.second);
         res.parent = res.left = res.right = nullptr;
         return res;// コピーを返す
     }
@@ -515,19 +495,22 @@ class EulerTourTree{
 
     // u が属する木のオイラーツアーを出力。
     // u の NodeFactor を splay するのでデバッグの際は注意
-    void Debug(node_type u){
+    void Debug(long long u){
         long long sz = EulerTourSize(u);
+        cerr << "Debug From Root : " << root(u) << endl;
         SplayNode* rt = NodeFactor[u];
         rt->splay();
-        cerr << "Debug : " << u << endl;
-        for( int i = 0 ; i < sz ; i++){rt = getNode(i,rt);cerr << "( " << rt->from << " , " << rt->to << " ) , "; } 
+        for( int i = 0 ; i < sz ; i++){
+            rt = getNode(i,rt);
+            cerr << "( " << rt->from << " , " << rt->to << " ) , value = " << rt->Value << endl; 
+        }
+             
         NodeFactor[u]->splay();
-        cerr << endl;
     }
 
     // オイラーツアー (到達を全て記録)
-    vector<node_type> tour(node_type u){
-        vector<node_type> res(0);
+    vector<long long> tour(long long u){
+        vector<long long> res(0);
         SplayNode* rt = NodeFactor[u];
         rt->splay();
         long long sz = rt->SubTreeSize;
@@ -541,13 +524,13 @@ class EulerTourTree{
     }
     // compress ver. のオイラーツアー。
     // 部分木に入る時と出る時のみをメモする
-    vector<node_type> tour_compress(node_type u){
-        vector<node_type> res,tmp;
+    vector<long long> tour_compress(long long u){
+        vector<long long> res,tmp;
         tmp = this->tour(u);
         // [x] := tour で x が最初に登場する地点 
-        unordered_map<node_type,priority_queue<long long>> first;
+        unordered_map<long long,priority_queue<long long>> first;
         // [x] := tour で x が最後に登場する地点 
-        unordered_map<node_type,priority_queue<long long>> last;
+        unordered_map<long long,priority_queue<long long>> last;
         for(int i =0 ; i < tmp.size() ; i++){
             first[tmp[i]].push(-i);
             last[tmp[i]].push(i);
@@ -560,13 +543,14 @@ class EulerTourTree{
     }
     // read-only で nodeID の NodeFactor のコピーを取得 
     // 副作用 : nodeID の NodeFactor を splay 
-    SplayNode operator [](node_type nodeID){
+    SplayNode operator [](long long nodeID){
         NodeFactor[nodeID]->splay();
         SplayNode res = *(NodeFactor[nodeID]);
         res.parent = res.left = res.right = nullptr;// read-only なので隣接頂点へのアクセスを封印
         return res;
     }
 };
+
 
 
 
