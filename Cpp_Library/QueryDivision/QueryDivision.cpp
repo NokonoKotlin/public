@@ -4,6 +4,9 @@
 
 
 
+
+
+
 /*
     - 更新クエリの有効期限が決まっているようなクエリ処理をオフライン(クエリ先読み)で行うコードのテンプレート
     - クエリが 1 つ飛んでくるごとに時刻が 1 進む問題が対象。  
@@ -177,8 +180,12 @@ class OfflineQueryTemplate{
     }
 
     // 時刻 t の取得クエリの結果
-    result res(int t){return ans[t];}
-
+    // 時刻 t に取得クエリが存在しない場合、first が false (second は未定義)
+    pair<bool,result> res(int t){
+        if(!ask[t].first)return {false,result(-1)};
+        return {true,ans[t]};
+    }
+    
 };
 
 
