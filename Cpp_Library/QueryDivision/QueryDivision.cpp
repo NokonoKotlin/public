@@ -86,7 +86,6 @@ class OfflineQueryTemplate{
 
 
     // 有効期限が [l,r) のクエリを時系列セグ木に追加
-    // 取得クエリの有効期限は 1 とする ([i,i+1) と表記)
     void add_query_sub(int l , int r , update x , int SubRoot = SegTreeRoot){
         // 部分木の区間
         int left = Range[SubRoot].first;
