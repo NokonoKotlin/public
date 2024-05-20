@@ -4,6 +4,8 @@
 N 次元矩形の領域の取得クエリ/一点更新 を行うデータ構造。  
 セグメントツリーの要素を、一次元下のセグメントツリーと捉えることで再帰的に領域を選択する。  
 
+<a href = "https://nokonokotlin.github.io/Home/Contents/algorithm/Articles/DataStructure/NdSegTree.html">説明はこちらの記事(自筆)</a>
+
 ## ライセンス (license)
 Copyright (c) 2024 NokonoKotlin
 Released under the MIT license
