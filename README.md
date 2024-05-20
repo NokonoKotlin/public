@@ -74,7 +74,7 @@ https://opensource.org/licenses/mit-license.php
 <a href = "https://nokonokotlin.github.io/Home/Contents/algorithm/index.html">こちらのページ</a> にアルゴリズムや自作ライブラリの記事を載せています。
 
 
-## Cpp_Library
+## mylibrary
 
 競プロに関するコード&ドキュメントのフォルダです。自慢のコードが置いてあります。
 
