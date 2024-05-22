@@ -4,9 +4,6 @@
 
 
 
-/*
-
-*/
 template<typename index_int , class T>
 class SegmentTree{
     private:
@@ -169,10 +166,30 @@ class SegmentTree{
     Node* Root = nullptr;
     index_int _Llim,_Rlim;
 
+    // デストラクタ - メモリ解放
+    void release(){
+        // dfs で解放
+        stack<Node*> s;
+        s.push(Root);
+        while(!s.empty()){
+            Node* now = s.top();
+            s.pop();
+            if(now->left != nullptr)s.push(now->left);
+            if(now->right != nullptr)s.push(now->right);
+            delete now;
+        }
+    }
     public:
     SegmentTree(){}
     // index の範囲を受け取る
     SegmentTree(index_int L_ , index_int R_ , T init_value):_Llim(L_),_Rlim(R_),Root(new Node(nullptr,L_,R_,init_value)){}
+    ~SegmentTree(){release();}
+    // 複雑な挙動を回避するので、コンストラクタによるコピー/ムーブを一律に禁止する。
+    SegmentTree(const SegmentTree<index_int,T> &x) = delete ;
+    SegmentTree& operator = (const SegmentTree<index_int,T> &x) = delete ;
+    SegmentTree ( SegmentTree<index_int,T>&& x){assert(0);}
+    SegmentTree& operator = ( SegmentTree<index_int,T>&& x){assert(0);}
+
     // 有効な index の範囲が [ Llimit() , Rlimit() ) に対応
     index_int Llimit(){return _Llim;}
     index_int Rlimit(){return _Rlim;}
@@ -260,7 +277,5 @@ class SegmentTree{
     }
 
 };
-
-
 
 
