@@ -2,8 +2,106 @@
 #include "./../template/template.hpp"
 
 
-/*
 
+
+
+
+
+
+
+
+/*
+    - T 型の列 : S に対して、頂点 0 を根とする Suffix Tree を構築。変数などは基本的に 0-index。
+    - 列は string / vector の両方に対応したいので template<class VecOrStr> とする
+    - 頂点は Node クラスのポインタで扱うが、ポインタで扱うので中身を変更しないように注意
+    - ノードの番号は生成順 (root の id が 0)。
+    - 空列も接尾辞として含み、辞書順で最小とする(suffix_id は |S| とする)
+        |- 空列である接尾辞に対応するノードが root であるとする。
+    |
+    - 前提
+        |- Suffix Tree は、S の連続部分列を辺ラベルに持つ木である。
+            |- S のどの区間かを表す半開区間を持たせる
+        |- root から列 R に沿って移動した結果到達した地点を「R に対応する地点」と呼ぶことにする
+        |- 根から地点 P までの辺上に存在する要素を連結してできる列を「P に対応する列」と呼ぶことにする
+    |
+    - Node クラスが、Suffix Tree を構成する 
+        |- id : 頂点の生成順に割り振られる
+        |- parent : 自身の親 Node のポインタ
+        |- child[x] := 先頭が x の辺の先の Node のポインタ (辺は先頭の文字でユニーク)
+        |- cover : {int,int*} 
+            |- 自身に入ってくる辺に対応する列が S のどの連続部分列かを表す 
+            |- S の長さが不定なので、S の終端を表すときは m_EndS という変数を参照するポインタで表す
+            |- S の半開区間 [cleft() , cright() ) を担当する    
+        |- get_path_length() : このノードに対応する列の長さ
+        |- isEndPoint() 
+            |- 根からこのノードまでの経路上の要素の列が S の接尾辞かどうか
+            |- suffix_id : 接尾辞に対応する場合、何番目から始まるものか(0-index)(なければ-1)
+        |- SuffixLink :「このノードに対応する列の先頭を削除した列」に対応するノードのポインタ
+        |- 木 DP の変数なども持つ
+            |- SubTreeEndPointCount := 自分以降の部分木に含まれる EndPoint の個数
+            |- SubTreeKindOfPrefix  := 自分から根方向に移動して得られる列の種類数 (空列を含まない)
+    |
+    |
+    - PositionData という構造体は Suffix Tree 上の地点 (S の連続部分列) を表す 
+        |- RecentNode から NextNode の方向に place だけ進んだ地点を指す。
+            |- ちょうど頂点の上の場合は、NextNode を nullptr , place を 0 とする。
+        |- get_path_length() : 今いる地点に対応する列の長さ (地点の深さ) を返す
+        |- deque<T> refer : 今いる地点に対応する列
+            |- refer を明示的に持たないことで、地点データを定数サイズオブジェクトとして扱える。
+                |- そのような場合は、refering を false としておく。
+        |- walkSuffixLink : 自分自身を、現在地に対応する列の先頭削除した地点データに変更する(refer も変更される) 
+            |- refer を明示的に持たない場合
+                |- PositionData は何らかの列の連続部分列なので、
+                        / refer の代わりにその文字列の参照と、どこから始まる部分文字列かを表す整数を引数に取る
+                    |- 必ずしも Suffix Tree の元の文字列である必要はない (matching statistics のコード例参照)
+    |
+    |
+    - Node クラスは PositionData クラスは private なので、インターフェースを通して取得する。
+        |- get_root() : 根ノードのポインタを返す。
+        |- from_root(bool refering = true) : 根に対応する地点を返す。(地点データの refering を指定する)
+    |               
+    |
+    - (割と重要) : Suffix Tree 上の各地点は S の連続部分列と 1 対 1 対応している (連続部分列を重複なく列挙しているのと同様)
+        |- search(l,r) := S の区間 [l,r) に対応する地点データを返す。ただし、refer は非明示的
+        |- decode_suffix(PositionData x) := 地点 x に対応する列を連続部分列として含む接尾辞の開始 index のうちの 1 つを返す。
+            |- 返り値を l とすると、地点 x は S の [l,l + |x|) に対応する (|x| は地点 x に対応する列の長さ)
+    |
+    |
+    - オンラインで S を編集 (push_back のみ) しながら Suffix Tree にも変更を反映する
+        |- オンライン編集の必要がなくなれば、Suffix Tree を確定させる (determine())
+    |
+    - Suffix Tree 構築メソッド
+        |- push(s_) : オンライン構築中の S に、s_ (列 or T 型単体) をくっつけて、Suffix Tree にも反映させる。
+            |- オンライン構築中の Suffix Tree では、tree_dp 系の、全ての接尾辞を格納している前提の操作は行えない。
+        |- determine() : オンライン構築を終了し、オフラインにする
+            |- この操作によって、全ての接尾辞が Suffix Tree のノードのいずれかと対応するようになる。
+            |- determine() しないと、木 DP などができないので制限される機能がある
+        |- build(s) := 初期状態から push(s) + determine()
+        
+    |
+    - 探索メソッド
+        |- find(t) := t が S の連続部分列かどうかを判定
+        |- count(t) := t が S の連続部分列として何回現れるか計算
+        |- search(t):= t を検索し、移動できた地点までのデータを返す
+        |- search(l,r) := S の区間 [l,r) に対応する地点データを返す。ただし、refer は非明示的
+    |
+    - 木構造メソッド
+        |- get_node(i) : 頂点番号が i のノードのポインタを返す
+        |- get_suffix_node(i) : S[i] から始まる接尾辞に対応するノードのポインタを返す
+        |- get_depth_as_tree(i) := root から頂点 i までの辺の本数を返す
+        |- edges() := Suffix Tree の辺集合を返す
+        |- dfs(f) := root から dfs するときの到達順に頂点のポインタを並べて返す (f が true なら辞書順最小優先で dfs)
+        |- LCA(地点のデータ 2 つ) := 地点(辺の途中含む)の LCA のデータを返す。
+    |
+    - その他機能たくさん(詳細はコメントを参照)
+        |- クラス外で Suffix Tree 上地点の移動をする際は、コメントに従って以下を使う    
+            |- findValidPath(p,c) := 地点から c の方向に移動できるか
+            |- walkdown(p,c) := 地点 p から c の方向に移動し、p を書き換える
+        |- size() := S のサイズを返す
+        |- [i] : S[i] を read-only でアクセス
+        |- suffix_array()
+        |- get_Kth_subStr(K)
+    |
 */
 template<typename T = long long>
 class SuffixTree{
@@ -131,23 +229,23 @@ class SuffixTree{
 
     // メンバたち
     // これらは内部関数でのみ編集される
-    int vertex_id = 0;// ノードができた順に id を 0 から割り振る(現時点の Suffix Tree の頂点数でもある)
+    int m_vertex_id = 0;// ノードができた順に id を 0 から割り振る(現時点の Suffix Tree の頂点数でもある)
     vector<T> S;// Suffix Tree 構築元の列
-    int S_end_Symbol = 0;// S の終端を表すためのシンボル (葉ノードに入る辺の右端 (int*) に参照される)
+    int m_EndS = 0;// S の終端を表すためのシンボル (葉ノードに入る辺の右端 (int*) に参照される)
     Node* root = nullptr;// 根を表すデータ(Node* のリンクで木を表現)
     Node* lastCreatedLeafNode = nullptr;// 最後に追加された葉ノード
 
     // ノードを追加する際に、共有する部分の(端点の)地点データ
-    PositionData C_data_;
+    PositionData m_data_cstr;
     // 重複して初期化を行わないためのフラグなど
-    bool _determined = false;// 構築が完全終了したか (それぞれの接尾辞に対応するノードが存在するか)
-    bool initialized_basic_data = false;//基本的なデータを初期化ずみか
-    bool initialized_tree_dp = false;//Suffix Tree の部分木の情報を 木DP で初期化したかどうか
-    bool initialized_LCA = false;// LCA の索引について、初期化したかどうか
+    bool m_determined = false;// 構築が完全終了したか (それぞれの接尾辞に対応するノードが存在するか)
+    bool m_initialized_basic_data = false;//基本的なデータを初期化ずみか
+    bool m_initialized_tree_dp = false;//Suffix Tree の部分木の情報を 木DP で初期化したかどうか
+    bool m_initialized_LCA = false;// LCA の索引について、初期化したかどうか
     // 木構造のデータにアクセスするための配列
-    vector<Node*> Nodes;//     [x] := 頂点番号 x のノードへのポインタ
-    vector<Node*> SuffixNodes;// [x] := x 文字目から始まる Suffix に対応するノードへのポインタ(0-index)
-    vector<int> tree_depth;// [x] := 頂点 x まで辺が何本か
+    vector<Node*> m_Nodes;//     [x] := 頂点番号 x のノードへのポインタ
+    vector<Node*> m_SuffixNodes;// [x] := x 文字目から始まる Suffix に対応するノードへのポインタ(0-index)
+    vector<int> m_tree_depth;// [x] := 頂点 x まで辺が何本か
     vector<vector<int> > parent; // [i][u] := 頂点 u の 2^i 個上の頂点
 
 
@@ -155,18 +253,18 @@ class SuffixTree{
     // 基本的なデータの初期化(ノードへのアクセス用の配列など)
     void init_data(){
         if(root == nullptr)return;
-        if(initialized_basic_data)return ;
-        if(!_determined)assert("接尾辞に対応するノードが存在する必要があります"=="");
-        initialized_basic_data = true;
-        Nodes.resize(tree_size() , nullptr);
-        tree_depth.resize(tree_size() , 0);
-        SuffixNodes.resize(S.size()+2 , nullptr);// 空文字列 (|S|+1 からの接尾辞) も含む
+        if(m_initialized_basic_data)return ;
+        if(!m_determined)assert("接尾辞に対応するノードが存在する必要があります"=="");
+        m_initialized_basic_data = true;
+        m_Nodes.resize(tree_size() , nullptr);
+        m_tree_depth.resize(tree_size() , 0);
+        m_SuffixNodes.resize(S.size()+2 , nullptr);// 空文字列 (|S|+1 からの接尾辞) も含む
         vector<Node*> s = dfs();
-        tree_depth[root->id] = 0;
+        m_tree_depth[root->id] = 0;
         for(Node* now : s){
-            Nodes[now->id] = now;//id と Node* を対応付け
-            if(now->isEndPoint())SuffixNodes[now->suffix_id] = now; // x 文字目から始まる Suffix に対応するノードを管理
-            if(now->parent != nullptr)tree_depth[now->id] = tree_depth[now->parent->id] + 1;
+            m_Nodes[now->id] = now;//id と Node* を対応付け
+            if(now->isEndPoint())m_SuffixNodes[now->suffix_id] = now; // x 文字目から始まる Suffix に対応するノードを管理
+            if(now->parent != nullptr)m_tree_depth[now->id] = m_tree_depth[now->parent->id] + 1;
         }
     }
 
@@ -174,9 +272,9 @@ class SuffixTree{
     // あるノード以降の部分木に関するデータを計算
     void init_tree_dp(){
         if(root == nullptr)return;
-        if(initialized_tree_dp)return;//すでに計算済み
-        if(!_determined)assert("接尾辞に対応するノードが存在する必要があります"=="");
-        initialized_tree_dp = true;
+        if(m_initialized_tree_dp)return;//すでに計算済み
+        if(!m_determined)assert("接尾辞に対応するノードが存在する必要があります"=="");
+        m_initialized_tree_dp = true;
         vector<Node*> rdfs = dfs();
         reverse(rdfs.begin() , rdfs.end());
         for(Node* now:rdfs){// 初期化
@@ -198,9 +296,9 @@ class SuffixTree{
     // LCA 計算用の、parent 配列の初期化
     void init_LCA(){
         if(root == nullptr)return;
-        if(initialized_LCA)return;//計算済みなので
-        if(!_determined)assert("接尾辞に対応するノードが存在する必要があります"=="");
-        initialized_LCA = true;
+        if(m_initialized_LCA)return;//計算済みなので
+        if(!m_determined)assert("接尾辞に対応するノードが存在する必要があります"=="");
+        m_initialized_LCA = true;
         const int K = log2(tree_size())+2;
         parent.resize(K,vector<int>(tree_size(),-1));// デフォルトは -1 にしておく
         vector<Node*> s = dfs();
@@ -217,54 +315,54 @@ class SuffixTree{
     // メンバの初期化
     void reset(){
         S.clear();
-        Nodes.clear();
-        SuffixNodes.clear();
+        m_Nodes.clear();
+        m_SuffixNodes.clear();
         parent.clear();
-        initialized_basic_data = false;
-        initialized_tree_dp = false;
-        initialized_LCA = false;
+        m_initialized_basic_data = false;
+        m_initialized_tree_dp = false;
+        m_initialized_LCA = false;
 
         // 構築用データ初期化
-        vertex_id=0;
-        root = new Node({0,new int(0)}, vertex_id++,nullptr,nullptr);
+        m_vertex_id=0;
+        root = new Node({0,new int(0)}, m_vertex_id++,nullptr,nullptr);
         root->SuffixLink = root; // root からは root にリンクが出ている(ここだけ例外)
 
-        C_data_ = from_root(true);// 地点データは refer を明示的に持つ
+        m_data_cstr = from_root(true);// 地点データは refer を明示的に持つ
     }
 
     // x をオンラインで S の末尾に連結する 
     void push_sub(T x){
         if(root == nullptr || S.size() == 0)reset();//初期化
-        assert(!_determined && "構築を完了した Suffix Tree を更新してはいけない" != "");
+        assert(!m_determined && "構築を完了した Suffix Tree を更新してはいけない" != "");
         
         S.push_back(x); 
-        S_end_Symbol++;// x を追加したので、S の長さが 1 増える
+        m_EndS++;// x を追加したので、S の長さが 1 増える
         Node* lastUsedBranch = nullptr;// 最後に追加された分岐点
         do{
-            if(findValidPath(C_data_,x)){
-                // 現時点の Suffix Tree で C_data_ → x に移動できるなら、x の影響がないので C_data_ から x の方向に移動して終了
-                if(lastUsedBranch!=nullptr)lastUsedBranch->SuffixLink = C_data_.RecentNode; 
-                walkdown(C_data_,x);
+            if(findValidPath(m_data_cstr,x)){
+                // 現時点の Suffix Tree で m_data_cstr → x に移動できるなら、x の影響がないので m_data_cstr から x の方向に移動して終了
+                if(lastUsedBranch!=nullptr)lastUsedBranch->SuffixLink = m_data_cstr.RecentNode; 
+                walkdown(m_data_cstr,x);
                 break;
             }
 
-            // Branch を分岐点として S の接尾辞 {C_data_ + x} を Suffix Tree に挿入する
-            Node* Branch = C_data_.RecentNode;
-            if(C_data_.NextNode != nullptr){// 辺の途中に分岐点を新たに作成する場合
-                int middle = C_data_.NextNode->cleft() + C_data_.place;
-                Branch = new Node({C_data_.NextNode->cleft() , new int(middle) } ,vertex_id++ , C_data_.RecentNode , root);
+            // Branch を分岐点として S の接尾辞 {m_data_cstr + x} を Suffix Tree に挿入する
+            Node* Branch = m_data_cstr.RecentNode;
+            if(m_data_cstr.NextNode != nullptr){// 辺の途中に分岐点を新たに作成する場合
+                int middle = m_data_cstr.NextNode->cleft() + m_data_cstr.place;
+                Branch = new Node({m_data_cstr.NextNode->cleft() , new int(middle) } ,m_vertex_id++ , m_data_cstr.RecentNode , root);
                 // 辺の上に新たな Branch ができたことによる辺の張り替えなど
-                C_data_.RecentNode->child[ S[C_data_.NextNode->cleft()]] = Branch;
-                Branch->parent = C_data_.RecentNode;
-                Branch->path_len_sub = C_data_.get_path_length();
-                C_data_.NextNode->cover.first = middle;
-                Branch->child[ S[C_data_.NextNode->cleft()] ] = C_data_.NextNode;
-                C_data_.NextNode->parent = Branch;
+                m_data_cstr.RecentNode->child[ S[m_data_cstr.NextNode->cleft()]] = Branch;
+                Branch->parent = m_data_cstr.RecentNode;
+                Branch->path_len_sub = m_data_cstr.get_path_length();
+                m_data_cstr.NextNode->cover.first = middle;
+                Branch->child[ S[m_data_cstr.NextNode->cleft()] ] = m_data_cstr.NextNode;
+                m_data_cstr.NextNode->parent = Branch;
             }
             
             // はみ出た部分 (1 文字分) を Leaf Node として追加する
-            Node* NewLeaf = new Node( { S_end_Symbol-1 , &S_end_Symbol} ,vertex_id++ , Branch , root);
-            NewLeaf->suffix_id = NewLeaf->cright() - C_data_.get_path_length() - 1;
+            Node* NewLeaf = new Node( { m_EndS-1 , &m_EndS} ,m_vertex_id++ , Branch , root);
+            NewLeaf->suffix_id = NewLeaf->cright() - m_data_cstr.get_path_length() - 1;
             Branch->child[x] = NewLeaf;
 
             if(lastUsedBranch!=nullptr)lastUsedBranch->SuffixLink = Branch;// 使った分岐点と leaf に Suffix Link を張る
@@ -274,31 +372,31 @@ class SuffixTree{
             lastCreatedLeafNode = NewLeaf;
 
             // 接尾辞 {C_data+x} の挿入の次は、{C_data+x} の先頭の文字を消した接尾辞を挿入するために、
-            //  C_data_ から Suffix Link を使用して C_data_ の先頭を削除した地点に移動する
-        }while(C_data_.walkSuffixLink());
+            //  m_data_cstr から Suffix Link を使用して m_data_cstr の先頭を削除した地点に移動する
+        }while(m_data_cstr.walkSuffixLink());
     }
 
     // {接尾辞 → ノード} の対応を全て決定する。  
     // これによって、それぞれの接尾辞に対応するノードが Suffix Tree に存在するようになる
     void determine_sub(){
-        if(_determined)return ;// すでに完了している場合
-        _determined = true;
+        if(m_determined)return ;// すでに完了している場合
+        m_determined = true;
         do{
-            Node* Branch = C_data_.RecentNode;
-            if(C_data_.NextNode != nullptr){// 辺の途中に分岐点を新たに作成する場合
-                int middle = C_data_.NextNode->cleft() + C_data_.place;
-                Branch = new Node({C_data_.NextNode->cleft() , new int(middle) } ,vertex_id++ , C_data_.RecentNode , root);
-                C_data_.RecentNode->child[ S[C_data_.NextNode->cleft()]] = Branch;
-                Branch->parent = C_data_.RecentNode;
-                Branch->path_len_sub = C_data_.get_path_length();
-                C_data_.NextNode->cover.first = middle;
-                Branch->child[ S[C_data_.NextNode->cleft()] ] = C_data_.NextNode;
-                C_data_.NextNode->parent = Branch;
+            Node* Branch = m_data_cstr.RecentNode;
+            if(m_data_cstr.NextNode != nullptr){// 辺の途中に分岐点を新たに作成する場合
+                int middle = m_data_cstr.NextNode->cleft() + m_data_cstr.place;
+                Branch = new Node({m_data_cstr.NextNode->cleft() , new int(middle) } ,m_vertex_id++ , m_data_cstr.RecentNode , root);
+                m_data_cstr.RecentNode->child[ S[m_data_cstr.NextNode->cleft()]] = Branch;
+                Branch->parent = m_data_cstr.RecentNode;
+                Branch->path_len_sub = m_data_cstr.get_path_length();
+                m_data_cstr.NextNode->cover.first = middle;
+                Branch->child[ S[m_data_cstr.NextNode->cleft()] ] = m_data_cstr.NextNode;
+                m_data_cstr.NextNode->parent = Branch;
             }
-            Branch->suffix_id = S_end_Symbol - C_data_.get_path_length();
+            Branch->suffix_id = m_EndS - m_data_cstr.get_path_length();
             if(lastCreatedLeafNode!=nullptr)lastCreatedLeafNode->SuffixLink = Branch;// Suffix Link を張る
             lastCreatedLeafNode = Branch;
-        }while(C_data_.walkSuffixLink());
+        }while(m_data_cstr.walkSuffixLink());
     }
 
 
@@ -410,7 +508,7 @@ class SuffixTree{
     // 頂点 x の地点に対応する文字列を含む接尾辞の開始地点を返す (0-index)
     // 複数存在する場合はいずれか 1 つを返す
     int decode_suffix(Node* x){
-        if(x == root)return S_end_Symbol;
+        if(x == root)return m_EndS;
         return x->cleft() - x->parent->get_path_length();
     }   
     // 地点 p_data に対応する文字列を含む接尾辞の開始地点を返す (0-index)
@@ -485,9 +583,9 @@ class SuffixTree{
     int LCA(int u , int v){
         init_LCA();
         init_data();
-        if(tree_depth[u] > tree_depth[v])swap(u,v);
+        if(m_tree_depth[u] > m_tree_depth[v])swap(u,v);
         for(int k = int(parent.size())-1 ; k >= 0 ; k--){
-            if(parent[k][v] >= 0 && tree_depth[parent[k][v]]>=tree_depth[u])v = parent[k][v];
+            if(parent[k][v] >= 0 && m_tree_depth[parent[k][v]]>=m_tree_depth[u])v = parent[k][v];
         }
         if(u == v)return u;
         for(int k = int(parent.size())-1 ; k >= 0 ; k--){
@@ -501,7 +599,7 @@ class SuffixTree{
 
 
     // 頂点 u と v の LCA (u,vは頂点のポインタ)、返り値もポインタ
-    Node* LCA(Node* u , Node* v){return Nodes[LCA(u->id , v->id)];}
+    Node* LCA(Node* u , Node* v){return m_Nodes[LCA(u->id , v->id)];}
 
     // 地点データ sd と、頂点 v の LCA 。LCA が 辺の途中になる可能性もあるので PositionData で返す 
     PositionData LCA(PositionData sd , Node* v){
@@ -550,13 +648,13 @@ class SuffixTree{
     // 頂点番号が v であるノードを返す
     Node* get_node(int v){
         init_data();
-        return Nodes[v];
+        return m_Nodes[v];
     }
 
     // i 番目の suffix の終端に対応するノードを返す(0-index)
     Node* get_suffix_node(int i){
         init_data();
-        return SuffixNodes[i];
+        return m_SuffixNodes[i];
     }
 
     // 根ノードを返す
@@ -565,7 +663,7 @@ class SuffixTree{
     // 頂点 v の深さ(根から辺を何本経由するか)
     int get_depth_as_tree(int v){
         init_data();
-        return tree_depth[v];
+        return m_tree_depth[v];
     }
 
     // S[i] (0-index) を返す (read-only)
@@ -584,7 +682,7 @@ class SuffixTree{
         return root->SubTreeKindOfPrefix;
     }
 
-    int tree_size(){return vertex_id;}
+    int tree_size(){return m_vertex_id;}
 
     // 木の辺を頂点番号のペアとして、辺集合(vector)を返す
     vector<pair<int,int>> edges(){

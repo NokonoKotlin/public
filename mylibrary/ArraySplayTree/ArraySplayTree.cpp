@@ -9,7 +9,72 @@
 
 
 
-/**/
+
+
+
+/*
+    - 数列型の Splay Tree 
+    - 頂点にアクセスしたら、その頂点をsplay (& update) するのを忘れないで！！
+    - SplayNodeというデータ構造に必要なデータを持たせ、m_Root から探索することでアクセスする。
+    - SplayNode にモノイド積などの集約データを持たせる(Sum,Min など) 
+    - 基本的に、機能の変更をしたい場合は SplayNode のメンバや update 方法を編集することになる
+    |
+    - rootを頂点とする部分木において
+        |- split(l,root) := l 番目で分割
+        |- merge(l_root , r_root) := 頂点がl_root ,r_rootであるような部分木を連結
+        |- insert_sub(ind,NODE,root) := ind番目にNODEが挿入される
+        |- Delete_sub(ind ,root) := ind番目を削除(返り値はfirstが新しいroot , secondが削除したNode)
+    |
+    - これらを駆使し、様々な操作を実装可能
+    - : _sub で実装される関数は、スプレー木を管理するために必要な最低限の機能で、クラス内部での処理のための関数。
+    - : _sub 関数は、基本的な操作のみを担当するので、ユーザー向けの機能は、_subでない関数で実装する。
+    - (重要) : _sub 関数の中身は、_sub 関数だけで完結させる!!!!!!!
+    |
+    - find(x,c) : a_i = x である様な i を c 個まで検索する。
+        |- 以下のタイミングで、x を持つノードのポインタ pos[x] を編集する。
+        |- insert するとき / Delete するとき /update_valするとき
+        |- Delete(i)の後、削除したNodeのisThisDeletedをtrueにしている
+        |- (重要) 前提として Splay Tree の連結性が必要 ( Splay Tree を分割してから find() を使うのは未定義動作 )
+        |- find() を使うには、テンプレートで _find_ = true を指定する (指定せずに使うと RE)
+    |
+    - 区間クエリ
+        |- 区間のモノイド積ができる (総和,Min など)
+        |- 区間作用について
+            |- _find_ が true なのに更新をかけると RE になる。
+            |- 半開区間 [l,r) の要素を reverse することができる (区間反転)
+                |- _find_ が true の場合の計算量解析不明 , 多分 O(NQ) になるケースもある
+            |- 区間内の要素に一律に更新をかけることができる
+                |- 区間内の要素に対して、代入/アフィン変換/chmax など
+    |
+    - 計算量について :
+        |- 遅い時はいらない集約や遅延評価を消す。
+        |- eval() しなくていい時は、eval() の中身を全消ししたり、eval() を呼び出さなくするとかなり速くなる
+    |
+    - ライブラリの設計 : 
+        |- 内部処理 (Node の splay や _sub がついた関数) を信頼する  
+        |- 関数に渡す SplayNode や、関数から返される SplayNode は全て update (& eval) されている必要がある
+        |- 抽象化はせずに、モノイド積や遅延評価作用を例示することで、書き換えを容易にする。  
+            |- Sum , Min , Max , RangeUpdate , RangeAffine , RangeReverse で特殊化している
+            |- 不必要なモノイド積や作用の記述を消すと速くなる  
+        |- 特殊化されたモノイド積や作用は以下に書き込まれているので、書き換えるときは主に以下を書き換える
+            |- Node のメンバ (lazy_affine や set_LazyAffine)
+            |- Node の update ,eval の処理
+            |- RangeHoge_sub 関数で、Node から 取り出す/遅延評価を載せる
+        |- T を自作クラス (modint) などにするときは、pos メンバのキーを long long などにしておく 
+            (modint は long long にキャストできる設計なので)
+        |- merge と split が++全く++反対の操作であることで、計算量を削減できる
+            |- merge(lef,rig) : rig の左の子に lef をくっつける
+            |- split(i,ROOT) : i 番目のノードの左の辺をカットして (lef,rig) に分割する
+        |- 内部実装の merge , split の使用法は最適化されていることに注意、変に変更したら遅くなる
+            |- split は右から、merge は左から行うと良いです
+        |
+        |- ヒープ上のオブジェクトのポインタを扱う関係で、コピー/ムーブを禁止する。
+            |- 宣言後に代入するときは、copy(X) で、X の中身を再度生成して自身に格納する。
+            |- 平衡二分木は、アクセスするだけでも構造を変えるので、const 修飾できない。
+                |- 右辺値用と左辺値用それぞれの copy を定義する。
+        |- get(i) や getRange(l,r) で取得するノードは、要素取得の用途での使用のみを想定しているので、
+            / 隣接するノードへのアクセスを封印したコピーを返すようにしてある。
+*/
 template<class T , bool _find_=false>
 class ArraySplayTree{
     private:
@@ -184,7 +249,7 @@ class ArraySplayTree{
 
 
     // rootを根とする SplayTree において、求めたいindexまで降りていく(左側の部分木サイズを参照する)
-    SplayNode *getNode(int index , SplayNode *root){
+    SplayNode *get_sub(int index , SplayNode *root){
         if(root==nullptr)return root;
         SplayNode *now = root;
         while(true){
@@ -214,7 +279,7 @@ class ArraySplayTree{
         if(rightRoot!=nullptr)rightRoot->update();
         if(bool(leftRoot ) == false)return rightRoot;//右のみあり
         if(bool(rightRoot) == false )return leftRoot;//左のみあり
-        rightRoot = getNode(0,rightRoot);
+        rightRoot = get_sub(0,rightRoot);
         rightRoot->left = leftRoot;
         leftRoot->parent = rightRoot;
         rightRoot->update();
@@ -225,7 +290,7 @@ class ArraySplayTree{
     std::pair<SplayNode*,SplayNode*> split(int leftnum, SplayNode *root){
         if(leftnum<=0)return std::make_pair(nullptr , root);
         if(leftnum >= root->SubTreeSize)return std::make_pair(root, nullptr);
-        root = getNode(leftnum , root);
+        root = get_sub(leftnum , root);
         SplayNode *leftRoot = root->left;
         SplayNode *rightRoot = root;
         if(bool(rightRoot))rightRoot->left = nullptr;
@@ -249,7 +314,7 @@ class ArraySplayTree{
     // second は消したやつ (ここではメモリの解放はしない)
     std::pair<SplayNode*,SplayNode*> Delete_sub(int index , SplayNode *root){
         if(bool(root) == false)return std::make_pair(root,root);
-        root = getNode(index,root);
+        root = get_sub(index,root);
         SplayNode *leftRoot = root->left;
         SplayNode *rightRoot = root->right;
         if(bool(leftRoot))leftRoot->parent = nullptr;
@@ -292,8 +357,8 @@ class ArraySplayTree{
 
     protected:
 
-    // 常に Root が根であるようにする (merge した後は Root に代入するなど)
-    SplayNode *Root = nullptr;
+    // 常に m_Root が根であるようにする (merge した後は m_Root に代入するなど)
+    SplayNode *m_Root = nullptr;
     map<T , vector<SplayNode*> > pos; 
     vector<int> checked;
     int find_called_time = 0;//find 関数を呼び出した回数をメモ
@@ -309,15 +374,15 @@ class ArraySplayTree{
     
     void release(){
         // pos は放置して OK (ポインタしか格納されていないので多重解放でもない)
-        while(Root != nullptr){
-            std::pair<SplayNode*,SplayNode*> tmp = Delete_sub(0,Root);
-            Root = tmp.first;
+        while(m_Root != nullptr){
+            std::pair<SplayNode*,SplayNode*> tmp = Delete_sub(0,m_Root);
+            m_Root = tmp.first;
             delete tmp.second;
         }
     }
     // 初期状態にする (copy() などで使用)
     void init(){
-        Root = nullptr;
+        m_Root = nullptr;
         find_called_time = 0;
         checked.clear();
         pos.clear();
@@ -325,8 +390,8 @@ class ArraySplayTree{
     // 先頭要素のアドレスを取得。
     const SplayNode* const begin(){
         if(size() == 0)return nullptr;
-        Root = getNode(0,Root);
-        return Root;
+        m_Root = get_sub(0,m_Root);
+        return m_Root;
     }
     public:
 
@@ -361,8 +426,8 @@ class ArraySplayTree{
         this->find_called_time = x.find_called_time;// ここは別に必要ないけど、不変性を尊重
     }
     int size(){
-        if(Root == nullptr)return 0;
-        return Root->SubTreeSize;
+        if(m_Root == nullptr)return 0;
+        return m_Root->SubTreeSize;
     }
 
 
@@ -370,8 +435,8 @@ class ArraySplayTree{
     // ただし、値の取得が目的なので right などの隣接頂点へのアクセスを封印する
     SplayNode get(int i){
         assert(0 <= i && i < size());
-        Root = getNode(i,Root);
-        SplayNode res = (*Root);
+        m_Root = get_sub(i,m_Root);
+        SplayNode res = (*m_Root);
         res.right = res.left = res.parent = nullptr;// 隣接するノードへのアクセスを封じる
         return res;
     }
@@ -381,12 +446,12 @@ class ArraySplayTree{
     // 使用用途はモノイド積の取得に限定 (コピーなので、オリジナルの現在の値とは関係なく [l,r) のデータが格納されている)
     SplayNode GetRange(int l , int r){
         assert(0 <= l && l < r && r <= size());
-        std::pair<SplayNode*,SplayNode*> tmp = split(r,Root);
+        std::pair<SplayNode*,SplayNode*> tmp = split(r,m_Root);
         SplayNode* rightRoot = tmp.second;
         tmp = split(l,tmp.first);// 部分木を取り出す。
         SplayNode res = (*tmp.second);// 取り出した部分木の根をコピーする。
         res.right = res.left = res.parent = nullptr;// 隣接するノードへのアクセスを封じる
-        Root = merge(merge(tmp.first,tmp.second),rightRoot);
+        m_Root = merge(merge(tmp.first,tmp.second),rightRoot);
         return res;
     }
 
@@ -395,7 +460,7 @@ class ArraySplayTree{
     void insert(int index , T x){
         assert(0 <= index && index <= size());
         SplayNode* NODE = new SplayNode(x);
-        Root = insert_sub(index , NODE , Root);
+        m_Root = insert_sub(index , NODE , m_Root);
         if(_find_ == false)return;
         pos[NODE->Value].push_back(NODE);//位置検索mapに追加
         if(checked.size() <= size())checked.resize(int(checked.size())+1 , -1);// アロケータを信じる
@@ -405,8 +470,8 @@ class ArraySplayTree{
     // index番目のNodeを消去
     void Delete(int index){
         if(index<0 || index >= size())assert(0);
-        std::pair<SplayNode*,SplayNode*> tmp = Delete_sub(index,Root);
-        Root = tmp.first;
+        std::pair<SplayNode*,SplayNode*> tmp = Delete_sub(index,m_Root);
+        m_Root = tmp.first;
         if(_find_)tmp.second->isThisDeleted = true;
         else delete tmp.second;
         return;
@@ -414,12 +479,12 @@ class ArraySplayTree{
     // x 番目のvalueをyにする
     void update_val(int x , T y){
         if(x<0 || x >= size())assert(0);
-        Root = getNode(x,Root);
-        if(bool(Root)==false)return;
-        Root->Value = y;
-        Root->update();// ノードを編集したら update!!
+        m_Root = get_sub(x,m_Root);
+        if(bool(m_Root)==false)return;
+        m_Root->Value = y;
+        m_Root->update();// ノードを編集したら update!!
         if(_find_ == false)return;
-        pos[y].push_back(Root);
+        pos[y].push_back(m_Root);
         return;
     }
 
@@ -430,7 +495,7 @@ class ArraySplayTree{
         r = min(size(),r);
         if(l>r)assert(0);
         if(r-l <= 1)return;
-        Root = reverse_sub(l,r,Root);
+        m_Root = reverse_sub(l,r,m_Root);
         return;
     }
 
@@ -440,7 +505,7 @@ class ArraySplayTree{
         l = max(0,l);
         r = min(size(),r);
         if(l>=r)assert(0);
-        Root = RangeAffine_sub(l,r,A,B,Root);
+        m_Root = RangeAffine_sub(l,r,A,B,m_Root);
         return;
     }
 
@@ -456,7 +521,7 @@ class ArraySplayTree{
         l = max(0,l);
         r = min(size(),r);
         if(l>=r)assert(0);
-        Root = RangeUpdate_sub(l,r,x,Root);
+        m_Root = RangeUpdate_sub(l,r,x,m_Root);
         return;
     }
 
@@ -478,7 +543,7 @@ class ArraySplayTree{
             else if(Nd->Value != x)pos[x].erase(pos[x].begin()+i);//値の変更ずみを弾く
             else{ // この時点で、 Nd は実在するノードであることが確定している
                 Nd->splay();
-                Root = Nd;
+                m_Root = Nd;
                 int index = 0;
                 if(bool(Nd->left))index+=Nd->left->SubTreeSize;
                 if(checked[index] == find_called_time)pos[x].erase(pos[x].begin()+i);//同じ NODE へのポインタが複数存在する場合はpop

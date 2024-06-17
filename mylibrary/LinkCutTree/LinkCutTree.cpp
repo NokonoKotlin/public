@@ -5,6 +5,41 @@
 
 
 
+
+
+/*
+    - 辺を切ったり貼ったりできる森、accessがとっても大事！！忘れないでね！！
+    - 木を明示的に管理するのではなく、木上ののパスを SplayTree (列型) として管理する。
+    |
+    - evert(x) := xを連結成分のrootに
+    - link(x,y) := x,y に辺を追加 (元々 x,y は非連結)
+    - cut(x,y) := x,y から辺を削除 (元々 x,y に辺がある)
+    |
+    - access(x) := x の属する木の根から x までを HeavyEdge で繋ぎ、パスにする。
+        |- パスは SplayTree である。
+        |- ついでに m_Nodes[x] を SplayTree の根にする (splay)
+    - access(x)で繋がった SplayTreeは、左の方が根に近く、右に行くほど下の頂点になる (path である)
+    - 根から x までの path の情報 (Value の Sum など) は、access(x) してから m_Nodes[x]->Sum などで取得できる
+    - operator [x] := 頂点 x に対応する SplayNode のコピー (隣接 SplayNode へのポインタを封印してある)
+        |- [x] にアクセスすると自動で access(x) される。
+        |- つまり、[x] は 「根から x までのパスを表す SplayTree の根」(のコピー) を取得する
+
+    - root(x) := x の属する木の根
+    - depth(x) := x の深さ
+    - same(x,y) := x,y が同じ木に属しているか
+    - parent(x) := ( x の親が存在するか, 親の番号) のペア
+    - LCA(x,y) := x,y の lca (x,y は同じ木に属する)
+    - path_xth_element(v,x) := v の属する木の「根から頂点 v までのパス」のうち 深さが x の頂点番号
+    |
+    - PathUpdate(i,x) := 頂点 i が属する木の根から頂点 i までのパス上の頂点の値を一律 x に更新する
+    - PathAffine(i,A,B) := 頂点 i が属する木の根から頂点 i までのパス上の頂点の値 (Value) を一律 A*Value + B に更新
+    - PathUpdate(i,x) := 頂点 i が属する木の根から頂点 i までのパス上の頂点の値に一律 x 加算する
+    |
+    - 辺の表現には頂点拡張をすると良い
+
+    頂点の持つ値 (Value) は T 型。    
+    遅ければいらない遅延評価やモノイド積を消す。
+*/
 template<typename T>
 class LinkCutTree{
     private:
@@ -174,8 +209,8 @@ class LinkCutTree{
 
     private:
                    
-    //Nodes[i] := 頂点 i のポインタ
-    unordered_map<long long,SplayNode*> Nodes;
+    //m_Nodes[i] := 頂点 i のポインタ
+    unordered_map<long long,SplayNode*> m_Nodes;
     // [u][v] := 辺 u-v が存在するか
     unordered_map<long long , unordered_map<long long,bool>> ExistEdge;
 
@@ -183,13 +218,13 @@ class LinkCutTree{
     T init_v;
     // 頂点集合を明示的に持たないので、使う前に 1 度宣言する
     bool register_node(long long u){
-        if(Nodes[u] != nullptr)return false;
-        Nodes[u] = new SplayNode(u,init_v);
+        if(m_Nodes[u] != nullptr)return false;
+        m_Nodes[u] = new SplayNode(u,init_v);
         return true;
     }
     
     // rootを根とする SplayTree において、求めたいindexまで降りていく(左側の部分木サイズを参照する)
-    SplayNode* getNode(long long  index , SplayNode* root){
+    SplayNode* get_sub(long long  index , SplayNode* root){
         if(root==nullptr)return root;
         SplayNode* now = root;
         while(true){
@@ -207,9 +242,9 @@ class LinkCutTree{
     }
 
 
-    void init(){Nodes.clear();}
+    void init(){m_Nodes.clear();}
     void release(){
-        for(pair<long long,SplayNode*>p : Nodes){
+        for(pair<long long,SplayNode*>p : m_Nodes){
             if(p.second != nullptr)delete p.second;
         }
     }
@@ -228,17 +263,17 @@ class LinkCutTree{
     // 最後にlight edgeを辿った先の頂点番号を返す(LCA用)
     long long access(const long long id){
         register_node(id);
-        if(bool(Nodes[id]) == false)return -1;//存在しない場合
+        if(bool(m_Nodes[id]) == false)return -1;//存在しない場合
         long long res = id;
         while(1){
-            Nodes[id]->splay();// splay は eval を兼ねる
-            Nodes[id]->right = nullptr;
-            Nodes[id]->update();
-            if(bool(Nodes[id]->parent) == false)break;
-            res = Nodes[id]->parent->id;
-            Nodes[id]->parent->splay();
-            Nodes[id]->parent->right = Nodes[id];
-            Nodes[id]->parent->update();
+            m_Nodes[id]->splay();// splay は eval を兼ねる
+            m_Nodes[id]->right = nullptr;
+            m_Nodes[id]->update();
+            if(bool(m_Nodes[id]->parent) == false)break;
+            res = m_Nodes[id]->parent->id;
+            m_Nodes[id]->parent->splay();
+            m_Nodes[id]->parent->right = m_Nodes[id];
+            m_Nodes[id]->parent->update();
         }
         return res;
     }
@@ -248,7 +283,7 @@ class LinkCutTree{
         register_node(v);
         assert(0 <= x && x <= depth(v));
         access(v);
-        SplayNode* nd = getNode(x , Nodes[v]);
+        SplayNode* nd = get_sub(x , m_Nodes[v]);
         access(v); // 副作用を統一
         return nd->id;
     }
@@ -272,7 +307,7 @@ class LinkCutTree{
     long long depth(long long x){
         register_node(x);
         access(x);
-        return Nodes[x]->SubTreeSize - 1;
+        return m_Nodes[x]->SubTreeSize - 1;
     }
     // ( 親が存在するか , 親の番号 ) のペアを返す
     // 副作用 : 親が存在するなら、その親にaccessする
@@ -280,7 +315,7 @@ class LinkCutTree{
         register_node(x);
         pair<bool,long long> res;
         access(x);
-        SplayNode* p = Nodes[x]->_before();
+        SplayNode* p = m_Nodes[x]->_before();
         if(p == nullptr)res.first = false;
         else {
             res.first = true;
@@ -295,8 +330,8 @@ class LinkCutTree{
     void evert(long long x){
         register_node(x);
         access(x);
-        Nodes[x]->set_lazyReverse();// 反転
-        Nodes[x]->update();
+        m_Nodes[x]->set_lazyReverse();// 反転
+        m_Nodes[x]->update();
         access(x);
     }
 
@@ -311,8 +346,8 @@ class LinkCutTree{
         access(u);
         ExistEdge[u][v] = true;
         ExistEdge[v][u] = true;
-        Nodes[v]->parent = Nodes[u];// v → u に light edge を追加
-        Nodes[u]->update();
+        m_Nodes[v]->parent = m_Nodes[u];// v → u に light edge を追加
+        m_Nodes[u]->update();
     }
 
     // 辺 u-v をカット
@@ -326,9 +361,9 @@ class LinkCutTree{
         if(depth(u) > depth(v))swap(u,v);// v が深い方とする
         access(v);
         // v が SplayTree の根なので、左の部分木を切れば v より上の頂点と切り離せる
-        Nodes[v]->left->parent = nullptr;
-        Nodes[v]->left = nullptr;
-        Nodes[v]->update();
+        m_Nodes[v]->left->parent = nullptr;
+        m_Nodes[v]->left = nullptr;
+        m_Nodes[v]->update();
         return true;
     }
 
@@ -337,8 +372,8 @@ class LinkCutTree{
     void update_val(long long i , T x){
         register_node(i);
         access(i);
-        Nodes[i]->Value = x;
-        Nodes[i]->update();
+        m_Nodes[i]->Value = x;
+        m_Nodes[i]->update();
     }
 
     // 頂点 i が属する木の根から頂点 i までのパス上の頂点の値を一律 x に更新する
@@ -346,8 +381,8 @@ class LinkCutTree{
     void PathUpdate(long long i , T x){
         register_node(i);
         access(i);
-        Nodes[i]->set_lazyUpdate(x);
-        Nodes[i]->update();
+        m_Nodes[i]->set_lazyUpdate(x);
+        m_Nodes[i]->update();
         access(i);
     }
 
@@ -356,8 +391,8 @@ class LinkCutTree{
     void PathAffine(long long i , T A , T B){
         register_node(i);
         access(i);
-        Nodes[i]->set_lazyAffine(A,B);
-        Nodes[i]->update();
+        m_Nodes[i]->set_lazyAffine(A,B);
+        m_Nodes[i]->update();
         access(i);
     }
 
@@ -383,7 +418,7 @@ class LinkCutTree{
     // read-only で ノード のコピーを取得 ( 副作用で ノードに access (重要) )
     SplayNode operator [](long long nodeID){
         access(nodeID);
-        SplayNode res = *(Nodes[nodeID]);
+        SplayNode res = *(m_Nodes[nodeID]);
         res.parent = res.left = res.right = nullptr;// read-only なので隣接頂点へのアクセスを封印
         return res;
     }

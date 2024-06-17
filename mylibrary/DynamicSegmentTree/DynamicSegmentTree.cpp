@@ -4,6 +4,39 @@
 
 
 
+
+
+
+/*
+    遅延評価付き動的セグメント木
+    - 数列を表すデータ構造
+    |
+    - できること
+        |- 区間更新 (一律に代入)
+        |- 区間アフィン変換 (区間内の要素全てに A 掛けて B 足す)
+        |- 区間のモノイド積(集約値 Sum など)を求める
+    |   
+    - 定数倍が気になるならいらない機能を削除してね
+    - テンプレートで インデックスの型 index_int(整数) と 要素の型 T  を渡す
+    - 初期化値もモノイド積に含まれるので、Sum などがオーバーフローしないように注意
+    |
+    - コンストラクタで [L,R) と初期化値 init_  を渡し、[L,R) に対応する根ノードを作成する。
+    - はじめ、ノードは [L,R) に対応するものしかなく、必要に応じて半分に分割することを繰り返す。
+    - L,R に範囲の制約はない (オーバーフロー注意)
+    |
+    - アルゴリズム
+        |- はじめ、セグ木のノードは根のみ存在する。
+        |- アクセスを伴う処理が行われた際に、アクセスするセグメントまでのノードを必要に応じて作る。  
+            |- 作るノード数はクエリあたり log(R-L) 
+            |- eval から内部処理関数 make_child を呼び出す。
+        |- eval は遅延評価 + 必要な子ノードを作る役割を持つ。
+            |- ノードの Value は本来は葉ノードのみが持つものだが、m_Root から init_value を継承するためにも使う。
+            |- 継承される Value (init_value) には遅延評価も作用させる。(子ノードを作った時に限り、子ノードに遅延評価を降ろさない)
+    |
+    - 設計思想
+        |- Node クラスに必要なデータを持たせる
+        |- いじるのは基本的に Node の eval , UpdateNode およびコンストラクタでの変数の初期化
+*/
 template<typename index_int , class T>
 class SegmentTree{
     private:
@@ -163,14 +196,14 @@ class SegmentTree{
         }
     }
 
-    Node* Root = nullptr;
+    Node* m_Root = nullptr;
     index_int _Llim,_Rlim;
 
     // デストラクタ - メモリ解放
     void release(){
         // dfs で解放
         stack<Node*> s;
-        s.push(Root);
+        s.push(m_Root);
         while(!s.empty()){
             Node* now = s.top();
             s.pop();
@@ -182,7 +215,7 @@ class SegmentTree{
     public:
     SegmentTree(){}
     // index の範囲を受け取る
-    SegmentTree(index_int L_ , index_int R_ , T init_value):_Llim(L_),_Rlim(R_),Root(new Node(nullptr,L_,R_,init_value)){}
+    SegmentTree(index_int L_ , index_int R_ , T init_value):_Llim(L_),_Rlim(R_),m_Root(new Node(nullptr,L_,R_,init_value)){}
     ~SegmentTree(){release();}
     // 複雑な挙動を回避するので、コンストラクタによるコピー/ムーブを一律に禁止する。
     SegmentTree(const SegmentTree<index_int,T> &x) = delete ;
@@ -197,7 +230,7 @@ class SegmentTree{
     // 数列の i 番目を x に変更する
     void update_val(index_int i , T x){
         assert(i >= Llimit() && i < Rlimit());
-        Node* instance = access(i,Root);
+        Node* instance = access(i,m_Root);
         instance->Value = x;
         while(instance != nullptr){
             instance->NodeUpdate();
@@ -208,7 +241,7 @@ class SegmentTree{
     // 数列の i 番目の値を取得    
     T get(index_int i){
         assert(i >= Llimit() && i < Rlimit());
-        return access(i,Root)->Value;
+        return access(i,m_Root)->Value;
     }
 
     // 区間 [l,r) の min
@@ -216,7 +249,7 @@ class SegmentTree{
         l = max(l,Llimit());r = min(r,Rlimit());
         assert(l<=r);
         vector<Node*> bucket;
-        RangeSegments(l,r,Root,bucket);
+        RangeSegments(l,r,m_Root,bucket);
         assert(bucket.size() > 0);
         T res = bucket[0]->Min;
         for(int i = 1 ; i < bucket.size() ; i++)res = min(res,bucket[i]->Min);
@@ -227,7 +260,7 @@ class SegmentTree{
         l = max(l,Llimit());r = min(r,Rlimit());
         assert(l<=r);
         vector<Node*> bucket;
-        RangeSegments(l,r,Root,bucket);
+        RangeSegments(l,r,m_Root,bucket);
         assert(bucket.size() > 0);
         T res = bucket[0]->Max;
         for(int i = 1 ; i < bucket.size() ; i++)res = max(res,bucket[i]->Max);
@@ -238,7 +271,7 @@ class SegmentTree{
         l = max(l,Llimit());r = min(r,Rlimit());
         assert(l<=r);
         vector<Node*> bucket;
-        RangeSegments(l,r,Root,bucket);
+        RangeSegments(l,r,m_Root,bucket);
         assert(bucket.size() > 0);
         T res = bucket[0]->Sum;
         for(int i = 1 ; i < bucket.size() ; i++)res += bucket[i]->Sum;
@@ -249,21 +282,21 @@ class SegmentTree{
     void RangeUpdate(index_int l , index_int r, T x){
         l = max(l,Llimit());r = min(r,Rlimit());
         assert(l<=r);
-        RangeUpdate_sub(l,r,x,Root);
+        RangeUpdate_sub(l,r,x,m_Root);
     }
 
     // 半開区間 [l,r) 内の要素全てに A 掛けて B 足す
     void RangeAffine(index_int l , index_int r, T A , T B){
         l = max(l,Llimit());r = min(r,Rlimit());
         assert(l<=r);
-        RangeAffine_sub(l,r,A,B,Root);
+        RangeAffine_sub(l,r,A,B,m_Root);
     }
                    
     // 半開区間 [l,r) 内の要素全てに x 足す
     void RangeAdd(index_int l , index_int r, T x){
         l = max(l,Llimit());r = min(r,Rlimit());
         assert(l<=r);
-        RangeAffine_sub(l,r,T(1) , x,Root);
+        RangeAffine_sub(l,r,T(1) , x,m_Root);
     }
     
     // 数列の i 番目の値を取得    

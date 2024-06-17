@@ -3,6 +3,7 @@
 
 
 
+
 /*
     - 多次元セグ木(1次元も含む)
     - コンストラクタで vector<int> size_ と T init_ を渡す。
@@ -212,6 +213,77 @@ namespace PointAddRectSum{
         int height(){return H;}
         int width(){return W;}
     };
+    // グリッドに奥行きを追加
+    // H,W の関係を維持したかったので、奥行きを第 0 次元にしたが、使う上ではネーミングは関係ない
+    class _3dSegTree{
+        private:
+        int H , W , D;
+        NdSegTree<TypE , OP , E, UPD> T;
+        public:
+        // 奥行き,縦幅,横幅,初期化値
+        _3dSegTree(int D_,int H_,int W_,TypE init_):D(D_),H(H_),W(W_){
+            vector<int> S = {D,H,W};
+            T = NdSegTree<TypE , OP , E, UPD>(S,init_);
+        }
+        TypE get(int z , int y , int x){vector<int> s = {z,y,x};return T.get(s);}
+        void set(int z , int y , int x , TypE V){vector<int> s = {z,y,x};T.set(s,V);}
+        void update(int z ,int y , int x , TypE V){vector<int> s = {z,y,x};T.update(s,V);}
+        TypE rect_query(int z1 , int y1, int x1 , int z2 , int y2 , int x2){
+            vector<int> s1 = {z1,y1,x1};
+            vector<int> s2 = {z2,y2,x2};
+            return T.rect_query(s1,s2);
+        }
+        int depth(){return D;}
+        int height(){return H;}
+        int width(){return W;}
+        
+    };
+
+
+
+
+    void test3(){
+        const int sz = 100;
+        vector<vector<vll>> A(sz,vector<vll>(sz,vll(sz,0)));
+        PointAddRectSum::_3dSegTree S(sz,sz,sz,0);
+        const int vmx = 1000;
+        REP(i,A.size()){
+            REP(j,A[i].size()){
+                REP(k,A[i][j].size()){
+                    int r = rand()%(vmx*2) - vmx;
+                    S.set(i,j,k,r);
+                    A[i][j][k] = r;
+                }
+            }
+        }
+        ll cnt = 3000;
+        while(cnt-->0){
+            int t = rand()%3;
+            int x1 = rand()%(sz);int x2 = rand()%(sz);if(x1>x2)swap(x1,x2);if(x2 == x1)x2++;
+            int y1 = rand()%(sz);int y2 = rand()%(sz);if(y1>y2)swap(y1,y2);if(y2 == y1)y2++;
+            int z1 = rand()%(sz);int z2 = rand()%(sz);if(z1>z2)swap(z1,z2);if(z2 == z1)z2++;
+            if(t == 0){
+                long long sum = 0;
+                for(int i = z1 ; i < z2 ; i++){
+                    for(int j = y1 ; j < y2 ; j++){
+                        for(int k = x1 ; k < x2 ; k++){
+                            sum += A[i][j][k];
+                        }
+                    }
+                }
+                assert(sum == S.rect_query(z1,y1,x1,z2,y2,x2));
+            }else if(t == 1){
+                int r = rand()%(vmx*2) - vmx;
+                A[z1][y1][x1] = r;
+                S.set(z1,y1,x1,r);
+            }else{
+                int r = rand()%(vmx*2) - vmx;
+                A[z1][y1][x1] += r;
+                S.update(z1,y1,x1,r);
+            }
+            if(cnt%100 == 0)debug(cnt)
+        }
+    }
 }
 
 
