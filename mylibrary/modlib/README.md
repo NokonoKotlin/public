@@ -35,6 +35,8 @@ https://opensource.org/licenses/mit-license.php
     - $998244353$ の場合は列サイズが $2^{23}$  まで OK
 
 
+
+
 ## FPS (Formal Power Series)
 - 多項式を扱うクラス。
     - 係数は MOD 付き整数
