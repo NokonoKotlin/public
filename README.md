@@ -23,7 +23,7 @@
 <p align="left">
 	<a href="https://nokonokotlin.github.io/Home/index.html" target="blank"><img align="center"
 	alt="nokonokotlin" height="30" width="30" src = "./static/images/NokonoKotlin.jpeg"></a>  
-	<a href="https://nokonokotlin.github.io/Home/Contents/algorithm/index.html" target="blank"><img align="center"
+	<a href="https://nokonokotlin.github.io/Home/Contents/Study/index.html" target="blank"><img align="center"
 	alt="nokonokotlin" height="30" width="40" src = "./static/images/Algo.jpeg"></a>
 </p>
 
