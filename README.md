@@ -71,7 +71,7 @@ https://opensource.org/licenses/mit-license.php
 
 ## ポートフォリオ
 
-<a href = "https://nokonokotlin.github.io/Home/Contents/algorithm/index.html">こちらのページ</a> にアルゴリズムや自作ライブラリの記事を載せています。
+<a href = "https://nokonokotlin.github.io/Home/Contents/Study/index.html">こちらのページ</a> にアルゴリズムや自作ライブラリの記事を載せています。
 
 
 ## mylibrary
