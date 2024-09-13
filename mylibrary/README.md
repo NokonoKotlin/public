@@ -102,7 +102,7 @@ class modint{
 
     // これだけで modint の <,<=,>,>= の機能を定義できる
     // int → modint は暗黙にキャストされるので、int と modint の比較も定義されている
-    // int へのキャストが明示的なので、int と int の比較はここでは呼ばれない。
+    // int へのキャストが明示的なので、int と int の比較ではなく、こちらの比較演算が呼ばれる
     friend std::partial_ordering <=>(const modint<mod>& a , const modint<mod>&b){
         return (a.v <=> b.v); // long long の <=> に丸投げする
     }
