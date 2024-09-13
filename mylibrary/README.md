@@ -58,7 +58,7 @@ https://opensource.org/licenses/mit-license.php
 - modint , Fraction , MyVector などのオブジェクトは、演算子をオーバーロードして直感的に使えるようにする。
 - 演算子の設計は C++ の int などの演算子の設計に準拠する (代入の結合など)。
 - 左辺値/右辺値 について
-    - 基本的に演算子の両辺は const 参照 (`const T&`) で書くが、SplayTree や FPS は勝手に自己の構成を変更するので、場合によっては右辺値参照 (`T&&`) を受け取るようにする。
+    - 基本的に演算子の右辺は const 参照 (`const T&`) で書くが、SplayTree や FPS は勝手に自己の構成を変更するので、場合によっては右辺値参照 (`T&&`) を受け取るようにする。
         - const なメンバ関数 `F` は `F() const& {}` にしておくと右辺値参照でも const 参照でも呼び出せる(当然`F`は const である前提)
     - const に関しての資料はこちら (**TODO:記事を書く**)
 - **順序比較について**
@@ -102,7 +102,7 @@ class modint{
 
     // これだけで modint の <,<=,>,>= の機能を定義できる
     // int → modint は暗黙にキャストされるので、int と modint の比較も定義されている
-    // int と int の比較はここでは呼ばれない。(おそらく C++ のキャストの順序の関係??? 要勉強 )
+    // int へのキャストが明示的なので、int と int の比較はここでは呼ばれない。
     friend std::partial_ordering <=>(const modint<mod>& a , const modint<mod>&b){
         return (a.v <=> b.v); // long long の <=> に丸投げする
     }
