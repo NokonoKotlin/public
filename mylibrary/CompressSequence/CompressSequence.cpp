@@ -6,6 +6,8 @@
 
 
 /*
+    Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
+
     ランレングス圧縮
     vector<long long> か string を (連続数 , 要素) の vector に変換
     string は文字を long long　にキャストする

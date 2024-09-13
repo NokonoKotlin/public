@@ -8,37 +8,7 @@
 
 
 /*
-    - 辺を切ったり貼ったりできる森、accessがとっても大事！！忘れないでね！！
-    - 木を明示的に管理するのではなく、木上ののパスを SplayTree (列型) として管理する。
-    |
-    - evert(x) := xを連結成分のrootに
-    - link(x,y) := x,y に辺を追加 (元々 x,y は非連結)
-    - cut(x,y) := x,y から辺を削除 (元々 x,y に辺がある)
-    |
-    - access(x) := x の属する木の根から x までを HeavyEdge で繋ぎ、パスにする。
-        |- パスは SplayTree である。
-        |- ついでに m_Nodes[x] を SplayTree の根にする (splay)
-    - access(x)で繋がった SplayTreeは、左の方が根に近く、右に行くほど下の頂点になる (path である)
-    - 根から x までの path の情報 (Value の Sum など) は、access(x) してから m_Nodes[x]->Sum などで取得できる
-    - operator [x] := 頂点 x に対応する SplayNode のコピー (隣接 SplayNode へのポインタを封印してある)
-        |- [x] にアクセスすると自動で access(x) される。
-        |- つまり、[x] は 「根から x までのパスを表す SplayTree の根」(のコピー) を取得する
-
-    - root(x) := x の属する木の根
-    - depth(x) := x の深さ
-    - same(x,y) := x,y が同じ木に属しているか
-    - parent(x) := ( x の親が存在するか, 親の番号) のペア
-    - LCA(x,y) := x,y の lca (x,y は同じ木に属する)
-    - path_xth_element(v,x) := v の属する木の「根から頂点 v までのパス」のうち 深さが x の頂点番号
-    |
-    - PathUpdate(i,x) := 頂点 i が属する木の根から頂点 i までのパス上の頂点の値を一律 x に更新する
-    - PathAffine(i,A,B) := 頂点 i が属する木の根から頂点 i までのパス上の頂点の値 (Value) を一律 A*Value + B に更新
-    - PathUpdate(i,x) := 頂点 i が属する木の根から頂点 i までのパス上の頂点の値に一律 x 加算する
-    |
-    - 辺の表現には頂点拡張をすると良い
-
-    頂点の持つ値 (Value) は T 型。    
-    遅ければいらない遅延評価やモノイド積を消す。
+    Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 */
 template<typename T>
 class LinkCutTree{

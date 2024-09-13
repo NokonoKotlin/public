@@ -5,22 +5,7 @@
 
 
 /*
-    - 多次元セグ木(1次元も含む)
-    - コンストラクタで vector<int> size_ と T init_ を渡す。
-    - 各次元のサイズが size_[0],size_[1] , ... , size_[d-1] の d 次元グリッド(マス目)を表現し、初期値が init_ となる
-    |
-    - 基本的に座標を表すのは d 次元座標。
-    - d 次元座標上の矩形を表す際は、その矩形の対角の座標 A , B を用いて表す。
-    - 矩形内のマスを対象に、矩形クエリを行う。
-    - 0 次元セグ木 = T 型要素 として扱う。
-    |
-    - 多次元セグ木のノードは一次元下のセグ木なので、セグ木 = Node として捉えて OK 
-    |                   
-    - 抽象化
-        |- データの型        : T 
-        |- データ a , b のマージ演算 : op(a,b)
-        |- op の単位元 : e
-        |- 1 点の値 x に対して、val で更新をかける : upd(&x , val) 
+    Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 */
 template<class T,
 T (*op_)(T,T) ,

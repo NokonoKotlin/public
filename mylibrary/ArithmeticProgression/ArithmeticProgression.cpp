@@ -5,6 +5,8 @@
 
 
 /*
+    Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
+    
     区間に等差数列を加算 (Add) したり代入 (update) したりするやつ。
     等差数列 ax + b とは、初項 b , 公差 a の等差数列とする。よって、x の範囲は x ≧ 0
     update は未 verify だけど多分大丈夫でしょう。

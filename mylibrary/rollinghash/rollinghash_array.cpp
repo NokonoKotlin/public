@@ -10,8 +10,7 @@
 
 
 /*
-    ロリハを乗せたセグ木 (間違ってるかもなので、いつか書き直す)
-    hash(l,r) で半開区間 [l,r) のローリングハッシュを取得
+    Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 */
 template<long long base = 41 , long long MOD = 998244353>
 class RollingHashSegTree{

@@ -5,6 +5,8 @@
 
 
 /* 
+    Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
+    
     - ただの UnionFind (rollback 付き)
     - 注意点
         - UF 木をマージするデータ構造であり、辺をつなげると捉えるとバグる。  

@@ -10,7 +10,7 @@
 
 
 /*
-
+    Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 */
 template<typename T = long long>
 class mxfl{

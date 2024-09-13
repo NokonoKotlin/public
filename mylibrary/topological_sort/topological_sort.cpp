@@ -3,7 +3,7 @@
 
 
 
-// グラフを受け取り、そのトポロジカルソートを記録した配列を返す関数 (DAGでなければ 空列 を返す)
+// Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 template<typename Integer>
 vector<Integer> topological_sort(const vector<vector<Integer> > &G) {
     int V = G.size();

@@ -5,10 +5,7 @@
 
 
 /* 
-    Kruskal :クラスカル法で minimum spanning forest を求める構造体
-    最小全域森の重みの総和: sum
-    計算量: O(|E|log|V|)
-    add_edge( u , v , cost ) で辺を追加
+    Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 */
 template<class T>
 struct Kruskal {

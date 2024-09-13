@@ -12,46 +12,7 @@
 
 
 /*
-    オイラーツアー森。
-    木を明示的に管理するのではなく、木のオイラーツアーを SplayTree (列型) として管理する。
-
-    - オイラーツアー列は以下の 2 要素からなる
-        |- u から v に移動したことを表す EdgeFactor (u → v) 
-        |- 頂点 u を表す NodeFactor (u → u)
-            |- NodeFactor[u] が u の部分木に対応する区間のどこに現れるかは不定
-    - これらはオイラーツアーに重複して現れることはない
-    |
-    - NodeFactor も EdgeFactor も SplayNode で表現する。
-        |- NodeFactor は頂点を表すので、頂点が持つ値は NodeFactor にのみ持たせる。
-        |- EdgeFactor は Value の値が未定義なので、SplayTree の区間のモノイド積や遅延評価
-            / などは、EdgeFactor を無視して計算する。(isNodeFactor というフラグがある)
-
-    - evert(x) := x を連結成分のrootに
-    - link(x,y) := x,y に辺を追加 (元々 x,y は非連結)
-    - cut(x,y) := x,y から辺を削除 (元々 x,y に辺がある)
-
-    - root(x) := x の属する木の根
-    - same(x,y) := x,y が同じ木に属しているか
-
-    - 頂点 u の部分木に関するクエリを処理できるが、頂点 u の親頂点 p がわかっていないといけない。
-        |- 頂点 u の部分木に対応するオイラーツアーの区間を見つけるため (他にうまくやる方法はない)
-        |- u の親は ETT から計算することはできないので、LinkCutTree と併用する。
-        |- u が根の場合は親を考えなくて OK (u が根なら p はなんでも (テキトーで) OK)
-    |
-    - operator [u] := 頂点 u の NodeFactor の SplayNode を返す
-    - SubTree(u,p) := 「u の部分木に対応するオイラーツアー列の区間」に対応する SplayNode のコピーを取得 (p は u の親)
-    - (注意) SplayNode のコピーは、隣接する SplayNode へのポインタを封印して返す
-    | 
-    - SubTreeUpdate(u,p,x) := u の部分木 (u 含む) の頂点の持つ値を一律に x に変更する  (p は u の親)
-    - SubTreeAffine(u,p,a,b) := u の部分木 (u 含む) の頂点の持つ値に一律に a かけて b 足す (p は u の親)
-    - SubTreeAdd(u,p,x) := u の部分木 (u 含む) の頂点の持つ値に一律に x 足す (p は u の親)
-
-    - tour := オイラーツアー到達順に頂点を並べた vector
-    - tour_compress := オイラーツアーで、部分木に入る時/出る時 のみ記録
-
-
-    頂点の持つ値 (Value) は T 型。
-    遅ければいらない遅延評価やモノイド積を消す。
+    Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 */
 template<typename T>
 class EulerTourTree{

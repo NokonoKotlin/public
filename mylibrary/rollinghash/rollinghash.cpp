@@ -2,7 +2,7 @@
 
 
 
-
+//Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 // 32 bit ローリングハッシュ (Rolling Hash Int)
 template<long long MOD>
 class _rhi{
@@ -23,7 +23,7 @@ class _rhi{
     long long hash(int l , int r){return ((prefix_hash[r] - prefix_hash[l]*power[r-l] )%MOD + MOD)%MOD;}
 };  
 
-
+//Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 // (b1,m1) , (b2,m2) の 2 つのハッシュをマージするローリングハッシュ
 // m1*m2 < (1ll<<62) 
 template<long long m1 , long long m2>

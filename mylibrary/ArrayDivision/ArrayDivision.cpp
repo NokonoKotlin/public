@@ -3,7 +3,7 @@
 
 
 
-
+//  Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 template<class T>
 class SqDivision{
     private:

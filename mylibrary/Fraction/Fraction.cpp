@@ -1,7 +1,7 @@
 #include "./../template/template.hpp"
 
 /*
-    幾何-数学ライブラリの一部
+    Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 */
 namespace MyMath{
     template<class Integer>Integer gcd(Integer x, Integer y) { return (y!=0) ? gcd(y, x % y) : x; }

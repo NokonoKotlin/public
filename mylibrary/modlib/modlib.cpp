@@ -8,9 +8,7 @@
 
 
 /*
-    modint , FFT , FPS ライブラリ
-    - 設計&方針
-        |- 参照する演算が複数存在するような状況を回避するため、modint と FPS のキャスト関係は作らない。
+    Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 */
 namespace modlib{
     

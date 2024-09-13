@@ -7,24 +7,7 @@
 
 
 /*
-    - 回分木
-        |- 列 S の回文をノードとして持つ
-    - 空の回文もノードとして持つが、(外部機能のために) 取得するときは空の列は回文として扱わない
-    - 構造 : 各ノードは以下の 2 種類の辺をもつ。
-        |- connect[x] := 自分自身の両端に x をつけた回文 (S に存在するなら) のノードへの有向辺 
-        |- SuffixLink := 自分自身の Suffix のうち、最長の回文への有向辺
-    |
-    - SuffixLink を無向辺として見ると、このグラフは木となる。
-        |- DP なども、このように考えた木上で行う
-    |
-    - 特殊なノードとして、以下がある。
-        |- m_SeedNode : 長さが -1 の空回文を表す不自然なノード (頂点番号は -1 でアクセス不可)
-            |- 外で使用する機能では基本的に無視する。
-        |- m_EmptyNode : 長さが 0 の空回文を表す自然なノード (頂点番号は 0 )
-    |
-    - aggregate : ノードの情報を Suffix Link に沿って集約する。
-        |- ただし空回文は集約に含んでいない。
-        |- そうすることで、全体の集約データは m_EmptyNode からアクセスできる。
+    Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 */
 template<typename T>
 struct PalindromicTree{
