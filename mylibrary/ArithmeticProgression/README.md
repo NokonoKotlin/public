@@ -18,14 +18,11 @@ splay 木なのでセグ木より定数倍が遅いが、挿入/削除 をサポ
 verify 問題リンク (ABC 268-E)
 </a>
 
-## ライセンス (license)
-Copyright (c) 2024 NokonoKotlin
-Released under the MIT license
-https://opensource.org/licenses/mit-license.php
+Copyright (c) 2024 NokonoKotlin(okoteiyu) Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 
 
 ## NokonoKotlin のお気持ち
 ライセンスを守って使って欲しいよ (ライブラリの冒頭に以下を書くだけ)
-- Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
+- Copyright ©️ (c) 2024 NokonoKotlin(okoteiyu) Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 
 

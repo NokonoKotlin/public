@@ -6,15 +6,12 @@ N 次元領域で、一点取得/矩形更新 を行うデータ構造。
 
 <a href = "https://nokonokotlin.github.io/Home/Contents/algorithm/Articles/DataStructure/NdSegTree.html">説明はこちらの記事(自筆)</a>
 
-## ライセンス (license)
-Copyright (c) 2024 NokonoKotlin
-Released under the MIT license
-https://opensource.org/licenses/mit-license.php
+Copyright (c) 2024 NokonoKotlin(okoteiyu) Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 
 
 ## NokonoKotlin のお気持ち
 ライセンスを守って使って欲しいよ (ライブラリの冒頭に以下を書くだけ)
-- Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
+- Copyright ©️ (c) 2024 NokonoKotlin(okoteiyu) Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 
 
 

@@ -3,15 +3,12 @@
 
 定数倍さえ気にしなければかなり便利。動的セグ木 + 挿入&削除 ができる。   
 
-## ライセンス (license)
-Copyright (c) 2024 NokonoKotlin
-Released under the MIT license
-https://opensource.org/licenses/mit-license.php
+Copyright (c) 2024 NokonoKotlin(okoteiyu) Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 
 
 ## NokonoKotlin のお気持ち
 ライセンスを守って使って欲しいよ (ライブラリの冒頭に以下を書くだけ)
-- Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
+- Copyright ©️ (c) 2024 NokonoKotlin(okoteiyu) Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 
 
 ### 概要

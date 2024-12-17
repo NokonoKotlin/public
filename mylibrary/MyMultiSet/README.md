@@ -11,15 +11,12 @@ C++ 使いの競プロ er なら誰しもが思う「`std::set` にもっと機�
 ##### TODO_FLAG
 自作 splay 木の使用方法についての注意事項をまとめて、そこにリンクする。
 
-## ライセンス (license)
-Copyright (c) 2024 NokonoKotlin
-Released under the MIT license
-https://opensource.org/licenses/mit-license.php
+Copyright (c) 2024 NokonoKotlin(okoteiyu) Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 
 
 ## NokonoKotlin のお気持ち
 ライセンスを守って使って欲しいよ (ライブラリの冒頭に以下を書くだけ)
-- Copyright ©️ (c) 2024 NokonoKotlin Released under the MIT license(https://opensource.org/licenses/mit-license.php)
+- Copyright ©️ (c) 2024 NokonoKotlin(okoteiyu) Released under the MIT license(https://opensource.org/licenses/mit-license.php)
 
 
 
